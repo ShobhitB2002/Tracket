@@ -1,21 +1,32 @@
-MIT License
+Tracket — Source-Available License
+Copyright (c) 2026 Shobhit Bansal. All rights reserved.
 
-Copyright (c) 2026 Shobhit Bansal
+The source code in this repository is published so it can be read, reviewed
+and learned from. It is NOT open source.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+You MAY:
+  - view and read the code on GitHub;
+  - fork it on GitHub only as far as GitHub's Terms of Service allow;
+  - reference it for personal learning, and quote short snippets with
+    attribution.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+You may NOT, without prior written permission from the copyright holder:
+  - use, run, host, deploy or operate this software or any part of it,
+    for yourself or for others, commercially or not;
+  - copy, modify, merge, publish, distribute, sublicense or sell it, or any
+    derivative work based on it;
+  - use its name, logo or design to offer a similar service.
+
+Access to the hosted Tracket service is by invitation. To ask for access or
+for a license, use "Request access" on the site or contact the author via
+https://github.com/ShobhitB2002.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
+
+Versions of this repository published before this license (commit 94a5c1e and
+earlier) were released under the MIT License; that grant applies only to
+those earlier versions.

@@ -19,6 +19,7 @@
   --sans:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--ink)}
 body{font-family:var(--sans);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -164,13 +165,63 @@ kbd{font:600 10px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 .skel{height:70px;border-radius:18px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:sh 1.2s linear infinite}
 @keyframes sh{to{background-position:-200% 0}}
 
-#login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#0b0b10ee;backdrop-filter:blur(8px);padding:16px}
-.lock{width:100%;max-width:320px;display:grid;gap:14px;justify-items:center;padding:32px 24px;border-radius:28px;background:var(--card);border:1px solid var(--line)}
-.lock b{font-size:18px}
-.lock input{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:0 14px;font:400 15px var(--mono);outline:none}
-.lock input:focus{border-color:var(--amber)}
-.lock button{width:100%;height:46px;border-radius:14px;background:var(--amber);color:var(--bg);font-weight:800;font-size:15px}
-.lock small{color:var(--rec);font:400 12px var(--mono);min-height:14px}
+/* ---------- modals, forms, banner ---------- */
+.btn{height:44px;padding:0 18px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--amber);color:var(--bg);font-weight:800;font-size:15px;transition:transform .15s,filter .2s;cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line);font-weight:600}
+.btn.ghost:hover{border-color:var(--amber)}
+.btn.danger{background:transparent;color:var(--rec);border:1px solid #ff4d6d55;font-weight:600}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.iconbtn{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--mute);transition:border-color .2s,color .2s}
+.iconbtn:hover{border-color:var(--amber);color:var(--ink)}
+.iconbtn svg{width:19px;height:19px}
+
+.banner{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:-10px 0 26px;padding:18px 20px;border-radius:22px;
+  background:linear-gradient(120deg,#2a2112,#171320 60%);border:1px solid #ffb54744}
+.banner .txt{flex:1;min-width:220px}
+.banner b{display:block;font-size:17px;margin-bottom:4px}
+.banner span{color:var(--mute);font-size:14px}
+.banner .acts{display:flex;gap:8px;flex-wrap:wrap}
+.demo-tag{position:fixed;top:14px;right:-38px;z-index:5;transform:rotate(45deg);background:var(--amber);color:var(--bg);font:800 10px/1 var(--mono);letter-spacing:.2em;padding:6px 44px;pointer-events:none}
+
+.modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:#07070bcc;backdrop-filter:blur(10px);animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.sheet{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow:auto;padding:28px 24px 24px;border-radius:26px;background:var(--card);border:1px solid var(--line);
+  box-shadow:0 30px 80px -30px #000;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.sheet.wide{max-width:560px}
+@keyframes pop{from{transform:translateY(14px) scale(.97);opacity:0}}
+.sheet h3{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+.sheet p.lead{color:var(--mute);font-size:14px;line-height:1.5;margin-bottom:18px}
+.sheet .x{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;color:var(--mute);font-size:20px}
+.sheet .x:hover{background:var(--card2);color:var(--ink)}
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.field input,.field textarea{width:100%;border-radius:13px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:12px 14px;font:400 15px var(--sans);outline:none;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--amber)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.formerr{color:#ffb3c1;font:400 13px/1.4 var(--mono);min-height:18px;margin:4px 0 10px}
+.row2{display:flex;gap:10px;flex-wrap:wrap}
+.row2 .btn{flex:1}
+.ok{text-align:center;padding:10px 0}
+.ok .big{font-size:44px;display:block;margin-bottom:10px}
+.steps{counter-reset:s;display:grid;gap:10px;margin:0 0 16px;padding:0;list-style:none}
+.steps li{counter-increment:s;position:relative;padding-left:34px;color:var(--mute);font-size:14px;line-height:1.5}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:7px;background:var(--card2);border:1px solid var(--line);
+  display:grid;place-items:center;font:800 11px/1 var(--mono);color:var(--amber)}
+.steps b{color:var(--ink);font-weight:600}
+.steps a,.lead a,.sec a{color:var(--amber)}
+.sec{padding:18px 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0;padding-top:4px}
+.sec h4{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec .status{font:600 12px var(--mono);color:var(--mint)}
+.sec .status.off{color:var(--rec)}
+.sec p{color:var(--mute);font-size:14px;line-height:1.5;margin-bottom:12px}
+details.how{margin-top:12px;color:var(--mute);font-size:14px}
+details.how summary{cursor:pointer;color:var(--ink);font-weight:600}
+details.how ol{margin:10px 0 0;padding-left:20px;line-height:1.6}
+code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);padding:2px 6px;border-radius:6px}
 @media (max-width:560px){
   .wrap{padding:20px 16px 60px}
   .hero{padding:26px 20px 22px;border-radius:26px}
@@ -194,7 +245,12 @@ kbd{font:600 10px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
     <div class="logo">◔</div>
     <div class="hello"><b id="greet">Hello</b><span id="date">—</span></div>
     <span class="pill" id="link" title="Userscript connection"><i></i><span id="linkText">Asana link</span></span>
+    <button class="btn ghost" id="loginBtn" hidden>Log in</button>
+    <button class="iconbtn" id="gear" title="Settings" aria-label="Settings" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </header>
+  <div id="bannerSlot"></div>
 
   <nav class="days">
     <button id="prev" title="Previous day (←)" aria-label="Previous day">‹</button>
@@ -299,7 +355,7 @@ function renderStatic(){
     $('list').innerHTML = tasks.map((t, i) => {
       const c = colorFor(t.gid);
       const n = t.entries?.length || 0;
-      return `<a class="tk ${t.live ? 'live' : ''}" data-gid="${esc(t.gid)}" style="--c:${c};animation-delay:${i*45}ms" href="${esc(t.url || '#')}" target="_blank" rel="noopener">
+      return `<a class="tk ${t.live ? 'live' : ''}" data-gid="${esc(t.gid)}" style="--c:${c};animation-delay:${i*45}ms" ${t.url ? `href="${esc(t.url)}" target="_blank" rel="noopener"` : ''}>
         <div class="rank">${pad(i + 1)}</div>
         <div class="body">
           <span class="title">${esc(t.name)}</span>
@@ -327,15 +383,16 @@ function renderRunning(){
   const started = new Date(r.startedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   $('running').innerHTML = `<div class="onair"><div class="row">
       <div class="recdot"><i></i></div>
-      <div class="meta"><span class="tag">● RUNNING</span><a class="name" href="${esc(r.url || '#')}" target="_blank" rel="noopener">${esc(r.taskName || 'Untitled task')}</a></div>
+      <div class="meta"><span class="tag">● RUNNING</span><a class="name" ${r.url ? `href="${esc(r.url)}" target="_blank" rel="noopener"` : ''}>${esc(r.taskName || 'Untitled task')}</a></div>
       <div class="clock" id="runClock">00:00:00</div>
     </div>
     <div class="since"><span>started ${started}</span><button id="clearRun" title="Clear if this is wrong">not running?</button></div>
   </div>`;
-  $('clearRun').onclick = async (e) => { e.preventDefault(); await api('/api/running', { method: 'DELETE' }); poll(); };
+  $('clearRun').onclick = async (e) => { e.preventDefault(); if (mode !== 'live') return; await api('/api/running', { method: 'DELETE' }); poll(); };
 }
 
 function tick(){
+  if (mode === 'demo' && live) live.lastHeartbeat = Date.now();
   const { tasks, total, r } = totals();
   setOdo(total);
   if (r && $('runClock')) $('runClock').textContent = hms(r.sec);
@@ -427,6 +484,8 @@ function header(){
 
 // ---------- data ----------
 async function load(force){
+  if (mode === 'demo') return loadDemo();
+  if (mode !== 'live') return;
   const want = viewDay;
   try {
     const qs = new URLSearchParams();
@@ -446,7 +505,7 @@ async function load(force){
     header();
     renderStatic();
   } catch (e) {
-    if (e.locked) return;
+      if (e.handled) return;
     const offline = !navigator.onLine || /fetch|network|ENOTFOUND|EAI_AGAIN|ECONN|timed out/i.test(e.message);
     $('err').textContent = offline ? '⚠ Can’t reach Asana right now — showing last known data, will resync automatically.' : `⚠ ${e.message}`;
     $('err').classList.add('show');
@@ -465,7 +524,7 @@ function retry(){
 // refreshes Asana every ~20s and tells us via `sig` when the day's data changed.
 let lastSig = null, polling = false;
 async function poll(){
-  if (polling || !isTodayView()) return;
+  if (polling || mode !== 'live' || !isTodayView()) return;
   polling = true;
   try {
     const next = await api('/api/live');
@@ -480,32 +539,186 @@ async function poll(){
   } catch {} finally { polling = false; }
 }
 
-// ---------- api + login ----------
+// ---------- api ----------
 const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
+let mode = 'boot';   // boot → demo (visitor) | connect (member, no Asana yet) | live
+let meInfo = null;
+
 async function api(path, opts = {}){
   const url = path + (path.includes('?') ? '&' : '?') + 'tz=' + encodeURIComponent(TZ);
-  const res = await fetch(url, { credentials: 'same-origin', ...opts });
+  const init = { credentials: 'same-origin', ...opts };
+  if (opts.json !== undefined) { init.method = init.method || 'POST'; init.headers = { 'Content-Type': 'application/json' }; init.body = JSON.stringify(opts.json); }
+  const res = await fetch(url, init);
   const body = await res.json().catch(() => ({}));
-  if (res.status === 401) { showLogin(); const e = new Error('locked'); e.locked = true; throw e; }
-  if (!res.ok) throw new Error(body.error || res.statusText);
-  hideLogin();
+  if (res.status === 401 && body.error === 'login-required' && mode === 'live') { enterDemo(); const e = new Error('logged out'); e.handled = true; throw e; }
+  if (res.status === 409 && body.error === 'asana-not-connected') { enterConnect(); const e = new Error('connect'); e.handled = true; throw e; }
+  if (!res.ok) { const e = new Error(body.error || res.statusText); e.status = res.status; throw e; }
   return body;
 }
-function showLogin(){
-  if ($('login')) return;
+
+// ---------- modals ----------
+function modal(html, { wide = false, closable = true } = {}){
+  closeModal();
   const el = document.createElement('div');
-  el.id = 'login';
-  el.innerHTML = `<form class="lock"><div class="logo">◔</div><b>Tracket is locked</b>
-    <input type="password" id="pw" placeholder="Password" autocomplete="current-password" autofocus>
-    <button>Unlock</button><small id="pwErr"></small></form>`;
+  el.className = 'modal'; el.id = 'modal';
+  el.innerHTML = `<div class="sheet ${wide ? 'wide' : ''}" role="dialog" aria-modal="true">${closable ? '<button class="x" data-close aria-label="Close">×</button>' : ''}${html}</div>`;
+  if (closable) {
+    el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-close]')) closeModal(); });
+    modal.esc = (e) => { if (e.key === 'Escape') closeModal(); };
+    addEventListener('keydown', modal.esc);
+  }
   document.body.appendChild(el);
-  el.querySelector('form').onsubmit = async (e) => {
+  setTimeout(() => el.querySelector('input:not(.hp)')?.focus(), 60);
+  return el;
+}
+function closeModal(){ $('modal')?.remove(); if (modal.esc) removeEventListener('keydown', modal.esc); }
+function form(el, handler){
+  const f = el.querySelector('form');
+  f.onsubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('pw').value }) });
-    if (res.ok) { hideLogin(); load(true); } else { $('pwErr').textContent = 'Wrong password'; $('pw').select(); }
+    const btn = f.querySelector('button[type=submit],button:not([type])'); const err = f.querySelector('.formerr');
+    if (err) err.textContent = '';
+    btn.disabled = true;
+    try { await handler(Object.fromEntries(new FormData(f)), f); }
+    catch (x) { if (err) err.textContent = x.message; }
+    finally { btn.disabled = false; }
   };
 }
-function hideLogin(){ $('login')?.remove(); }
+
+function openLogin(){
+  const el = modal(`<h3>Welcome back</h3><p class="lead">Log in with the email and password you got when your access was approved.</p>
+    <form><div class="field"><label>Email</label><input name="email" type="email" autocomplete="username" required></div>
+    <div class="field"><label>Password</label><input name="password" type="password" autocomplete="current-password" required></div>
+    <div class="formerr"></div><button class="btn" style="width:100%">Log in</button></form>
+    <p class="lead" style="margin:16px 0 0;text-align:center">No access yet? <a href="#" id="toReq">Request it</a></p>`);
+  el.querySelector('#toReq').onclick = (e) => { e.preventDefault(); openRequest(); };
+  form(el, async (v) => { await api('/api/login', { json: v }); closeModal(); boot(); });
+}
+
+function openRequest(){
+  const el = modal(`<h3>Request access</h3><p class="lead">Tracket is members-only. Tell me who you are and I’ll get back to you by email.</p>
+    <form><div class="field"><label>Name</label><input name="name" autocomplete="name" required maxlength="80"></div>
+    <div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div>
+    <div class="field"><label>Why do you want in? <span style="text-transform:none;letter-spacing:0">(optional)</span></label><textarea name="note" rows="3" maxlength="500"></textarea></div>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="formerr"></div><button class="btn" style="width:100%">Send request</button></form>`);
+  form(el, async (v) => {
+    const r = await api('/api/request', { json: v });
+    el.querySelector('.sheet').innerHTML = `<div class="ok"><span class="big">📨</span><h3>${r.duplicate ? 'Already on the list' : 'Request sent'}</h3>
+      <p class="lead">${r.duplicate ? 'Your request is still waiting — hang tight.' : 'You’ll get an email with your login once it’s approved.'}</p>
+      <button class="btn ghost" data-close style="width:100%">Keep exploring the demo</button></div>`;
+  });
+}
+
+function openConnect(){
+  const el = modal(`<h3>Connect your Asana</h3><p class="lead">Tracket reads your time entries with a personal access token. It’s encrypted before it’s stored, and only used to <b>read</b>.</p>
+    <ol class="steps"><li>Open <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">Asana → Developer console</a></li>
+    <li>Click <b>Create new token</b>, name it “Tracket”, agree, and copy it</li><li>Paste it here</li></ol>
+    <form><div class="field"><label>Asana token</label><input name="pat" type="password" autocomplete="off" required placeholder="2/1234…"></div>
+    <div class="formerr"></div><button class="btn" style="width:100%">Connect</button></form>
+    <p class="lead" style="margin:14px 0 0;text-align:center">Not you? <a href="#" id="lo">Log out</a></p>`, { closable: false });
+  el.querySelector('#lo').onclick = (e) => { e.preventDefault(); logout(); };
+  form(el, async (v) => { await api('/api/asana', { json: v }); closeModal(); toast('Asana connected ✦'); boot(); });
+}
+
+async function openSettings(){
+  const el = modal(`<h3>Settings</h3><p class="lead">Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b></p>
+    <div class="sec"><h4>Live timer <span class="status ${hbOn() ? '' : 'off'}">${hbOn() ? '● connected' : '● not connected'}</span></h4>
+      <p>A small userscript watches your open Asana tab and sends the running timer here. Your copy is already set up for your account.</p>
+      <div class="row2"><button class="btn" id="copyUs">Copy my userscript</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download</a></div>
+      <details class="how"><summary>How to install it</summary><ol>
+        <li><b>Safari:</b> install <a href="https://apps.apple.com/app/userscripts/id1463298887" target="_blank" rel="noopener">Userscripts</a> → enable it in Safari → Settings → Extensions → allow on app.asana.com → open its extension page → <b>+ → New JS</b> → select all → paste → Save.</li>
+        <li><b>Chrome / Edge / Firefox:</b> install <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> → Create a new script → select all → paste → Save.</li>
+        <li>Reload your Asana tab and start a timer — it shows up here within a second.</li></ol></details>
+      <p style="margin:12px 0 0"><a href="#" id="rotate">Reset my userscript key</a> — use if you shared it by mistake. You’ll need to re-install the script.</p>
+    </div>
+    <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
+      <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
+    <div class="sec"><h4>Password</h4><form>
+      <div class="field"><label>Current</label><input name="current" type="password" autocomplete="current-password" required></div>
+      <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
+    <div class="sec"><button class="btn ghost" id="lo" style="width:100%">Log out</button></div>`, { wide: true });
+  el.querySelector('#copyUs').onclick = async (e) => {
+    const b = e.currentTarget; b.disabled = true;
+    try {
+      const txt = await (await fetch('/api/userscript?tz=' + encodeURIComponent(TZ), { credentials: 'same-origin' })).text();
+      await navigator.clipboard.writeText(txt);
+      b.textContent = 'Copied ✓';
+    } catch { b.textContent = 'Copy failed — use Download'; }
+    setTimeout(() => { b.textContent = 'Copy my userscript'; b.disabled = false; }, 2500);
+  };
+  el.querySelector('#rotate').onclick = async (e) => {
+    e.preventDefault();
+    if (!confirm('Reset your key? Your installed userscript will stop working until you re-install it.')) return;
+    await api('/api/apikey', { json: {} }); toast('New key — re-install your userscript');
+  };
+  el.querySelector('#replace').onclick = () => openConnect();
+  el.querySelector('#disc').onclick = async () => {
+    if (!confirm('Disconnect Asana? Your token is deleted from Tracket.')) return;
+    await api('/api/asana', { method: 'DELETE' }); closeModal(); boot();
+  };
+  el.querySelector('#lo').onclick = logout;
+  form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); });
+}
+
+async function logout(){ await fetch('/api/logout', { method: 'POST' }); closeModal(); meInfo = null; enterDemo(); }
+const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
+
+// ---------- modes ----------
+function setChrome(){
+  $('gear').hidden = mode !== 'live';
+  $('loginBtn').hidden = mode !== 'demo';
+  document.querySelector('.demo-tag')?.remove();
+  $('bannerSlot').innerHTML = '';
+  if (mode === 'demo') {
+    document.body.insertAdjacentHTML('beforeend', '<div class="demo-tag">DEMO</div>');
+    $('bannerSlot').innerHTML = `<div class="banner"><div class="txt"><b>Tracket is members-only.</b>
+      <span>You’re looking at a live demo with made-up tickets. Members see their own Asana time here, in real time.</span></div>
+      <div class="acts"><button class="btn" id="bReq">Request access</button><button class="btn ghost" id="bLog">Log in</button></div></div>`;
+    $('bReq').onclick = openRequest; $('bLog').onclick = openLogin;
+  }
+}
+function enterDemo(){ mode = 'demo'; viewDay = null; colorOrder.length = 0; setChrome(); header(); loadDemo(); }
+function enterConnect(){ mode = 'connect'; data = null; live = null; setChrome(); header(); renderStatic(); openConnect(); }
+function enterLive(){ mode = 'live'; data = null; live = null; colorOrder.length = 0; setChrome(); header(); renderStatic(); load(false); }
+
+async function boot(){
+  try {
+    meInfo = await api('/api/me');
+  } catch { meInfo = { role: 'guest' }; }
+  if (meInfo.role === 'member') { if (meInfo.asana) enterLive(); else enterConnect(); }
+  else enterDemo();
+}
+
+// A believable fake day: a few tickets and a timer that started 23 minutes ago.
+function loadDemo(){
+  const t0 = Date.now();
+  const mk = (gid, name, mins) => ({ gid, name, url: null, minutes: mins.reduce((a, b) => a + b, 0),
+    entries: mins.map((m, i) => ({ minutes: m, createdAt: new Date(t0 - (6 - i) * 3600e3).toISOString() })) });
+  const demoDay = { date: ymd(new Date()), today: ymd(new Date()), user: { name: 'Guest' },
+    tasks: [
+      mk('d1', 'Checkout › coupon totals round the wrong way', [74, 58]),
+      mk('d2', 'Onboarding › redesign the welcome screens', [66]),
+      mk('d3', 'API › rate-limit the export endpoint', [41, 22]),
+      mk('d4', 'Standup & sprint planning', [30]),
+    ] };
+  todayStr = demoDay.today;
+  if (viewDay) { // past days in the demo: same shape, different numbers
+    demoDay.tasks = demoDay.tasks.map((t, i) => ({ ...t, minutes: Math.round(t.minutes * (0.6 + ((viewDay.charCodeAt(9) + i) % 5) / 6)) }));
+  }
+  data = demoDay;
+  live = viewDay ? { running: null, lastHeartbeat: Date.now() }
+    : { running: { taskGid: 'd5', taskName: 'Search › results flicker while typing', url: null, startedAt: (loadDemo.start ||= t0 - 23 * 60e3 - 17e3) }, lastHeartbeat: Date.now() };
+  live.lastHeartbeat = Date.now();
+  clockSkew = 0;
+  $('synced').textContent = 'Demo data';
+  header();
+  renderStatic();
+}
+
+$('gear').onclick = openSettings;
+$('loginBtn').onclick = openLogin;
 
 buildOdo();
 try { const q = new URLSearchParams(location.search).get('date'); if (/^\d{4}-\d{2}-\d{2}$/.test(q || '') && q < ymd(new Date())) viewDay = q; } catch {}
@@ -532,8 +745,8 @@ try {
   let n = 0;
   w.onmessage = () => { tick(); if (++n % 2 === 0) poll(); };
 } catch { setInterval(tick, 1000); setInterval(poll, 2000); }
-setInterval(() => { if (isTodayView()) load(false); }, 60 * 1000); // backup
-load(false);
+setInterval(() => { if (mode === 'live' && isTodayView()) load(false); }, 60 * 1000); // backup
+boot();
 </script>
 </body>
 </html>

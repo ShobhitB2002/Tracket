@@ -1,14 +1,19 @@
 {
   "name": "tracket",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "A live, dark-mode dashboard for your Asana time tracking — today's tickets, the running timer, and your total, in real time.",
-  "license": "MIT",
+  "description": "Members-only, dark-mode live dashboard for Asana time tracking \u2014 today's tickets, the running timer and your total, in real time.",
+  "license": "SEE LICENSE IN LICENSE",
   "author": "Shobhit Bansal",
-  "repository": { "type": "git", "url": "https://github.com/ShobhitB2002/Tracket.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShobhitB2002/Tracket.git"
+  },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && for f in lib/*.js api/*.js tracket.user.js; do node --check $f || exit 1; done"
+    "check": "for f in server.js lib/*.js api/*.js tracket.user.js; do node --check $f || exit 1; done"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
