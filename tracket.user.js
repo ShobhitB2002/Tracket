@@ -2,7 +2,7 @@
 // @name         Tracket · Asana timer bridge
 // @namespace    https://github.com/ShobhitB2002/Tracket
 // @description  Sends your running Asana timer to your Tracket dashboard, live, and runs Tracket's auto mode.
-// @version      2.3
+// @version      2.4
 // @homepageURL  https://github.com/ShobhitB2002/Tracket
 // @match        https://app.asana.com/*
 // @exclude      https://app.asana.com/-/*
@@ -27,7 +27,7 @@ const TRACKET_KEY = '';
   'use strict';
   if (window.top !== window.self) return; // ignore Asana's embedded iframes
 
-  const VERSION = '2.3';
+  const VERSION = '2.4';
   const BASE = TRACKET_URL.replace(/\/+$/, '');
   const SERVER = BASE + '/api/event';
   const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
@@ -167,6 +167,23 @@ const TRACKET_KEY = '';
     el.firstChild.textContent = '◔ ' + msg;
   }
 
+  // One Asana tab is the leader (the one you look at wins); the others stay
+  // quiet unless something changes. Kept in Asana's localStorage, shared by tabs.
+  const BEAT_MS = 60000;
+  const LEAD = 'tracket-leader';
+  const me = Math.random().toString(36).slice(2);
+  function isLeader() {
+    let cur = null;
+    try { cur = JSON.parse(localStorage.getItem(LEAD) || 'null'); } catch {}
+    const now = Date.now();
+    if (!cur || cur.id === me || now - cur.at > 20000 || (!document.hidden && cur.hidden)) {
+      try { localStorage.setItem(LEAD, JSON.stringify({ id: me, at: now, hidden: document.hidden })); } catch { return true; }
+      return true;
+    }
+    return false;
+  }
+  setInterval(isLeader, 5000); // keeps the lease fresh (or takes over from a closed tab)
+
   let seen = null;      // timer this tab last saw running
   let emptyReads = 0;
   let lastKey = null;
@@ -194,7 +211,10 @@ const TRACKET_KEY = '';
 
     const key = running ? `R${running.startedAt}` : previous ? `S${previous.startedAt}` : `-${t.state}`;
     const now = Date.now();
-    if (key !== lastKey || now - lastBeat > (auto ? 2000 : 15000)) { // faster while an auto action counts down
+    // Changes go out at once from any tab. The "still here" heartbeat comes from
+    // one tab only (the leader), every 60s — every 2s while auto mode counts down.
+    const beatDue = auto ? now - lastBeat > 2000 : isLeader() && now - lastBeat > BEAT_MS;
+    if (key !== lastKey || beatDue) {
       if (key !== lastKey) log(running ? `running: ${running.taskName || running.taskGid}` : previous ? 'stopped' : `no timer (${t.state})`);
       post({ running, previous, visible, diag: { v: VERSION, state: t.state, visible, reader: !!document.documentElement.getAttribute(ATTR + '-alive') } });
       lastKey = key;

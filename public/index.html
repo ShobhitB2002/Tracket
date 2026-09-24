@@ -387,7 +387,7 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
 
   <footer>
     <span id="synced">Not synced yet</span>
-    <span><kbd>←</kbd> <kbd>→</kbd> change day · <kbd>T</kbd> today</span>
+    <span><a href="/guide" style="color:var(--amber)">📖 Setup guide</a> · <kbd>←</kbd> <kbd>→</kbd> change day · <kbd>T</kbd> today</span>
   </footer>
 </main>
 <div class="toast" id="toast"></div>
@@ -398,6 +398,12 @@ const $ = (id) => document.getElementById(id);
 const PALETTE = ['#ffb547','#5cf2b0','#a78bfa','#5cc8ff','#ff8fab','#f5e663','#ff7a45','#7ee081'];
 const GOAL_MIN = 8 * 60;
 const MIN_DAY_MIN = 7 * 60; // below this the day doesn't count as a full one
+// The Asana script reports every 60s (instantly on start/stop), so a report
+// newer than this = connected. Matches FRESH_MS on the server.
+const FRESH_MS = 150000;
+// How often to ask the server (free-tier friendly): looking at it, open but
+// not focused (e.g. a second screen), and in a background tab.
+const POLL_MS = { focused: 4000, visible: 12000, hidden: 90000 };
 // The owner's lines (grammar tidied, meaning kept).
 const LINES = {
   comment: 'Dude, you forgot to mention what you did on this ticket. All good?',
@@ -512,7 +518,7 @@ function renderRunning(){
   const r = runningNow();
   $('hero').classList.toggle('ticking', !!r);
   if (!r) {
-    const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
+    const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < FRESH_MS;
     const lost = mode === 'live' && !hb && live?.lastHeartbeat;
     $('running').innerHTML = `<div class="idle"><span class="z">z<sup>z</sup></span><div>Nothing ticking right now.
       <small>${hb ? 'Watching your Asana tabs — keep one open, even in the background.'
@@ -576,7 +582,7 @@ function tick(){
   if (lastHourShown !== null && hours > lastHourShown && total - (tick.prev || 0) < 5) toast(`+1h · ${hours}h in the bag`);
   lastHourShown = hours; tick.prev = total;
 
-  const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
+  const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < FRESH_MS;
   const offline = !navigator.onLine;
   $('link').classList.toggle('on', !!hb && !offline);
   $('link').classList.toggle('off', offline);
@@ -735,13 +741,14 @@ function autoSummary(p){
   else if (p.lunch) parts.push(`lunch is <b>${p.lunch.start}–${p.lunch.end}</b> (no auto stop)`);
   return parts.length ? `Auto mode ${parts.join(' · ')}.` : 'Auto mode is off.';
 }
-const scriptOld = () => hbOn() && live?.scriptV && parseFloat(live.scriptV) < 2.3;
+const SCRIPT_V = '2.4'; // current userscript version
+const scriptOld = () => hbOn() && live?.scriptV && parseFloat(live.scriptV) < parseFloat(SCRIPT_V);
 function renderAuto(){
   const el = $('automode');
   if (!data || !isTodayView() || (mode !== 'live' && mode !== 'demo')) { el.hidden = true; return; }
   const p = mode === 'demo' ? DEMO_PREFS : meInfo?.prefs;
   const on = p && (p.auto.cap.on || (p.auto.lunch && p.lunch));
-  const html = `<span>⚙ ${autoSummary(p)}${on && scriptOld() ? ' <span class="old">Needs the updated Asana script (v2.3).</span>' : ''}</span><button data-auto>Configure</button>`;
+  const html = `<span>⚙ ${autoSummary(p)}${on && scriptOld() ? ` <span class="old">Needs the updated Asana script (v${SCRIPT_V}).</span>` : ''}</span><button data-auto>Configure</button>`;
   if (el.dataset.h !== html) {
     el.dataset.h = html; el.innerHTML = html; el.hidden = false;
     el.querySelector('[data-auto]').onclick = () => (mode === 'live' ? openAuto() : openLogin());
@@ -752,7 +759,7 @@ function renderAuto(){
 function renderNotes(){
   const out = [];
   if (mode === 'live' && isTodayView() && data?.lunchMinutes > 0) out.push(`<div class="n">🍽 <span>${esc(LINES.lunch)} Use <b>Remove lunch</b> on the ticket below.</span></div>`);
-  if (mode === 'live' && scriptOld()) out.push(`<div class="n">⬆ <span>Your Asana script is v${esc(live.scriptV)}. Install v2.3 for auto mode.</span><button data-upd>Update</button></div>`);
+  if (mode === 'live' && scriptOld()) out.push(`<div class="n">⬆ <span>Your Asana script is v${esc(live.scriptV)}. Install v${SCRIPT_V} — auto mode needs it, and it uses much less of Tracket’s free hosting.</span><button data-upd>Update</button></div>`);
   const html = out.join('');
   const el = $('notes');
   if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; el.querySelector('[data-upd]')?.addEventListener('click', () => openTimerSetup(false)); }
@@ -938,18 +945,24 @@ function retry(){
 // Live updates: poll the server (works on serverless hosting too). The server
 // refreshes Asana every ~20s and tells us via `sig` when the day's data changed.
 let lastSig = null, polling = false;
+function pollDue(){
+  const every = document.hidden ? POLL_MS.hidden : document.hasFocus() ? POLL_MS.focused : POLL_MS.visible;
+  return Date.now() - (poll.at || 0) >= every;
+}
 async function poll(){
   if (polling || mode !== 'live' || !isTodayView()) return;
-  polling = true;
+  polling = true; poll.at = Date.now();
   try {
-    const next = await api('/api/live');
+    const next = await api('/api/live' + (document.hidden ? '?bg=1' : ''));
     const changed = JSON.stringify(next.running) !== JSON.stringify(live?.running);
     const stopped = live?.running && !next.running;
     const newAuto = next.auto?.id !== live?.auto?.id;
     clockSkew = next.serverNow - Date.now();
     live = next;
     renderNotes();
-    if (newAuto) pollAlerts();
+    // the feed is only fetched when its head says something changed
+    const h = next.alertsHead, known = alertsFeed.items[alertsFeed.items.length - 1]?.id || 0;
+    if (newAuto || (h && (h.last !== known || h.seen !== alertsFeed.seen))) pollAlerts();
     if (!isTodayView()) return;
     if (next.sig && lastSig && next.sig !== lastSig) load(false);   // Asana data changed
     else if (stopped) setTimeout(() => load(true), 2500);            // let Asana save the entry
@@ -1096,7 +1109,7 @@ function timerSteps(b){
 function openTimerSetup(first){
   let b = detectBrowser();
   const el = modal(`<h3>${first ? 'Last step: the live timer' : 'Set up the live timer'}</h3>
-    <p class="lead">Asana doesn’t share a <i>running</i> timer, so a tiny script in your browser watches your Asana tab and sends it here. Your copy is already linked to your account.</p>
+    <p class="lead">Asana doesn’t share a <i>running</i> timer, so a tiny script in your browser watches your Asana tab and sends it here. Your copy is already linked to your account. Stuck? <a href="/guide#start" target="_blank">Step-by-step guide</a>.</p>
     <div class="seg-tabs" id="btabs">${Object.entries(BROWSERS).map(([k, v]) => `<button data-b="${k}" class="${k === b ? 'on' : ''}">${v}</button>`).join('')}</div>
     <ol class="steps" id="bsteps">${timerSteps(b)}</ol>
     <p class="note-open">💡 <b>Keep one Asana tab open</b> — it can sit in the background. The script is tiny: a few bytes every 15 seconds and barely any memory. Close Asana and Tracket still shows your logged time; only the <i>live</i> timer pauses.</p>
@@ -1124,7 +1137,7 @@ function openTimerSetup(first){
 }
 
 async function openSettings(){
-  const el = modal(`<h3>Settings</h3><p class="lead">Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b></p>
+  const el = modal(`<h3>Settings</h3><p class="lead">Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b> · <a href="/guide" target="_blank">📖 Step-by-step guide</a></p>
     <div class="sec"><h4>Live timer <span class="status ${hbOn() ? '' : 'off'}">${hbOn() ? '● connected' : '● not connected'}</span></h4>
       <p>A small browser script sends your running Asana timer here. Your copy is already linked to your account.</p>
       <div class="row2"><button class="btn" id="setupTimer">${hbOn() ? 'Install on another browser' : 'Set up live timer'}</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download script</a></div>
@@ -1153,8 +1166,8 @@ async function openSettings(){
       <ol class="steps">
         <li>Install <a href="https://swiftbar.app" target="_blank" rel="noopener"><b>SwiftBar</b></a> (free), open it, and pick a plugin folder when it asks.</li>
         <li><button class="btn sm-inline" id="barCopy">Copy install command</button> then paste it in <b>Terminal</b> and press Return. It puts your Tracket plugin in SwiftBar’s folder.
-          <small>Or <a href="/api/menubar" download="tracket.10s.js">download the plugin</a>, drop it in that folder and run <code>chmod +x tracket.10s.js</code> there.</small></li>
-        <li><small>🔔3 in the menu bar = 3 new alerts. Open it → <b>Mark all read</b>. It refreshes every 10s.</small></li>
+          <small>Or <a href="/api/menubar" download="tracket.js">download the plugin</a>, drop it in that folder and run <code>chmod +x tracket.js</code> there.</small></li>
+        <li><small>The running timer ticks every second. 🔔3 = 3 new alerts: open it → <b>Mark all read</b>. New data arrives about once a minute (<b>Refresh now</b> in the menu for sooner).</small></li>
       </ol></div>
     <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
       <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
@@ -1211,7 +1224,7 @@ async function openSettings(){
       const src = await (await fetch('/api/menubar', { credentials: 'same-origin' })).text();
       const key = (src.match(/^const TRACKET_KEY = "(.*)";$/m) || [])[1];
       if (!key) throw new Error('no key');
-      const cmd = `DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBar")"; mkdir -p "$DIR" && curl -fsSL -H 'x-tracket-key: ${key}' '${location.origin}/api/menubar' -o "$DIR/tracket.10s.js" && chmod +x "$DIR/tracket.10s.js" && echo "Tracket plugin installed in $DIR"; open -g 'swiftbar://refreshallplugins' 2>/dev/null`;
+      const cmd = `DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBar")"; mkdir -p "$DIR" && curl -fsSL -H 'x-tracket-key: ${key}' '${location.origin}/api/menubar' -o "$DIR/tracket.js" && chmod +x "$DIR/tracket.js" && rm -f "$DIR/tracket.10s.js" && echo "Tracket plugin installed in $DIR"; open -g 'swiftbar://refreshallplugins' 2>/dev/null`;
       await navigator.clipboard.writeText(cmd); e.target.textContent = 'Copied ✓';
     } catch { e.target.textContent = 'Copy failed — use Download'; }
     setTimeout(() => { e.target.textContent = 'Copy install command'; }, 2500);
@@ -1222,7 +1235,7 @@ async function openSettings(){
 function openAuto(){
   const p = meInfo?.prefs || DEMO_PREFS;
   const el = modal(`<h3>Auto mode</h3>
-    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v2.3${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}.</p>
+    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v${SCRIPT_V}${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}.</p>
     <div class="sec"><h4>Daily limit</h4>
       <label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span>Stop my timer when today reaches <input type="number" id="capH" min="1" max="16" step="0.25" value="${p.auto.cap.hours}"> hours</span></label>
       <small class="hint">7h is the minimum day. Once a day: if you deny it, or start a timer again afterwards, it won’t stop you again that day.</small></div>
@@ -1269,7 +1282,7 @@ $('list').addEventListener('click', (e) => {
 });
 
 async function logout(){ await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ which: 'member' }) }); closeModal(); meInfo = null; enterDemo(); }
-const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
+const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < FRESH_MS;
 
 // ---------- modes ----------
 function setChrome(){
@@ -1363,9 +1376,10 @@ addEventListener('offline', tick);
 try {
   const w = new Worker(URL.createObjectURL(new Blob(['setInterval(() => postMessage(0), 1000)'], { type: 'text/javascript' })));
   let n = 0;
-  w.onmessage = () => { tick(); if (++n % 2 === 0) poll(); if (n % 15 === 0) pollAlerts(); };
-} catch { setInterval(tick, 1000); setInterval(poll, 2000); setInterval(pollAlerts, 15000); }
-setInterval(() => { if (mode === 'live' && isTodayView()) load(false); }, 60 * 1000); // backup
+  w.onmessage = () => { tick(); if (pollDue()) poll(); };
+} catch { setInterval(tick, 1000); setInterval(() => { if (pollDue()) poll(); }, 1000); }
+addEventListener('focus', () => poll());
+setInterval(() => { if (mode === 'live' && isTodayView() && !document.hidden) load(false); }, 5 * 60 * 1000); // backup
 boot();
 </script>
 </body>

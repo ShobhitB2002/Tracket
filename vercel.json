@@ -14,6 +14,10 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/guide",
+      "destination": "/guide.html"
     }
   ],
   "headers": [

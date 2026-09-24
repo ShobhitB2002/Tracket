@@ -34,6 +34,8 @@ ticking in real time, even in a background tab.
 
 ## Access
 
+**New member? Follow the [step-by-step guide](https://tracketv1.vercel.app/guide)** — setup, phone notifications, auto mode, menu bar.
+
 Tracket is invite-only. Open the site to explore a live demo, then hit **Request access**. Once approved you get a login by email:
 
 1. **Log in** with the email and password you were sent.
@@ -84,7 +86,7 @@ lib/core.js       Asana client, day summaries, running-timer rules
 lib/users.js      members, access requests, sessions, API keys, rate limits
 lib/crypto.js     scrypt, HMAC sessions, AES-256-GCM
 lib/notify.js     access-request pings (email via Resend, Telegram)
-lib/store.js      Upstash Redis (hosted) or a JSON file (local)
+lib/store.js      Turso or Upstash Redis (hosted), or a JSON file (local)
 public/           dashboard + admin panel — plain HTML/CSS/JS
 server.js         local server using the same routes
 tracket.user.js   the userscript

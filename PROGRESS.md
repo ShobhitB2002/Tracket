@@ -9,7 +9,8 @@ been done, and what's open. Update it at the end of each piece of work.
 - **Live site:** https://tracketv1.vercel.app (Vercel, auto-deploys from `main`)
 - **Repo:** https://github.com/ShobhitB2002/Tracket
 - **Owner / admin:** Shobhit Bansal. Admin panel at `/admin` (password = `ADMIN_PASSWORD` env var)
-- **Stack:** Node 18+, zero npm dependencies, no build step. Vercel function + Upstash Redis
+- **Stack:** Node 18+, zero npm dependencies, no build step. Vercel function (Hobby) + Turso (libSQL over HTTP), Upstash Redis as the older fallback
+- **Goal:** stay on free tiers for up to ~10 members (see *Free-tier budget*)
 - **Members:** invite-only. Visitors see a demo and can request access; the admin approves; the member gets a login by email (Resend)
 
 ## How it works
@@ -41,7 +42,7 @@ server --member's Asana PAT (AES-256-GCM at rest)--> Asana API (time_tracking_en
 | `lib/routes.js` | route table (public / member / admin), per-member userscript generation, shift API |
 | `lib/core.js` | Asana client, day summaries, running-timer rules, ticket ownership checks |
 | `lib/users.js` | members, requests, sessions (HMAC cookies `tk_s` / `tk_a`), API keys, rate limits |
-| `lib/store.js` | Upstash Redis REST, or a JSON file in `./data` locally |
+| `lib/store.js` | Turso (preferred) or Upstash Redis or a local JSON file; `mget`, `lock`, in-memory `throttle`, per-instance read cache, one-time Upstash → Turso copy |
 | `lib/crypto.js`, `lib/notify.js` | scrypt/HMAC/AES, cron key; access-request pings + `sendEmail` (Resend) |
 | `lib/alerts.js` | reminder engine, alert feed, auto mode (offer → countdown → claim/deny → result) |
 | `lib/push.js` | Web Push with no deps: VAPID ES256 JWT + aes128gcm (RFC 8291), subscriptions per member |
@@ -55,8 +56,8 @@ server --member's Asana PAT (AES-256-GCM at rest)--> Asana API (time_tracking_en
 
 ### Env vars (Vercel)
 `ADMIN_PASSWORD`, `SESSION_SECRET` (16+ chars; changing it logs everyone out, and also resets the push keys and cron URL),
-`RESEND_API_KEY` + `ADMIN_EMAIL`, `RESEND_FROM` (a verified-domain sender; without it Resend only delivers to the Resend
-account's own address, so reports only reach the owner), optional Telegram, optional `CRON_SECRET` (Bearer for a scheduler),
+`GMAIL_USER` + `GMAIL_APP_PASSWORD` (a Gmail made for Tracket sends all email over SMTP; owner's choice, no domain), `ADMIN_EMAIL`,
+`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` (set by Vercel's Turso integration), fallback `RESEND_API_KEY`/`RESEND_FROM`, optional Telegram, optional `CRON_SECRET` (Bearer for a scheduler),
 optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored). The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`. See `.env.example`.
 
 ## Features & rules (current)
@@ -98,17 +99,44 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   trigger runs first after that; a day missed is sent late the next day (if reports were on by then). "Send today's report now"
   in Settings. Account email is changeable in Settings (needs password; also the login).
 - **Scheduler:** `/api/cron?key=<cronKey>` (key derived from SESSION_SECRET; the admin panel shows the URL) runs `evaluate` for
-  every member. Point Upstash QStash (Schedules, every 5 min = 288 msgs/day, free tier) or cron-job.org at it. Without it,
+  every member and sweeps expired rows. Point Upstash QStash (Schedules, every 10 min = 144 msgs/day, free tier) or cron-job.org at it. Without it,
   reminders and reports still run whenever an Asana tab, dashboard or the menu bar is open.
-- **Menu bar (Mac):** SwiftBar plugin `tracket.10s.js`: redraws every 10s, fetches `/api/bar` at most every 30s (Upstash budget),
-  counts the running timer locally. Title `🔔2 ● 0:47 · 6h 47m`. Settings → Menu bar → *Copy install command*.
+- **Menu bar (Mac):** SwiftBar *streamable* plugin `tracket.js` (v2): one long-running process redraws every second (`~~~` frames),
+  fetches `/api/bar` once a minute, counts the timer locally → title `🔔2 ● 0:47:12 · 6:47:12` (Menlo, so digits don't wobble).
+  Menu actions (`seen`, `refresh`) run the file again with an argument and empty the cache file to make the loop refetch.
+  Settings → Menu bar → *Copy install command* (also removes the old `tracket.10s.js`).
+- **Email:** `lib/notify.js` sends through Gmail SMTP (implicit TLS 465, AUTH PLAIN, multipart text+HTML, UTF-8 subject) when
+  `GMAIL_USER`/`GMAIL_APP_PASSWORD` are set, else Resend. Also used for access-request pings to `ADMIN_EMAIL`.
+- **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
+  lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
   OK = assigned to me AND the custom field "Task Status" is "In Grooming" or "In Development". Otherwise a ⚠ chip
   appears on the row and On Air card, and an alert fires on **every** timer start (by design, the owner wants it repeated).
   No Task Status field → the assignee is still checked, and it's flagged "No Task Status field — are you sure that's acceptable?"
   Checks never throw (so there are no false warnings when Asana fails).
-- **Userscript v2.3** (auto mode; the dashboard shows "Install v2.3" when an older one reports). v2.2 added per-member `@name Tracket · <name>` / `@namespace tracket/<id>`. A warning pill shows in the Asana
+- **Userscript v2.4:** only one Asana tab (the leader, via `tracket-leader` in Asana's localStorage; the visible tab takes over)
+  sends the 60s heartbeat; any tab still reports a start/stop instantly; 2s beats during an auto countdown. v2.3 added auto mode.
+  The dashboard shows "Install v2.4" when an older one reports (`SCRIPT_V`). v2.2 added per-member `@name Tracket · <name>` / `@namespace tracket/<id>`. A warning pill shows in the Asana
   tab when sends error, time out, or get no answer in 20s. The dashboard says "Asana tab stopped reporting X ago" and gives the fix.
+
+## Free-tier budget (target: ≤10 members, all free)
+
+Limits: Vercel Hobby 1M function calls, 4 h active CPU, 360 GB-h memory a month (and non-commercial use only);
+Turso 500M row reads / 10M row writes; Upstash 500K commands; QStash 1,000 msgs/day, 10 schedules; Gmail ~500 emails/day.
+
+Measured 2026-09-24 with a 3-minute replay (dashboard focused, 3 Asana tabs, menu bar, timer running), mocks counting every call:
+
+| | old (f7db29a, Upstash) | new (Turso) |
+|---|---|---|
+| requests / hour | 2,880 | 1,040 focused all the time; ~300 typical |
+| database ops / hour | 31,200 Redis commands | 780 row writes + 5,900 row reads |
+| CPU per request | — | ~10 ms |
+
+Old: one member used Upstash's monthly 500K in about two workdays (live poll every 2s ≈ 11 commands each, heartbeats every 15s
+from every Asana tab ≈ 12 each, plus alert/menu-bar polling). New: ~64K requests / month per typical member → 10 members ≈ 64%
+of Vercel's 1M; Turso writes ≈ 4% of 10M. Rules that keep it there: dashboard polls 4s focused / 12s visible / 90s hidden;
+Asana refresh 30s (90s background); one heartbeat tab at 60s; `mget` per request; skip no-op state writes; in-memory throttles
+before any lock write; alerts fetched only when `alertsHead` changes; menu bar fetch 60s. Check usage monthly in Vercel → Usage.
 
 ## History
 
@@ -122,17 +150,18 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 | 2026-09-24 | 5e7bf46 | Work shift, pace score, duration-driven reminders |
 | 2026-09-24 | 9a7e8c1 | Flag tickets that may not be yours (assignee / Task Status) |
 | 2026-09-24 | 618b632 | Server-side alerts engine, Web Push (phone lock screen + watch, Home Screen app), auto mode (7h cap, lunch stop/restart, 25s countdown + Deny), lunch on the day bar + Remove lunch, 💬 missing-comment check, daily email report, change email, Mac menu bar (SwiftBar), scheduler URL in admin, userscript v2.3 |
+| 2026-09-24 | (see git log) | Free-tier pass: Turso store with auto-copy from Upstash, batched reads, adaptive polling, one heartbeat tab (userscript v2.4), Gmail SMTP email, streamable menu bar with seconds, `/guide` for members, grammar-tidied messages (f7db29a) |
 
 ## Known limits / open ideas
 
 - Verified live 2026-09-24: Web Push to Safari on the owner's Mac accepted by Apple (201); comment check matches Asana (no comments that day); owner's installed userscript updated to v2.3 in place (Asana tabs need a reload).
-- **Setup still needed by the owner:** (1) a scheduler hitting the admin panel's cron URL every 5 min (QStash recommended),
-  (2) a verified domain in Resend + `RESEND_FROM` so reports reach members other than the owner, (3) reinstall the userscript (v2.3).
+- **Setup still needed by the owner:** (1) Vercel → Storage → Turso → connect (then redeploy; data copies over by itself),
+  (2) a Tracket Gmail + app password → `GMAIL_USER`/`GMAIL_APP_PASSWORD`, (3) QStash schedule every 10 min on the admin panel's
+  cron URL (after Turso), (4) SwiftBar + install command, (5) userscript v2.4 on each browser.
 - No overnight shifts. Lunch is one window for every day.
 - Auto mode relies on Asana's button labels ("Start timer" / "Stop timer"); if Asana renames them, actions fail visibly (alert).
-- Upstash: `/api/live` now also reads `autonow`, and heartbeats run the alert checks (~5 extra commands per 12s). Watch the free tier.
 - Past-day ⚠ chips show a ticket's *current* assignee/status, not what it was that day.
-- Upstash free tier is ~500K commands/month; one open dashboard uses roughly 3 commands/s. Watch this as members grow.
+- Service workers don't register in the Claude built-in browser (embedded); test push in real Safari/Chrome.
 - Always-on-screen widget ideas, to do later (owner asked to remember): (a) video picture-in-picture trick — draw the timer on a
   canvas, stream it into a `<video>` and pop it out; floats over every app in Safari and Chrome, rectangle only; (b) Chrome/Brave
   Document Picture-in-Picture — any HTML, always on top, not Safari; (c) small native macOS app — a round, draggable, always-on-top

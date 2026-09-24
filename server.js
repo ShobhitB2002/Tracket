@@ -40,7 +40,7 @@ http.createServer(async (req, res) => {
     return res.end(out.raw !== undefined ? out.raw : JSON.stringify(out.body));
   }
 
-  const rel = url.pathname === '/' ? 'index.html' : url.pathname === '/admin' ? 'admin.html' : path.normalize(url.pathname);
+  const rel = url.pathname === '/' ? 'index.html' : url.pathname === '/admin' ? 'admin.html' : url.pathname === '/guide' ? 'guide.html' : path.normalize(url.pathname);
   const file = path.join(PUBLIC, rel);
   if (!file.startsWith(PUBLIC)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, buf) => {
