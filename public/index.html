@@ -166,6 +166,9 @@ h2::after{content:"";flex:1;height:1px;background:var(--line)}
 .rank{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font:800 14px/1 var(--mono);
   color:var(--bg);background:var(--c);box-shadow:0 6px 20px -8px var(--c)}
 .tk .body{min-width:0}
+.warn{display:inline-flex;align-items:flex-start;gap:6px;margin-top:6px;padding:4px 8px;border-radius:8px;border:1px solid #ffb54755;background:#ffb5470f;
+  color:var(--amber);font:600 11px/1.35 var(--mono);white-space:normal}
+.onair .warn{position:relative;margin-top:10px}
 .tk .title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .tk .sub{display:flex;align-items:center;gap:10px;margin-top:8px}
 .bar{flex:1;height:5px;border-radius:9px;background:#0c0c12;overflow:hidden;max-width:260px}
@@ -387,12 +390,15 @@ function totals(){
   const r = runningNow();
   if (r) {
     const hit = tasks.find((t) => t.gid === r.taskGid) || tasks.find((t) => r.taskGid.startsWith('name:') && t.name.trim() === r.taskName);
-    if (hit) { hit.sec += r.sec; hit.live = true; }
-    else tasks.push({ gid: r.taskGid, name: r.taskName, url: r.url, minutes: 0, sec: r.sec, entries: [], live: true, fresh: true });
+    if (hit) { hit.sec += r.sec; hit.live = true; if (r.check !== undefined) hit.check = r.check; }
+    else tasks.push({ gid: r.taskGid, name: r.taskName, url: r.url, minutes: 0, sec: r.sec, entries: [], live: true, fresh: true, check: r.check });
   }
   tasks.sort((a, b) => b.sec - a.sec);
   return { tasks, total: tasks.reduce((s, t) => s + t.sec, 0), r };
 }
+
+// ⚠ chip for tickets that may not be yours (see checkTasks on the server)
+const warnChip = (c) => (c && !c.ok ? `<span class="warn" title="Are you sure this is your task? The assignee or Task Status says otherwise.">⚠ ${esc(c.reasons.join(' · '))}</span>` : '');
 
 function renderStatic(){
   const { tasks, total } = totals();
@@ -410,6 +416,7 @@ function renderStatic(){
         <div class="rank">${pad(i + 1)}</div>
         <div class="body">
           <span class="title">${esc(t.name)}</span>
+          ${warnChip(t.check)}
           <div class="sub"><div class="bar"><i></i></div>
             <div class="chips">${Array.from({ length: Math.min(n, 8) }, () => '<b></b>').join('')}</div>
             <span class="pct"></span></div>
@@ -438,7 +445,7 @@ function renderRunning(){
   const started = new Date(r.startedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   $('running').innerHTML = `<div class="onair"><div class="row">
       <div class="recdot"><i></i></div>
-      <div class="meta"><span class="tag">● RUNNING</span><a class="name" ${r.url ? `href="${esc(r.url)}" target="_blank" rel="noopener"` : ''}>${esc(r.taskName || 'Untitled task')}</a></div>
+      <div class="meta"><span class="tag">● RUNNING</span><a class="name" ${r.url ? `href="${esc(r.url)}" target="_blank" rel="noopener"` : ''}>${esc(r.taskName || 'Untitled task')}</a>${warnChip(r.check)}</div>
       <div class="clock" id="runClock">00:00:00</div>
     </div>
     <div class="since"><span>started ${started}</span><button id="clearRun" title="Clear if this is wrong">not running?</button></div>
@@ -544,6 +551,14 @@ function checkAlerts(total){
   if (s && levelOf(checkAlerts.peak) === 'low' && t >= s.to && t - s.to < 5 * 60000 && once(`tk_end_${day}`))
     notify(`Shift over — ${hm(total)} logged, under 7h`, VERDICTS.low.today, 'tkend');
 }
+// Every timer start on a ticket that may not be yours gets an alert — each
+// start, not once a day, so a second start is a second chance to notice.
+function checkStartAlert(r){
+  if (mode !== 'live' || !r?.check || r.check.ok) return;
+  if (!once(`tk_own_${r.taskGid}_${r.startedAt}`)) return;
+  notify('Are you sure this is your task?', `${r.taskName || 'This ticket'} — the assignee or Task Status says otherwise: ${r.check.reasons.join(' · ')}`, `tkown${r.startedAt}`);
+}
+
 // Called by poll() when the running timer stops; `total` includes that timer.
 function onTimerStop(total){
   if (mode !== 'live' || !isTodayView() || !data) return;
@@ -700,6 +715,7 @@ async function load(force){
     data = body;
     lastSig = body.sig;
     live = { running: body.running, lastHeartbeat: body.lastHeartbeat };
+    checkStartAlert(body.running);
     clockSkew = body.serverNow - Date.now();
     $('err').classList.remove('show'); retry.n = 0; clearTimeout(retry.t);
     $('synced').textContent = `Synced ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
@@ -734,6 +750,7 @@ async function poll(){
     if (stopped) onTimerStop(tick.prev || 0);
     clockSkew = next.serverNow - Date.now();
     live = next;
+    checkStartAlert(next.running);
     if (!isTodayView()) return;
     if (next.sig && lastSig && next.sig !== lastSig) load(false);   // Asana data changed
     else if (stopped) setTimeout(() => load(true), 2500);            // let Asana save the entry
@@ -979,7 +996,7 @@ function loadDemo(){
     tasks: [
       mk('d1', 'Checkout › coupon totals round the wrong way', [74, 58]),
       mk('d2', 'Onboarding › redesign the welcome screens', [66]),
-      mk('d3', 'API › rate-limit the export endpoint', [41, 22]),
+      { ...mk('d3', 'API › rate-limit the export endpoint', [41, 22]), check: { ok: false, reasons: ['Task Status is “India QC Feedback”'] } },
       mk('d4', 'Standup & sprint planning', [30]),
     ] };
   todayStr = demoDay.today;
