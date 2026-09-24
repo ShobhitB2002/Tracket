@@ -31,8 +31,11 @@ Tracket is invite-only. Open the site to explore a live demo, then hit **Request
 2. **Connect Asana** — paste a personal access token ([Asana → Developer console](https://app.asana.com/0/my-apps) → *Create new token*). It's encrypted before it's stored and only ever used to read.
 3. **Install the live-timer userscript** — Settings → *Copy my userscript*. Your copy is pre-configured for your account.
    - **Safari:** [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) → enable in Safari → Settings → Extensions, allow on `app.asana.com` → extension page → **+ → New JS** → select all → paste → Save.
+     Then choose **Always Allow** when Safari asks about the Tracket site. Denying it (or "Allow for One Day") silently stops the live timer.
    - **Chrome / Edge / Firefox:** [Tampermonkey](https://www.tampermonkey.net/) → *Create a new script* → select all → paste → Save.
 4. Reload your Asana tab and start a timer — it appears on Tracket within a second.
+
+Each member's script has their name in it (`Tracket · <name>`), so two accounts' scripts in one browser don't overwrite each other. If the script can't reach Tracket, a small warning appears in the corner of your Asana tab.
 
 ## How it works
 

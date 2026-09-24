@@ -2,7 +2,7 @@
 // @name         Tracket · Asana timer bridge
 // @namespace    https://github.com/ShobhitB2002/Tracket
 // @description  Sends your running Asana timer to your Tracket dashboard, live.
-// @version      2.1
+// @version      2.2
 // @homepageURL  https://github.com/ShobhitB2002/Tracket
 // @match        https://app.asana.com/*
 // @exclude      https://app.asana.com/-/*
@@ -27,7 +27,7 @@ const TRACKET_KEY = '';
   'use strict';
   if (window.top !== window.self) return; // ignore Asana's embedded iframes
 
-  const VERSION = '2.1';
+  const VERSION = '2.2';
   const SERVER = TRACKET_URL.replace(/\/+$/, '') + '/api/event';
   const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
   const ATTR = 'data-tracket-timer';
@@ -100,18 +100,66 @@ const TRACKET_KEY = '';
   // ---------------------------------------------------------------------------
   const xhr = (typeof GM !== 'undefined' && GM.xmlHttpRequest) || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest);
   if (!xhr) log('❌ GM.xmlHttpRequest unavailable');
+  // Failed sends must be visible: Safari can block the request (Userscripts not
+  // allowed on the Tracket site) without ever calling back, so a send that gets
+  // no answer within 20s counts as failed too.
   let failing = false;
+  let waiting = 0; // time of the oldest unanswered send
+  function ok() {
+    waiting = 0;
+    if (failing) log('✅ connected');
+    failing = false;
+    badge(null);
+  }
+  function fail(why) {
+    waiting = 0;
+    if (!failing) log('❌', why);
+    failing = true;
+    badge(why);
+  }
+  const HOST = (() => { try { return new URL(TRACKET_URL).host; } catch { return TRACKET_URL; } })();
+  const blocked = `Tracket can’t reach ${HOST}. Allow your userscript manager on ${HOST} (Safari: Userscripts icon → Always Allow), then reload this tab.`;
   function post(body) {
-    if (!xhr) return;
-    xhr({
-      method: 'POST', url: SERVER, data: JSON.stringify({ ...body, tz: TZ }),
-      headers: { 'Content-Type': 'application/json', ...(TRACKET_KEY ? { 'x-tracket-key': TRACKET_KEY } : {}) },
-      onload: (r) => {
-        if (r.status === 401) { if (!failing) log('❌ wrong TRACKET_KEY — check the top of this script'); failing = true; return; }
-        if (failing) log('✅ connected'); failing = false;
-      },
-      onerror: () => { if (!failing) log('❌ cannot reach', SERVER); failing = true; },
-    });
+    if (!xhr) return fail('GM.xmlHttpRequest unavailable — is this running in Tampermonkey or Userscripts?');
+    if (!waiting) waiting = Date.now();
+    try {
+      xhr({
+        method: 'POST', url: SERVER, data: JSON.stringify({ ...body, tz: TZ }), timeout: 15000,
+        headers: { 'Content-Type': 'application/json', ...(TRACKET_KEY ? { 'x-tracket-key': TRACKET_KEY } : {}) },
+        onload: (r) => {
+          if (r.status === 401) return fail('This script’s key is no longer valid — reinstall it from Tracket → Settings.');
+          if (r.status >= 200 && r.status < 300) return ok();
+          if (r.status === 0) return fail(blocked);
+          waiting = 0; // server hiccup: the next beat retries
+        },
+        onerror: () => fail(blocked),
+        ontimeout: () => fail(blocked),
+      });
+    } catch { fail(blocked); }
+  }
+  setInterval(() => { if (waiting && Date.now() - waiting > 20000) fail(blocked); }, 5000);
+
+  // Small warning pill in the Asana tab while sends fail; × hides it for 10 min.
+  let hiddenUntil = 0;
+  function badge(msg) {
+    let el = document.getElementById('tracket-badge');
+    if (!msg || Date.now() < hiddenUntil) { if (el) el.remove(); return; }
+    if (!document.body) return;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'tracket-badge';
+      el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:2147483647;max-width:360px;padding:10px 34px 10px 12px;' +
+        'background:#1b1b1f;color:#f4f4f5;border:1px solid #ffb547;border-radius:10px;font:13px/1.4 -apple-system,system-ui,sans-serif;box-shadow:0 6px 24px #0006';
+      const x = document.createElement('button');
+      x.textContent = '×';
+      x.title = 'Hide for 10 minutes';
+      x.style.cssText = 'position:absolute;top:4px;right:6px;background:none;border:0;color:#aaa;font-size:18px;cursor:pointer';
+      x.onclick = () => { hiddenUntil = Date.now() + 600000; el.remove(); };
+      const t = document.createElement('span');
+      el.append(t, x);
+      document.body.appendChild(el);
+    }
+    el.firstChild.textContent = '◔ ' + msg;
   }
 
   let seen = null;      // timer this tab last saw running

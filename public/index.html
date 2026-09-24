@@ -395,8 +395,11 @@ function renderRunning(){
   $('hero').classList.toggle('ticking', !!r);
   if (!r) {
     const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
+    const lost = mode === 'live' && !hb && live?.lastHeartbeat;
     $('running').innerHTML = `<div class="idle"><span class="z">z<sup>z</sup></span><div>Nothing ticking right now.
-      <small>${hb ? 'Watching your Asana tabs — keep one open, even in the background.' : mode === 'live' ? 'Live timer not connected — <a href="#" id="setupLink" style="color:var(--amber)">set it up</a> (2 min).' : 'Open Asana in your browser so the userscript can watch your timer.'}</small></div></div>`;
+      <small>${hb ? 'Watching your Asana tabs — keep one open, even in the background.'
+        : lost ? `Your Asana tab stopped reporting ${hm((now() - live.lastHeartbeat) / 1000)} ago. Is an Asana tab open? If it is, your browser is blocking the script from reaching Tracket — ${blockHint()} <a href="#" id="setupLink" style="color:var(--amber)">Setup guide</a>`
+        : mode === 'live' ? 'Live timer not connected — <a href="#" id="setupLink" style="color:var(--amber)">set it up</a> (2 min).' : 'Open Asana in your browser so the userscript can watch your timer.'}</small></div></div>`;
     $('setupLink')?.addEventListener('click', (e) => { e.preventDefault(); openTimerSetup(false); });
     return;
   }
@@ -450,7 +453,8 @@ function tick(){
   $('link').classList.toggle('on', !!hb && !offline);
   $('link').classList.toggle('off', offline);
   $('linkText').textContent = offline ? 'Offline' : 'Asana link';
-  $('link').title = offline ? 'No internet — will resync when back' : hb ? 'Userscript connected' : 'No Asana tab reporting — open Asana in your browser';
+  $('link').title = offline ? 'No internet — will resync when back' : hb ? 'Userscript connected'
+    : live?.lastHeartbeat ? `Asana tab stopped reporting — if Asana is open, ${blockHint()}` : 'No Asana tab reporting — open Asana in your browser';
   if (!isTodayView()) document.title = `${hm(total)} · ${dayName(viewDay, true)} · Tracket`;
   else document.title = r ? `${hms(total)} · ● ${r.taskName}` : `${hm(total)} today · Tracket`;
 }
@@ -653,6 +657,12 @@ function openConnect(){
 }
 
 // ---------- live-timer setup wizard ----------
+// Where to look when the script runs but its reports never arrive.
+function blockHint(){
+  return detectBrowser() === 'safari'
+    ? `click the Userscripts icon in Safari’s toolbar and choose Always Allow for both app.asana.com and ${location.host}.`
+    : `open Tampermonkey on the Asana tab and make sure requests to ${location.host} are allowed (Always allow domain).`;
+}
 function detectBrowser(){
   const ua = navigator.userAgent;
   if (navigator.brave) return 'brave';
@@ -676,14 +686,16 @@ function timerSteps(b){
     <li>Open <a href="https://app.asana.com" target="_blank" rel="noopener">app.asana.com</a>, click the <b>Userscripts</b> icon in the toolbar → <b>Always Allow on This Website</b>.</li>
     <li>${copy}</li>
     <li>Click the Userscripts icon again → <b>Open Extension Page</b> → <b>+</b> → <b>New JS</b>. Press <b>${mod}A</b> then <b>${mod}V</b> to replace <i>everything</i> with your script, then <b>${mod}S</b> to save.</li>
-    <li>Reload your Asana tab.</li>`;
+    <li>Reload your Asana tab. When Safari asks whether Userscripts may access <b>${location.host}</b>, choose <b>Always Allow</b> — not “Allow for One Day”, and not Deny, or the live timer stops without warning.</li>
+    <li><small>Reinstalling? Delete any older Tracket script in the extension page first, so only one copy runs.</small></li>`;
   const allow = b === 'firefox' ? '' : `<li>Open <code>${extPage[b]}</code> → <b>Tampermonkey → Details</b> → turn on <b>Allow User Scripts</b>. (Don’t see it? Turn on <b>Developer mode</b> at the top right instead.)</li>`;
   return `
     <li>Install <a href="${tmStore[b]}" target="_blank" rel="noopener"><b>Tampermonkey</b></a> for ${BROWSERS[b]} (free).</li>
     ${allow}
     <li><a class="btn sm-inline" href="/api/tracket.user.js" target="_blank" rel="noopener">Install my script</a> → Tampermonkey opens → click <b>Install</b>.
       <br><small>Didn’t open? ${copy} then Tampermonkey icon → <b>Create a new script</b> → ${mod}A, ${mod}V, ${mod}S.</small></li>
-    <li>Reload your Asana tab.</li>`;
+    <li>Reload your Asana tab. If Tampermonkey asks about a cross-origin request to <b>${location.host}</b>, choose <b>Always allow domain</b>.</li>
+    <li><small>Reinstalling? Delete any older Tracket script in Tampermonkey’s dashboard first, so only one copy runs.</small></li>`;
 }
 function openTimerSetup(first){
   let b = detectBrowser();
