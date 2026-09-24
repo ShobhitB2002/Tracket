@@ -22,7 +22,7 @@ ticking in real time, even in a background tab.
 - **Notifications everywhere** — reminders are decided on the server, so they reach your phone's lock screen (and your watch) even with Tracket closed. On iPhone, add Tracket to your Home Screen first.
 - **Auto mode** — stop your timer at a daily limit (default 7h), and stop it for lunch and restart the same ticket after. Every auto action shows a 25-second countdown with a **Deny** button, in your Asana tab and on Tracket.
 - **Lunch, made visible** — lunch shows on your day bar; time logged during lunch is flagged with a **Remove lunch** button that fixes the entry in Asana.
-- **“Dude u forgot to mention what u did in this ticket, all good?”** — tickets you logged time on but didn't comment on that day get flagged, on every timer stop and at shift end.
+- **“Dude, you forgot to mention what you did on this ticket. All good?”** — tickets you logged time on but didn't comment on that day get flagged, on every timer stop and at shift end.
 - **Daily email report** — your total, tickets, anything worth a look and every reminder of the day.
 - **Mac menu bar** — the running timer, today's total and a 🔔 for new alerts, via SwiftBar.
 - **“Is this really your ticket?”** — tickets not assigned to you, or whose Task Status isn't *In Grooming* / *In Development*, get a ⚠ with the reason, and every timer start on one sends an alert.

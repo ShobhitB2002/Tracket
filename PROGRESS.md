@@ -62,7 +62,7 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 ## Features & rules (current)
 
 - **Day health** (`public/index.html` → `VERDICTS`, `verdict()`): under 7h / 7h+ / 8h+ messages under the day bar.
-  Today uses the owner's wording; past days get past-tense variants. There's a 7h marker on the tape.
+  Today uses the owner's lines (grammar tidied); past days get past-tense variants. There's a 7h marker on the tape.
 - **Work shift** (`POST /api/shift`, stored at `u:<id>:shift` = `{days:{0-6:{start,end}}}`, 0 = Sunday, local time; no overnight):
   a shift card shows time left, a **pace score** (100 = on pace for 7h, computed as logged ÷ (7h × elapsed/shift length)), and the
   projected total. After the shift or on past days, the score is total ÷ 7h.
@@ -93,7 +93,7 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   ±3 min), never manual entries. A ticket with lunch time gets "🍽 Xm during lunch · Remove lunch": `PUT /time_tracking_entries/<gid>`
   with the lunch minutes taken off (Tracket's only write to Asana, on click only). Fixed entries are kept in `lunchfix`.
 - **Comments:** `commentsFor` reads each ticket's stories; ok = a `comment_added` by you that day (your tz). Yes is kept for the
-  day, no re-checked every 90s. Chip: "💬 Dude u forgot to mention what u did in this ticket, all good?" (owner's wording).
+  day, no re-checked every 90s. Chip: "💬 Dude, you forgot to mention what you did on this ticket. All good?" (owner's line, grammar tidied).
 - **Daily email report** (`lib/report.js`, opt-in in Settings): sent 30 min after shift end (20:00 without a shift) by whichever
   trigger runs first after that; a day missed is sent late the next day (if reports were on by then). "Send today's report now"
   in Settings. Account email is changeable in Settings (needs password; also the login).

@@ -398,10 +398,10 @@ const $ = (id) => document.getElementById(id);
 const PALETTE = ['#ffb547','#5cf2b0','#a78bfa','#5cc8ff','#ff8fab','#f5e663','#ff7a45','#7ee081'];
 const GOAL_MIN = 8 * 60;
 const MIN_DAY_MIN = 7 * 60; // below this the day doesn't count as a full one
-// The owner's wording — keep it.
+// The owner's lines (grammar tidied, meaning kept).
 const LINES = {
-  comment: 'Dude u forgot to mention what u did in this ticket, all good?',
-  lunch: 'Today u ran timer during lunch, wanna edit that?',
+  comment: 'Dude, you forgot to mention what you did on this ticket. All good?',
+  lunch: 'Your timer ran during lunch today. Want to fix that?',
 };
 
 let data = null;       // /api/today
@@ -589,9 +589,9 @@ function tick(){
 
 // How the day is going against the 7h minimum and the 8h goal.
 const VERDICTS = {
-  low: { today: 'Oh no! Are you sure you wanna log out now? You want to receive that mail?', past: 'Oh no! Under the 7h minimum — that’s a day that gets the mail.' },
-  ok: { today: 'Hey man, you logged the bare minimum. You can tap out now if you want.', past: 'Bare minimum logged — 7h, you made it.' },
-  over: { today: 'You sure you know what you’re doing? That’s enough work for today!', past: 'Over 8h — that was a big one.' },
+  low: { today: 'Oh no! Are you sure you want to log off now? Do you really want to get that email?', past: 'Oh no! Under the 7h minimum — that’s a day that gets the email.' },
+  ok: { today: 'Hey, you’ve logged the bare minimum. You can tap out now if you want.', past: 'Bare minimum logged — 7h, you made it.' },
+  over: { today: 'Are you sure you know what you’re doing? That’s enough work for today!', past: 'Over 8h — that was a big one.' },
 };
 const levelOf = (sec) => sec / 60 >= GOAL_MIN ? 'over' : sec / 60 >= MIN_DAY_MIN ? 'ok' : 'low';
 function verdict(total){
