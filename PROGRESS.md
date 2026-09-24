@@ -121,10 +121,11 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 | 2026-09-24 | 747d5c7 | Day health messages. **Bug:** date picker dead in Brave/Chrome (Chromium only opens a date input from its hidden calendar icon) → `showPicker()` on click |
 | 2026-09-24 | 5e7bf46 | Work shift, pace score, duration-driven reminders |
 | 2026-09-24 | 9a7e8c1 | Flag tickets that may not be yours (assignee / Task Status) |
-| 2026-09-24 | (see git log) | Server-side alerts engine, Web Push (phone lock screen + watch, Home Screen app), auto mode (7h cap, lunch stop/restart, 25s countdown + Deny), lunch on the day bar + Remove lunch, 💬 missing-comment check, daily email report, change email, Mac menu bar (SwiftBar), scheduler URL in admin, userscript v2.3 |
+| 2026-09-24 | 618b632 | Server-side alerts engine, Web Push (phone lock screen + watch, Home Screen app), auto mode (7h cap, lunch stop/restart, 25s countdown + Deny), lunch on the day bar + Remove lunch, 💬 missing-comment check, daily email report, change email, Mac menu bar (SwiftBar), scheduler URL in admin, userscript v2.3 |
 
 ## Known limits / open ideas
 
+- Verified live 2026-09-24: Web Push to Safari on the owner's Mac accepted by Apple (201); comment check matches Asana (no comments that day); owner's installed userscript updated to v2.3 in place (Asana tabs need a reload).
 - **Setup still needed by the owner:** (1) a scheduler hitting the admin panel's cron URL every 5 min (QStash recommended),
   (2) a verified domain in Resend + `RESEND_FROM` so reports reach members other than the owner, (3) reinstall the userscript (v2.3).
 - No overnight shifts. Lunch is one window for every day.
