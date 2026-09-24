@@ -110,7 +110,7 @@ function gate(){
 // Credentials to hand to a member — copy and send it to them however you like.
 function showCreds(member, password, title){
   const login = location.origin + '/';
-  const msg = `Hi ${member.name}! You now have access to Tracket 🎉\n\nLog in: ${login}\nEmail: ${member.email}\nPassword: ${password}\n\nAfter logging in, connect your Asana and open Settings to install the live-timer userscript. You can change your password in Settings.`;
+  const msg = `Hi ${member.name}! You now have access to Tracket 🎉\n\nLog in: ${login}\nEmail: ${member.email}\nPassword: ${password}\n\nAfter logging in, Tracket walks you through two quick steps: connecting your Asana (about a minute) and adding the live-timer script to your browser (about two). You can change your password any time in Settings.`;
   const el = document.createElement('div');
   el.className = 'modal';
   el.innerHTML = `<div class="sheet"><h3>${esc(title)}</h3><p>This password is shown <b>once</b>. Copy the message and send it to ${esc(member.name)}.</p>

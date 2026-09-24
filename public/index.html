@@ -221,6 +221,17 @@ kbd{font:600 10px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 details.how{margin-top:12px;color:var(--mute);font-size:14px}
 details.how summary{cursor:pointer;color:var(--ink);font-weight:600}
 details.how ol{margin:10px 0 0;padding-left:20px;line-height:1.6}
+.seg-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.seg-tabs button{height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--mute);font:600 12px var(--mono)}
+.seg-tabs button.on{background:var(--amber);border-color:var(--amber);color:var(--bg)}
+.steps a.btn,.sec a.btn{color:var(--bg)}
+.sec a.btn.ghost{color:var(--ink)}
+.btn.sm-inline{height:30px;padding:0 12px;border-radius:9px;font-size:13px;vertical-align:middle}
+.steps small{display:block;margin-top:8px;color:var(--dim);font-size:13px;line-height:1.9}
+.waiting{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:#0c0c12;border:1px dashed var(--line);color:var(--mute);font-size:14px}
+.waiting i{width:10px;height:10px;border-radius:50%;background:var(--amber);animation:blink 1.2s infinite;flex:none}
+.waiting.done{border-style:solid;border-color:#5cf2b055;color:var(--ink)}
+.waiting.done i{background:var(--mint);box-shadow:0 0 10px var(--mint);animation:none}
 code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);padding:2px 6px;border-radius:6px}
 @media (max-width:560px){
   .wrap{padding:20px 16px 60px}
@@ -377,7 +388,8 @@ function renderRunning(){
   if (!r) {
     const hb = live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
     $('running').innerHTML = `<div class="idle"><span class="z">z<sup>z</sup></span><div>Nothing ticking right now.
-      <small>${hb ? 'Watching your Asana tabs.' : 'Open Asana in your browser so the userscript can watch your timer.'}</small></div></div>`;
+      <small>${hb ? 'Watching your Asana tabs.' : mode === 'live' ? 'Live timer not connected — <a href="#" id="setupLink" style="color:var(--amber)">set it up</a> (2 min).' : 'Open Asana in your browser so the userscript can watch your timer.'}</small></div></div>`;
+    $('setupLink')?.addEventListener('click', (e) => { e.preventDefault(); openTimerSetup(false); });
     return;
   }
   const started = new Date(r.startedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -611,26 +623,95 @@ function openRequest(){
 }
 
 function openConnect(){
-  const el = modal(`<h3>Connect your Asana</h3><p class="lead">Tracket reads your time entries with a personal access token. It’s encrypted before it’s stored, and only used to <b>read</b>.</p>
-    <ol class="steps"><li>Open <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">Asana → Developer console</a></li>
-    <li>Click <b>Create new token</b>, name it “Tracket”, agree, and copy it</li><li>Paste it here</li></ol>
-    <form><div class="field"><label>Asana token</label><input name="pat" type="password" autocomplete="off" required placeholder="2/1234…"></div>
+  const el = modal(`<h3>Connect your Asana</h3>
+    <p class="lead">Tracket reads your logged time with an Asana <b>personal access token</b>. It’s encrypted before it’s stored and only ever used to <b>read</b>. Takes about a minute:</p>
+    <ol class="steps">
+      <li>Open <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener"><b>Asana’s developer console</b></a> (log in to Asana if asked).</li>
+      <li>Under <b>Personal access tokens</b>, click <b>+ Create new token</b>.</li>
+      <li>Name it <b>Tracket</b>, tick the terms checkbox, and click <b>Create token</b>.</li>
+      <li>Click <b>Copy</b> — Asana shows it only once — then paste it below.</li>
+    </ol>
+    <form><div class="field"><label>Asana token</label><input name="pat" type="password" autocomplete="off" required placeholder="Paste it here — starts with 2/…"></div>
     <div class="formerr"></div><button class="btn" style="width:100%">Connect</button></form>
-    <p class="lead" style="margin:14px 0 0;text-align:center">Not you? <a href="#" id="lo">Log out</a></p>`, { closable: false });
+    <p class="lead" style="margin:14px 0 0;font-size:13px">Your Asana plan needs time tracking turned on. You can remove the token any time in Settings (or in Asana).</p>
+    <p class="lead" style="margin:6px 0 0;text-align:center">Not you? <a href="#" id="lo">Log out</a></p>`, { closable: false });
   el.querySelector('#lo').onclick = (e) => { e.preventDefault(); logout(); };
-  form(el, async (v) => { await api('/api/asana', { json: v }); closeModal(); toast('Asana connected ✦'); boot(); });
+  form(el, async (v) => {
+    await api('/api/asana', { json: v });
+    closeModal(); toast('Asana connected ✦');
+    await boot();
+    setTimeout(() => openTimerSetup(true), 600);
+  });
+}
+
+// ---------- live-timer setup wizard ----------
+function detectBrowser(){
+  const ua = navigator.userAgent;
+  if (navigator.brave) return 'brave';
+  if (/Edg\//.test(ua)) return 'edge';
+  if (/OPR\//.test(ua)) return 'opera';
+  if (/Firefox\//.test(ua)) return 'firefox';
+  if (/Chrome\//.test(ua)) return 'chrome';
+  if (/Safari\//.test(ua)) return 'safari';
+  return 'chrome';
+}
+const BROWSERS = { safari: 'Safari', chrome: 'Chrome', edge: 'Edge', brave: 'Brave', opera: 'Opera', firefox: 'Firefox' };
+const mod = /Mac/.test(navigator.platform) ? '⌘' : 'Ctrl';
+function timerSteps(b){
+  const copy = `<button class="btn sm-inline" data-copy>Copy my script</button>`;
+  const tmStore = { chrome: 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo', brave: 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo', opera: 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo',
+    edge: 'https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd', firefox: 'https://addons.mozilla.org/firefox/addon/tampermonkey/' };
+  const extPage = { chrome: 'chrome://extensions', brave: 'brave://extensions', opera: 'opera://extensions', edge: 'edge://extensions' };
+  if (b === 'safari') return `
+    <li>Install <a href="https://apps.apple.com/app/userscripts/id1463298887" target="_blank" rel="noopener"><b>Userscripts</b></a> from the Mac App Store (free), and open it once.</li>
+    <li>In Safari: <b>Safari → Settings → Extensions</b> → tick <b>Userscripts</b>.</li>
+    <li>Open <a href="https://app.asana.com" target="_blank" rel="noopener">app.asana.com</a>, click the <b>Userscripts</b> icon in the toolbar → <b>Always Allow on This Website</b>.</li>
+    <li>${copy}</li>
+    <li>Click the Userscripts icon again → <b>Open Extension Page</b> → <b>+</b> → <b>New JS</b>. Press <b>${mod}A</b> then <b>${mod}V</b> to replace <i>everything</i> with your script, then <b>${mod}S</b> to save.</li>
+    <li>Reload your Asana tab.</li>`;
+  const allow = b === 'firefox' ? '' : `<li>Open <code>${extPage[b]}</code> → <b>Tampermonkey → Details</b> → turn on <b>Allow User Scripts</b>. (Don’t see it? Turn on <b>Developer mode</b> at the top right instead.)</li>`;
+  return `
+    <li>Install <a href="${tmStore[b]}" target="_blank" rel="noopener"><b>Tampermonkey</b></a> for ${BROWSERS[b]} (free).</li>
+    ${allow}
+    <li><a class="btn sm-inline" href="/api/tracket.user.js" target="_blank" rel="noopener">Install my script</a> → Tampermonkey opens → click <b>Install</b>.
+      <br><small>Didn’t open? ${copy} then Tampermonkey icon → <b>Create a new script</b> → ${mod}A, ${mod}V, ${mod}S.</small></li>
+    <li>Reload your Asana tab.</li>`;
+}
+function openTimerSetup(first){
+  let b = detectBrowser();
+  const el = modal(`<h3>${first ? 'Last step: the live timer' : 'Set up the live timer'}</h3>
+    <p class="lead">Asana doesn’t share a <i>running</i> timer, so a tiny script in your browser watches your Asana tab and sends it here. Your copy is already linked to your account.</p>
+    <div class="seg-tabs" id="btabs">${Object.entries(BROWSERS).map(([k, v]) => `<button data-b="${k}" class="${k === b ? 'on' : ''}">${v}</button>`).join('')}</div>
+    <ol class="steps" id="bsteps">${timerSteps(b)}</ol>
+    <div class="waiting ${hbOn() ? 'done' : ''}" id="wait"><i></i><span>${hbOn() ? 'Connected — start a timer in Asana and watch it appear here.' : 'Waiting for your Asana tab… (open Asana once the script is saved)'}</span></div>
+    <button class="btn ghost" data-close style="width:100%;margin-top:14px">${first ? 'I’ll do this later' : 'Close'}</button>`, { wide: true });
+  const bind = () => el.querySelectorAll('[data-copy]').forEach((btn) => btn.onclick = async () => {
+    try {
+      const txt = await (await fetch('/api/userscript?tz=' + encodeURIComponent(TZ), { credentials: 'same-origin' })).text();
+      await navigator.clipboard.writeText(txt); btn.textContent = 'Copied ✓';
+    } catch { btn.textContent = 'Copy failed — try Settings → Download'; }
+    setTimeout(() => { btn.textContent = 'Copy my script'; }, 2500);
+  });
+  bind();
+  el.querySelector('#btabs').onclick = (e) => {
+    const k = e.target.dataset.b; if (!k) return;
+    b = k; el.querySelectorAll('#btabs button').forEach((x) => x.classList.toggle('on', x.dataset.b === k));
+    el.querySelector('#bsteps').innerHTML = timerSteps(k); bind();
+  };
+  // flip to ✅ the moment the first report arrives
+  const t = setInterval(() => {
+    if (!document.body.contains(el)) return clearInterval(t);
+    poll();
+    if (hbOn()) { const w = el.querySelector('#wait'); if (!w.classList.contains('done')) { w.classList.add('done'); w.querySelector('span').textContent = 'Connected ✦ Start a timer in Asana and watch it appear here.'; toast('Live timer connected ✦'); } }
+  }, 2000);
 }
 
 async function openSettings(){
   const el = modal(`<h3>Settings</h3><p class="lead">Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b></p>
     <div class="sec"><h4>Live timer <span class="status ${hbOn() ? '' : 'off'}">${hbOn() ? '● connected' : '● not connected'}</span></h4>
-      <p>A small userscript watches your open Asana tab and sends the running timer here. Your copy is already set up for your account.</p>
-      <div class="row2"><button class="btn" id="copyUs">Copy my userscript</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download</a></div>
-      <details class="how"><summary>How to install it</summary><ol>
-        <li><b>Safari:</b> install <a href="https://apps.apple.com/app/userscripts/id1463298887" target="_blank" rel="noopener">Userscripts</a> → enable it in Safari → Settings → Extensions → allow on app.asana.com → open its extension page → <b>+ → New JS</b> → select all → paste → Save.</li>
-        <li><b>Chrome / Edge / Firefox:</b> install <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> → Create a new script → select all → paste → Save.</li>
-        <li>Reload your Asana tab and start a timer — it shows up here within a second.</li></ol></details>
-      <p style="margin:12px 0 0"><a href="#" id="rotate">Reset my userscript key</a> — use if you shared it by mistake. You’ll need to re-install the script.</p>
+      <p>A small browser script sends your running Asana timer here. Your copy is already linked to your account.</p>
+      <div class="row2"><button class="btn" id="setupTimer">${hbOn() ? 'Install on another browser' : 'Set up live timer'}</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download script</a></div>
+      <p style="margin:12px 0 0"><a href="#" id="rotate">Reset my script key</a> — if you shared your script by mistake. You’ll need to reinstall it.</p>
     </div>
     <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
       <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
@@ -639,15 +720,7 @@ async function openSettings(){
       <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
       <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
     <div class="sec"><div class="row2">${meInfo?.admin ? '<a class="btn ghost" href="/admin">Admin panel</a>' : ''}<button class="btn ghost" id="lo">Log out</button></div></div>`, { wide: true });
-  el.querySelector('#copyUs').onclick = async (e) => {
-    const b = e.currentTarget; b.disabled = true;
-    try {
-      const txt = await (await fetch('/api/userscript?tz=' + encodeURIComponent(TZ), { credentials: 'same-origin' })).text();
-      await navigator.clipboard.writeText(txt);
-      b.textContent = 'Copied ✓';
-    } catch { b.textContent = 'Copy failed — use Download'; }
-    setTimeout(() => { b.textContent = 'Copy my userscript'; b.disabled = false; }, 2500);
-  };
+  el.querySelector('#setupTimer').onclick = () => openTimerSetup(false);
   el.querySelector('#rotate').onclick = async (e) => {
     e.preventDefault();
     if (!confirm('Reset your key? Your installed userscript will stop working until you re-install it.')) return;
