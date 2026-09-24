@@ -82,6 +82,7 @@ lib/store.js      Upstash Redis (hosted) or a JSON file (local)
 public/           dashboard + admin panel — plain HTML/CSS/JS
 server.js         local server using the same routes
 tracket.user.js   the userscript
+PROGRESS.md       project notes, history and open items (for contributors)
 ```
 
 ## License
