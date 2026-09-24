@@ -160,7 +160,8 @@ before any lock write; alerts fetched only when `alertsHead` changes; menu bar f
 
 - Verified live 2026-09-24: Web Push to Safari on the owner's Mac accepted by Apple (201); comment check matches Asana (no comments that day); owner's installed userscript updated to v2.3 in place (Asana tabs need a reload).
 - **Live since 2026-09-24 (05939df):** Turso in Mumbai (aws-ap-south-1, 53 keys copied from Upstash), functions in Mumbai (`regions: ["bom1"]` in vercel.json), Gmail sending (test report delivered to the provider), Telegram removed (code + env vars), owner's userscript v2.4 + menu bar v2.1 installed. Warm poll ≈ 80–220 ms from India. Upstash database deleted by the owner (2026-09-24); its env vars are gone. The copy step now never overwrites Turso once it has members, and a failed copy only logs.
-- **Still to do:** QStash schedule every 10 min on the admin panel's cron URL.
+- **Incident 2026-09-24:** Vercel's Turso connection had *Create Database Branch For Deployment* ON for Production, so every deploy got a fresh empty DB branch. Fixed (setting OFF); data restored from branch `dpl-32yz7zkxj…` via the one-time `TRACKET_IMPORT_FROM`/`TRACKET_IMPORT_TOKEN` import (54 rows, 2 members); both env vars removed afterwards. Old branch DBs remain in Turso Cloud (free, can be deleted).
+- **QStash:** EU region schedule `*/10 * * * *` POST → `/api/cron?key=…` (created 2026-09-24).
 - No overnight shifts. Lunch is one window for every day.
 - Auto mode relies on Asana's button labels ("Start timer" / "Stop timer"); if Asana renames them, actions fail visibly (alert).
 - Past-day ⚠ chips show a ticket's *current* assignee/status, not what it was that day.
