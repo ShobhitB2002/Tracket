@@ -638,7 +638,7 @@ async function openSettings(){
       <div class="field"><label>Current</label><input name="current" type="password" autocomplete="current-password" required></div>
       <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
       <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
-    <div class="sec"><button class="btn ghost" id="lo" style="width:100%">Log out</button></div>`, { wide: true });
+    <div class="sec"><div class="row2">${meInfo?.admin ? '<a class="btn ghost" href="/admin">Admin panel</a>' : ''}<button class="btn ghost" id="lo">Log out</button></div></div>`, { wide: true });
   el.querySelector('#copyUs').onclick = async (e) => {
     const b = e.currentTarget; b.disabled = true;
     try {
@@ -662,7 +662,7 @@ async function openSettings(){
   form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); });
 }
 
-async function logout(){ await fetch('/api/logout', { method: 'POST' }); closeModal(); meInfo = null; enterDemo(); }
+async function logout(){ await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ which: 'member' }) }); closeModal(); meInfo = null; enterDemo(); }
 const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
 
 // ---------- modes ----------

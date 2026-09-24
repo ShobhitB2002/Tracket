@@ -132,7 +132,7 @@ async function render(){
   const active = d.members.filter((m) => m.status === 'active');
 
   $('app').innerHTML = `<main class="wrap">
-    <header class="top"><div class="logo">◔</div><h1>Tracket admin<small>members & access requests</small></h1>
+    <header class="top"><div class="logo">◔</div><h1>Tracket admin<small>members & access requests · add yourself as a member to use your own dashboard</small></h1>
       <a class="btn ghost" href="/">Dashboard</a><button class="btn ghost" id="out">Log out</button></header>
     <div class="stats">
       <div class="stat ${pending.length ? 'hot' : ''}"><b>${pending.length}</b><span>Waiting</span></div>
@@ -161,11 +161,12 @@ async function render(){
 
     ${past.length ? `<h2>Decided</h2><div class="list">${past.map((r) => `
       <div class="item"><div><div class="who"><b>${esc(r.name)}</b><span class="em">${esc(r.email)}</span></div>
-        <div class="meta"><span class="tag ${r.status === 'approved' ? 'ok' : 'off'}">${r.status}</span><span>${ago(r.decidedAt || r.at)}</span></div></div><div></div></div>`).join('')}</div>` : ''}
+        <div class="meta"><span class="tag ${r.status === 'approved' ? 'ok' : 'off'}">${r.status}</span><span>${ago(r.decidedAt || r.at)}</span></div>${r.note ? `<div class="note">${esc(r.note)}</div>` : ''}</div>
+        <div class="acts">${r.status === 'denied' ? `<button class="btn sm ghost" data-approve="${r.id}">Approve anyway</button>` : ''}<button class="btn sm ghost" data-forget="${r.id}">Delete</button></div></div>`).join('')}</div>` : ''}
   </main>`;
 
   const byId = Object.fromEntries(d.members.map((m) => [m.id, m]));
-  $('out').onclick = async () => { await fetch('/api/logout', { method: 'POST' }); gate(); };
+  $('out').onclick = async () => { await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ which: 'admin' }) }); gate(); };
   document.querySelectorAll('[data-approve]').forEach((b) => b.onclick = () => act(b, async () => {
     const r = await api('/api/admin/approve', { id: b.dataset.approve });
     showCreds(r.member, r.password, `${r.member.name} is in`);
@@ -173,6 +174,9 @@ async function render(){
   document.querySelectorAll('[data-deny]').forEach((b) => b.onclick = () => act(b, async () => {
     if (!confirm('Deny this request?')) return;
     await api('/api/admin/deny', { id: b.dataset.deny }); toast('Denied'); render();
+  }));
+  document.querySelectorAll('[data-forget]').forEach((b) => b.onclick = () => act(b, async () => {
+    await api('/api/admin/forget', { id: b.dataset.forget }); toast('Deleted'); render();
   }));
   document.querySelectorAll('[data-reset]').forEach((b) => b.onclick = () => act(b, async () => {
     const m = byId[b.dataset.reset];
