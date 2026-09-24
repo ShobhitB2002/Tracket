@@ -1,25 +1,11 @@
 // Single Vercel function for every /api/* route (see vercel.json rewrites and
 // lib/routes.js for the route table).
 const { dispatch } = require('../lib/routes');
+const { apiPath } = require('../lib/apipath');
 
-// Work out which /api/* path was requested. Depending on how Vercel applied the
-// rewrite, the original path is in req.url, in the __path query param (string
-// or array), or in a forwarding header.
-function apiPath(req) {
-  const fromUrl = new URL(req.url, 'http://x').pathname;
-  if (fromUrl.startsWith('/api/') && fromUrl !== '/api/router') return fromUrl;
-  let p = req.query?.__path;
-  if (Array.isArray(p)) p = p.join('/');
-  if (p) return '/api/' + String(p).replace(/^\/+/, '').replace(/^api\//, '');
-  for (const h of ['x-matched-path', 'x-forwarded-uri', 'x-original-url']) {
-    const v = req.headers[h];
-    if (v && String(v).startsWith('/api/') && !String(v).startsWith('/api/router')) return new URL(v, 'http://x').pathname;
-  }
-  return fromUrl;
-}
 
 module.exports = async (req, res) => {
-  const pathname = apiPath(req);
+  const pathname = apiPath(req.url, req.query || {}, req.headers);
   const { __path, ...query } = req.query || {};
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }

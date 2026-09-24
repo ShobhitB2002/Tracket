@@ -8,6 +8,7 @@ const path = require('path');
 loadEnv(path.join(__dirname, '.env'));
 
 const { dispatch } = require('./lib/routes');
+const { apiPath } = require('./lib/apipath');
 
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, 'public');
@@ -30,7 +31,10 @@ http.createServer(async (req, res) => {
     for await (const chunk of req) raw += chunk;
     let body = {};
     try { body = raw ? JSON.parse(raw) : {}; } catch {}
-    const out = await dispatch({ method: req.method, pathname: url.pathname, query: Object.fromEntries(url.searchParams), body, req });
+    const { __path, ...query } = Object.fromEntries(url.searchParams);
+    const pathname = apiPath(req.url, Object.fromEntries(url.searchParams), req.headers);
+    const out = await dispatch({ method: req.method, pathname, query, body, req });
+    if (out.status === 404) out.body = { error: 'not found', path: pathname };
     const headers = { 'Cache-Control': 'no-store', ...(out.raw === undefined ? { 'Content-Type': 'application/json' } : {}), ...out.headers };
     res.writeHead(out.status, headers);
     return res.end(out.raw !== undefined ? out.raw : JSON.stringify(out.body));
@@ -44,7 +48,7 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
     res.end(buf);
   });
-}).listen(PORT, '127.0.0.1', () => {
+}).listen(PORT, process.env.VERCEL ? undefined : '127.0.0.1', () => {
   console.log(`\n  ⏱  Tracket →  http://localhost:${PORT}   ·   admin → http://localhost:${PORT}/admin\n`);
   if (!process.env.ADMIN_PASSWORD) console.log('  ⚠  ADMIN_PASSWORD is empty — set it in .env to use the admin panel\n');
 });
