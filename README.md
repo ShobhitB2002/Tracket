@@ -7,7 +7,7 @@
 Today's tickets, the timer that's running right now, and your total for the day —
 ticking in real time, even in a background tab.
 
-**Members-only** · [Try the demo & request access →](https://tracket.vercel.app)
+**Members-only** · [Try the demo & request access →](https://tracketv1.vercel.app)
 
 </div>
 
