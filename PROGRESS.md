@@ -123,6 +123,13 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   The dashboard shows "Install v2.4" when an older one reports (`SCRIPT_V`). v2.2 added per-member `@name Tracket · <name>` / `@namespace tracket/<id>`. A warning pill shows in the Asana
   tab when sends error, time out, or get no answer in 20s. The dashboard says "Asana tab stopped reporting X ago" and gives the fix.
 
+## Current env vars (Vercel, 2026-09-24)
+
+Production: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `GMAIL_USER` (tracket.vuseia@gmail.com), `GMAIL_APP_PASSWORD`;
+Production + Preview: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. Removed: all Upstash/KV vars, Telegram, `RESEND_API_KEY`
+(Resend code stays as an unused fallback). Owner's installed copies: userscript v2.4 (Safari Userscripts), menu bar v2.1
+(`~/Documents/SwiftBar/tracket.js`).
+
 ## Free-tier budget (target: ≤10 members, all free)
 
 Limits: Vercel Hobby 1M function calls, 4 h active CPU, 360 GB-h memory a month (and non-commercial use only);
@@ -160,7 +167,7 @@ before any lock write; alerts fetched only when `alertsHead` changes; menu bar f
 
 - Verified live 2026-09-24: Web Push to Safari on the owner's Mac accepted by Apple (201); comment check matches Asana (no comments that day); owner's installed userscript updated to v2.3 in place (Asana tabs need a reload).
 - **Live since 2026-09-24 (05939df):** Turso in Mumbai (aws-ap-south-1, 53 keys copied from Upstash), functions in Mumbai (`regions: ["bom1"]` in vercel.json), Gmail sending (test report delivered to the provider), Telegram removed (code + env vars), owner's userscript v2.4 + menu bar v2.1 installed. Warm poll ≈ 80–220 ms from India. Upstash database deleted by the owner (2026-09-24); its env vars are gone. The copy step now never overwrites Turso once it has members, and a failed copy only logs.
-- **Incident 2026-09-24:** Vercel's Turso connection had *Create Database Branch For Deployment* ON for Production, so every deploy got a fresh empty DB branch. Fixed (setting OFF); data restored from branch `dpl-32yz7zkxj…` via the one-time `TRACKET_IMPORT_FROM`/`TRACKET_IMPORT_TOKEN` import (54 rows, 2 members); both env vars removed afterwards. Old branch DBs remain in Turso Cloud (free, can be deleted).
+- **Incident 2026-09-24:** Vercel's Turso connection had *Create Database Branch For Deployment* ON for Production, so every deploy got a fresh empty DB branch. Fixed (setting OFF); data restored from branch `dpl-32yz7zkxj…` via the one-time `TRACKET_IMPORT_FROM`/`TRACKET_IMPORT_TOKEN` import (54 rows, 2 members); both env vars removed afterwards. Old branch DBs (`dpl-*`) remain in Turso Cloud for the owner to delete (`dpl-32yz…` has Delete Protection on).
 - **QStash:** EU region schedule `*/10 * * * *` POST → `/api/cron?key=…` (created 2026-09-24).
 - No overnight shifts. Lunch is one window for every day.
 - Auto mode relies on Asana's button labels ("Start timer" / "Stop timer"); if Asana renames them, actions fail visibly (alert).
