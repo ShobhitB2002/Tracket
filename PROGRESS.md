@@ -105,8 +105,12 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   fetches `/api/bar` once a minute, counts the timer locally → title `🔔2 ● 0:47:12 · 6:47:12` (Menlo, so digits don't wobble).
   Menu actions (`seen`, `refresh`) run the file again with an argument and empty the cache file to make the loop refetch.
   Settings → Menu bar → *Copy install command* (also removes the old `tracket.10s.js`).
+  v2.1 real-time: every 2s it reads `data-tracket-timer` from open Asana tabs in Safari/Chrome/Brave/Edge over Apple Events
+  (needs "Allow JavaScript from Apple Events" + macOS Automation permission for SwiftBar); any change → fetch now and again
+  after 4s. Can't see tabs → fetches every 30s and shows how to enable it.
 - **Email:** `lib/notify.js` sends through Gmail SMTP (implicit TLS 465, AUTH PLAIN, multipart text+HTML, UTF-8 subject) when
   `GMAIL_USER`/`GMAIL_APP_PASSWORD` are set, else Resend. Also used for access-request pings to `ADMIN_EMAIL`.
+  Admin panel → Scheduler → *Check email* logs in to Gmail and quits (nothing sent). Tracket's Gmail: tracket.vuseia@gmail.com.
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):

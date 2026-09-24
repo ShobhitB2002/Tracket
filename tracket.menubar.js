@@ -1,7 +1,7 @@
 #!/usr/bin/osascript -l JavaScript
 // <swiftbar.type>streamable</swiftbar.type>
 // <swiftbar.title>Tracket</swiftbar.title>
-// <swiftbar.version>2.0</swiftbar.version>
+// <swiftbar.version>2.1</swiftbar.version>
 // <swiftbar.author>Tracket</swiftbar.author>
 // <swiftbar.desc>Your running Asana timer (to the second), today's total and Tracket alerts in the menu bar.</swiftbar.desc>
 // <swiftbar.hideAbout>true</swiftbar.hideAbout>
@@ -9,15 +9,22 @@
 // <swiftbar.hideDisablePlugin>true</swiftbar.hideDisablePlugin>
 //
 // Tracket menu bar plugin for SwiftBar (https://swiftbar.app), "streamable":
-// SwiftBar starts it once and it redraws every second by itself. It asks
-// Tracket for new data once a minute (free-tier friendly) and counts the
-// running timer locally in between, so the seconds tick smoothly.
+// SwiftBar starts it once and it redraws every second by itself, counting the
+// running timer locally so the seconds tick smoothly.
+// Real-time without extra server calls: every 2s it peeks at your open Asana
+// tabs (Safari, Chrome, Brave, Edge) through Apple Events, and the moment a
+// timer starts or stops there it fetches from Tracket. Otherwise it fetches
+// once a minute — or every 30s if it can't see the tabs (then turn on
+// "Allow JavaScript from Apple Events" in the browser's Develop menu).
 
 // ─────────────── filled in when you download it from Tracket ───────────────
 const TRACKET_URL = 'http://localhost:3000';
 const TRACKET_KEY = '';
 // ─────────────────────────────────────────────────────────────────────────────
-const FETCH_EVERY = 60000;
+const FETCH_EVERY = 60000;      // when it can watch your Asana tabs
+const FETCH_BLIND = 30000;      // when it can't
+const WATCH_EVERY = 2000;
+const CHROMIUMS = ['Google Chrome', 'Brave Browser', 'Microsoft Edge'];
 
 ObjC.import('Foundation');
 
@@ -50,6 +57,40 @@ function run(argv) {
       else problem = code === '401' ? 'Key no longer valid — install the plugin again from Tracket → Settings.' : `Tracket answered ${code}`;
     } catch (e) { problem = 'Can’t reach Tracket — offline?'; }
     if (!c) writeFile(cache, 'null');
+  }
+
+  // Timer state of every open Asana tab, as a string that changes when a timer
+  // starts or stops; null when no browser lets us look.
+  const READ = "document.documentElement.getAttribute('data-tracket-timer')";
+  let blindWhy = null;
+  function asanaTabs() {
+    const seen = [];
+    let looked = false;
+    const isAsana = (u) => typeof u === 'string' && u.startsWith('https://app.asana.com/');
+    try {
+      const s = Application('Safari');
+      if (s.running()) {
+        s.windows.tabs.url().forEach((tabs, wi) => tabs.forEach((u, ti) => {
+          if (!isAsana(u)) return;
+          try { seen.push(s.doJavaScript(READ, { in: s.windows[wi].tabs[ti] }) || '-'); looked = true; }
+          catch (e) { blindWhy = 'Safari → Develop → Allow JavaScript from Apple Events'; }
+        }));
+      }
+    } catch (e) { blindWhy = blindWhy || 'allow SwiftBar to control your browser (System Settings → Privacy & Security → Automation)'; }
+    for (const name of CHROMIUMS) {
+      try {
+        const b = Application(name);
+        if (!b.running()) continue;
+        b.windows.tabs.url().forEach((tabs, wi) => tabs.forEach((u, ti) => {
+          if (!isAsana(u)) return;
+          try { seen.push(b.windows[wi].tabs[ti].execute({ javascript: READ }) || '-'); looked = true; }
+          catch (e) { blindWhy = `${name} → View → Developer → Allow JavaScript from Apple Events`; }
+        }));
+      } catch (e) {}
+    }
+    if (looked) blindWhy = null;
+    // only state + start matter (names load late)
+    return looked ? seen.map((x) => { try { const t = JSON.parse(x); return `${t.state}:${t.startedAt || ''}`; } catch (e) { return x; } }).join('|') : null;
   }
 
   const clean = (s) => String(s || '').replace(/\|/g, '¦').replace(/\n/g, ' ');
@@ -85,7 +126,9 @@ function run(argv) {
     if (!c.alerts.length) L.push('Nothing yet | color=gray');
     for (const a of c.alerts) L.push(`${a.unread ? '● ' : '   '}${clean(a.title)} | length=70 tooltip=${JSON.stringify(clean(a.body))}`);
     if (c.unread && self) L.push(`Mark all read | ${act('seen')}`);
-    L.push('---', `Updated ${Math.round((Date.now() - c.fetchedLocal) / 1000)}s ago · Refresh now | ${act('refresh')} size=11`, `Open Tracket | href=${c.site || base}`);
+    L.push('---', `Updated ${Math.round((Date.now() - c.fetchedLocal) / 1000)}s ago · Refresh now | ${act('refresh')} size=11`);
+    if (watching === false && blindWhy) L.push(`For instant updates: ${clean(blindWhy)} | size=11 color=gray`);
+    L.push(`Open Tracket | href=${c.site || base}`);
     return L.join('\n');
   }
 
@@ -93,10 +136,26 @@ function run(argv) {
   if (!env('SWIFTBAR')) { if (!c || Date.now() - c.fetchedLocal > FETCH_EVERY) fetchNow(); return render(); }
   const out = $.NSFileHandle.fileHandleWithStandardOutput;
   const emit = (s) => out.writeData($('~~~\n' + s + '\n').dataUsingEncoding($.NSUTF8StringEncoding));
-  let lastFetch = c ? c.fetchedLocal : 0;
+  let lastFetch = c ? c.fetchedLocal : 0, lastWatch = 0, sig, again = 0;
+  var watching = null;
   for (;;) {
+    let changed = false;
+    if (Date.now() - lastWatch >= WATCH_EVERY) {
+      lastWatch = Date.now();
+      const now = asanaTabs();
+      watching = now !== null;
+      if (sig !== undefined && now !== null && now !== sig) changed = true;
+      sig = now;
+    }
     const forced = readFile(cache) === '';
-    if (forced || Date.now() - lastFetch > FETCH_EVERY) { fetchNow(); lastFetch = Date.now(); }
+    // a start/stop in Asana: fetch now, and again shortly after (Asana takes a
+    // few seconds to log a stopped timer)
+    if (changed) again = Date.now() + 4000;
+    const due = Date.now() - lastFetch > (watching ? FETCH_EVERY : FETCH_BLIND);
+    if (forced || changed || due || (again && Date.now() >= again)) {
+      if (again && Date.now() >= again) again = 0;
+      fetchNow(); lastFetch = Date.now();
+    }
     emit(render());
     delay(1);
   }
