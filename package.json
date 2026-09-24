@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "for f in server.js lib/*.js api/*.js tracket.user.js; do node --check $f || exit 1; done"
+    "check": "for f in server.js lib/*.js api/*.js tracket.user.js tracket.menubar.js; do node --check $f || exit 1; done"
   },
   "engines": {
     "node": ">=18"

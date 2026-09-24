@@ -26,8 +26,13 @@ server --member's Asana PAT (AES-256-GCM at rest)--> Asana API (time_tracking_en
   userscript-world sender posts it with `GM.xmlHttpRequest`: on every change, plus a heartbeat every 15s.
 - **Stale-tab rules** (`lib/core.js` onReport): a newer start always wins. "Stopped" is only accepted from the visible tab.
   A stop only becomes final once Asana logs the entry (reconcileRunning), or after 25s (settleSuspect).
-- **Isolation:** every member key is `u:<id>:*`. Keys: `pat, me, state, hb, names, seen, shift, chk, day:<date>, tasks:<date>`.
-  Global keys: `members, apikeys, requests, rl:*`.
+- **Alerts engine** (`lib/alerts.js`): every reminder is decided on the server so it works with no tab open.
+  `evaluate()` runs on userscript heartbeats (`/api/event`), dashboard polls (`/api/live`), the menu bar (`/api/bar`) and
+  `/api/cron`, at most every ~12s per member (lock `evalgap`). `autoStep()` (auto mode) runs on heartbeats only, since
+  only an open Asana tab can press Asana's buttons. Alerts go to a feed (`alerts`) and to every Web Push device.
+- **Isolation:** every member key is `u:<id>:*`. Keys: `pat, me, state, hb, names, seen, shift, chk, day:<date>, tasks:<date>`,
+  plus `prefs, push, alerts, rt:<date>, auto:<date>, autost:<id>, autonow, sess:<date>, cmt:<date>, lunchfix, reportlast`.
+  Global keys: `members, apikeys, requests, rl:*, vapid` (Web Push key pair, private half encrypted).
 
 ### Files
 | File | Role |
@@ -37,14 +42,22 @@ server --member's Asana PAT (AES-256-GCM at rest)--> Asana API (time_tracking_en
 | `lib/core.js` | Asana client, day summaries, running-timer rules, ticket ownership checks |
 | `lib/users.js` | members, requests, sessions (HMAC cookies `tk_s` / `tk_a`), API keys, rate limits |
 | `lib/store.js` | Upstash Redis REST, or a JSON file in `./data` locally |
-| `lib/crypto.js`, `lib/notify.js` | scrypt/HMAC/AES; access-request pings (Resend email, Telegram) |
+| `lib/crypto.js`, `lib/notify.js` | scrypt/HMAC/AES, cron key; access-request pings + `sendEmail` (Resend) |
+| `lib/alerts.js` | reminder engine, alert feed, auto mode (offer → countdown → claim/deny → result) |
+| `lib/push.js` | Web Push with no deps: VAPID ES256 JWT + aes128gcm (RFC 8291), subscriptions per member |
+| `lib/report.js` | end-of-day email report |
+| `lib/prefs.js` | member prefs: tz, lunch, auto mode, report |
+| `public/sw.js`, `public/manifest.webmanifest`, `public/*.png` | service worker (push, Deny action), Home Screen app manifest + icons |
+| `tracket.menubar.js` | SwiftBar plugin template (JavaScript for Automation). `/api/menubar` fills in URL + key |
 | `public/index.html` | the whole dashboard (plain HTML/CSS/JS) |
 | `public/admin.html` | admin panel |
 | `tracket.user.js` | the userscript template. `/api/userscript` fills in URL, key, @name, @namespace |
 
 ### Env vars (Vercel)
-`ADMIN_PASSWORD`, `SESSION_SECRET` (16+ chars; changing it logs everyone out), `RESEND_API_KEY` + `ADMIN_EMAIL`,
-optional Telegram. The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`. See `.env.example`.
+`ADMIN_PASSWORD`, `SESSION_SECRET` (16+ chars; changing it logs everyone out, and also resets the push keys and cron URL),
+`RESEND_API_KEY` + `ADMIN_EMAIL`, `RESEND_FROM` (a verified-domain sender; without it Resend only delivers to the Resend
+account's own address, so reports only reach the owner), optional Telegram, optional `CRON_SECRET` (Bearer for a scheduler),
+optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored). The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`. See `.env.example`.
 
 ## Features & rules (current)
 
@@ -53,16 +66,48 @@ optional Telegram. The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_T
 - **Work shift** (`POST /api/shift`, stored at `u:<id>:shift` = `{days:{0-6:{start,end}}}`, 0 = Sunday, local time; no overnight):
   a shift card shows time left, a **pace score** (100 = on pace for 7h, computed as logged ÷ (7h × elapsed/shift length)), and the
   projected total. After the shift or on past days, the score is total ÷ 7h.
-- **Reminders** (client side, need an open Tracket tab plus notification permission; `checkAlerts`, `onTimerStop`, `once()` keys in localStorage):
-  - crossing 7h → one notification. Crossing 8h → one (jumping straight past 8h sends only the 8h one)
-  - under 7h: a timer stop within the last 30 min of the shift → one. Shift end (within 5 min) → one. Uses the day's
-    peak total, so the dip right after a stop can't false-fire
+- **Reminders** (server side since 2026-09-24, `lib/alerts.js`; once per day per key in `rt:<date>.sent`):
+  - crossing 7h → one. Crossing 8h → one (jumping straight past 8h sends only the 8h one)
+  - under 7h: a timer stop within the last 30 min of the shift → one. Shift end (within 15 min, day's peak total) → one
+  - ⚠ on every start of a ticket that may not be yours
+  - 💬 on every timer stop when you haven't commented on that ticket that day, and one summary at shift end
+  - 🍽 once after lunch ends if logged time fell inside lunch
+  - Delivery: Web Push to every subscribed device + the feed. The dashboard polls `/api/alerts` every 15s, toasts new
+    ones (plus a browser notification if this device has no push) and marks them seen; the 🔔 in the header lists them.
+- **Web Push:** Settings → Notifications → *Turn on for this device*. iPhone/iPad need Tracket added to the Home Screen
+  (iOS 16.4+) and a login inside that app. Watches get them through the phone's notification mirroring. Chrome/Android show a
+  **Deny** button on auto-mode notifications (service worker posts `/api/auto` deny); Safari has no buttons.
+- **Auto mode** (prefs `auto.cap {on, hours}` default 7h, `auto.lunch` + `lunch {start,end}`), configured from the ⚙ row under the shift card:
+  - cap: timer running and today ≥ X h → offer "stop". lunchStop: running inside lunch → "stop". lunchResume: lunch stop
+    was done, nothing running, within 30 min after lunch end → "start" on the same ticket
+  - each kind at most once a day (a Deny or a restart means it won't come back). Only offered while the Asana tab reports (fresh heartbeat)
+  - 25s countdown (`COUNTDOWN`) shown in the Asana tab (userscript card with Deny) and on the dashboard; push too
+  - whoever takes `lock:autoclaim:<id>` first decides: a tab's claim (after the deadline; visible tab first, background +1.5s),
+    a Deny, or the timeout (deadline + 45s → missed). Result → `autost:<id>` + an alert
+  - the userscript presses Asana's own buttons: Stop = `[aria-label="Stop timer"]` / `.ActiveTimerStopButton`,
+    Start = `[aria-label="Start timer"]` in the task pane (opens the task via pushState, else loads it and finishes after reload).
+    A plain click first; a pointer/mouse press only if Asana ignored it (never both, to avoid a double toggle)
+  - no fallback by design: if the Asana tab is closed nothing happens (owner's call: risky to edit time on our own)
+- **Lunch:** lunch shows as a hatched band on the shift bar, and logged time inside lunch is hatched on the day tape.
+  Lunch minutes are only computed for entries made by a timer Tracket saw start (`sess:<date>`, start = created_at − duration,
+  ±3 min), never manual entries. A ticket with lunch time gets "🍽 Xm during lunch · Remove lunch": `PUT /time_tracking_entries/<gid>`
+  with the lunch minutes taken off (Tracket's only write to Asana, on click only). Fixed entries are kept in `lunchfix`.
+- **Comments:** `commentsFor` reads each ticket's stories; ok = a `comment_added` by you that day (your tz). Yes is kept for the
+  day, no re-checked every 90s. Chip: "💬 Dude u forgot to mention what u did in this ticket, all good?" (owner's wording).
+- **Daily email report** (`lib/report.js`, opt-in in Settings): sent 30 min after shift end (20:00 without a shift) by whichever
+  trigger runs first after that; a day missed is sent late the next day (if reports were on by then). "Send today's report now"
+  in Settings. Account email is changeable in Settings (needs password; also the login).
+- **Scheduler:** `/api/cron?key=<cronKey>` (key derived from SESSION_SECRET; the admin panel shows the URL) runs `evaluate` for
+  every member. Point Upstash QStash (Schedules, every 5 min = 288 msgs/day, free tier) or cron-job.org at it. Without it,
+  reminders and reports still run whenever an Asana tab, dashboard or the menu bar is open.
+- **Menu bar (Mac):** SwiftBar plugin `tracket.10s.js`: redraws every 10s, fetches `/api/bar` at most every 30s (Upstash budget),
+  counts the running timer locally. Title `🔔2 ● 0:47 · 6h 47m`. Settings → Menu bar → *Copy install command*.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
   OK = assigned to me AND the custom field "Task Status" is "In Grooming" or "In Development". Otherwise a ⚠ chip
   appears on the row and On Air card, and an alert fires on **every** timer start (by design, the owner wants it repeated).
   No Task Status field → the assignee is still checked, and it's flagged "No Task Status field — are you sure that's acceptable?"
   Checks never throw (so there are no false warnings when Asana fails).
-- **Userscript v2.2:** per-member `@name Tracket · <name>` / `@namespace tracket/<id>`. A warning pill shows in the Asana
+- **Userscript v2.3** (auto mode; the dashboard shows "Install v2.3" when an older one reports). v2.2 added per-member `@name Tracket · <name>` / `@namespace tracket/<id>`. A warning pill shows in the Asana
   tab when sends error, time out, or get no answer in 20s. The dashboard says "Asana tab stopped reporting X ago" and gives the fix.
 
 ## History
@@ -76,14 +121,21 @@ optional Telegram. The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_T
 | 2026-09-24 | 747d5c7 | Day health messages. **Bug:** date picker dead in Brave/Chrome (Chromium only opens a date input from its hidden calendar icon) → `showPicker()` on click |
 | 2026-09-24 | 5e7bf46 | Work shift, pace score, duration-driven reminders |
 | 2026-09-24 | 9a7e8c1 | Flag tickets that may not be yours (assignee / Task Status) |
+| 2026-09-24 | (see git log) | Server-side alerts engine, Web Push (phone lock screen + watch, Home Screen app), auto mode (7h cap, lunch stop/restart, 25s countdown + Deny), lunch on the day bar + Remove lunch, 💬 missing-comment check, daily email report, change email, Mac menu bar (SwiftBar), scheduler URL in admin, userscript v2.3 |
 
 ## Known limits / open ideas
 
-- Reminders only fire while a Tracket tab is open. Server-side push/email (Resend is already set up) was offered, not built.
-- No overnight shifts.
+- **Setup still needed by the owner:** (1) a scheduler hitting the admin panel's cron URL every 5 min (QStash recommended),
+  (2) a verified domain in Resend + `RESEND_FROM` so reports reach members other than the owner, (3) reinstall the userscript (v2.3).
+- No overnight shifts. Lunch is one window for every day.
+- Auto mode relies on Asana's button labels ("Start timer" / "Stop timer"); if Asana renames them, actions fail visibly (alert).
+- Upstash: `/api/live` now also reads `autonow`, and heartbeats run the alert checks (~5 extra commands per 12s). Watch the free tier.
 - Past-day ⚠ chips show a ticket's *current* assignee/status, not what it was that day.
 - Upstash free tier is ~500K commands/month; one open dashboard uses roughly 3 commands/s. Watch this as members grow.
-- A Tracket version check for outdated userscripts (diag sends `v`) isn't surfaced yet.
+- Always-on-screen widget ideas, to do later (owner asked to remember): (a) video picture-in-picture trick — draw the timer on a
+  canvas, stream it into a `<video>` and pop it out; floats over every app in Safari and Chrome, rectangle only; (b) Chrome/Brave
+  Document Picture-in-Picture — any HTML, always on top, not Safari; (c) small native macOS app — a round, draggable, always-on-top
+  bubble on every Space, reading `/api/bar` with the member key; (d) iPhone: a Scriptable widget, or Live Activities (needs a native app).
 
 ## Debugging checklist
 

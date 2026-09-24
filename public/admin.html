@@ -127,6 +127,7 @@ async function act(btn, fn){ btn.disabled = true; try { await fn(); } catch (e) 
 async function render(){
   let d;
   try { d = await api('/api/admin/overview'); } catch { return; }
+  const cron = await fetch('/api/admin/cron', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({}));
   const pending = d.requests.filter((r) => r.status === 'pending');
   const past = d.requests.filter((r) => r.status !== 'pending').slice(0, 20);
   const active = d.members.filter((m) => m.status === 'active');
@@ -159,6 +160,12 @@ async function render(){
           <button class="btn sm danger" data-remove="${m.id}">Remove</button></div></div>`).join('')
       : '<div class="empty">No members yet.</div>'}</div>
 
+    <h2>Scheduler</h2>
+    <div class="list"><div class="item"><div style="min-width:0;flex:1"><div class="who"><b>Reminders & daily reports with no tab open</b></div>
+      <div class="note">Have a free scheduler call this URL every 5 minutes (Upstash QStash → Schedules, or cron-job.org). Keep it private.</div>
+      <div class="note" style="word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(cron.url || '—')}</div></div>
+      <div class="acts"><button class="btn sm ghost" id="cronCopy">Copy URL</button></div></div></div>
+
     ${past.length ? `<h2>Decided</h2><div class="list">${past.map((r) => `
       <div class="item"><div><div class="who"><b>${esc(r.name)}</b><span class="em">${esc(r.email)}</span></div>
         <div class="meta"><span class="tag ${r.status === 'approved' ? 'ok' : 'off'}">${r.status}</span><span>${ago(r.decidedAt || r.at)}</span></div>${r.note ? `<div class="note">${esc(r.note)}</div>` : ''}</div>
@@ -166,6 +173,7 @@ async function render(){
   </main>`;
 
   const byId = Object.fromEntries(d.members.map((m) => [m.id, m]));
+  $('cronCopy').onclick = async () => { try { await navigator.clipboard.writeText(cron.url); toast('Copied'); } catch { prompt('Copy this URL', cron.url); } };
   $('out').onclick = async () => { await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ which: 'admin' }) }); gate(); };
   document.querySelectorAll('[data-approve]').forEach((b) => b.onclick = () => act(b, async () => {
     const r = await api('/api/admin/approve', { id: b.dataset.approve });

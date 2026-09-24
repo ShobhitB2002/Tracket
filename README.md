@@ -19,6 +19,12 @@ ticking in real time, even in a background tab.
 - **On air** — the Asana timer you're running *right now*, ticking by the second and added to the total live.
 - **Your shift, live** — set your working days and hours; see time left, a pace score (100 = on track for the 7h minimum) and where you'll land by shift end.
 - **Reminders that follow your hours** — a notification the moment you pass 7h and 8h; under 7h, a nudge if you stop a timer in your shift's last 30 minutes and again when the shift ends.
+- **Notifications everywhere** — reminders are decided on the server, so they reach your phone's lock screen (and your watch) even with Tracket closed. On iPhone, add Tracket to your Home Screen first.
+- **Auto mode** — stop your timer at a daily limit (default 7h), and stop it for lunch and restart the same ticket after. Every auto action shows a 25-second countdown with a **Deny** button, in your Asana tab and on Tracket.
+- **Lunch, made visible** — lunch shows on your day bar; time logged during lunch is flagged with a **Remove lunch** button that fixes the entry in Asana.
+- **“Dude u forgot to mention what u did in this ticket, all good?”** — tickets you logged time on but didn't comment on that day get flagged, on every timer stop and at shift end.
+- **Daily email report** — your total, tickets, anything worth a look and every reminder of the day.
+- **Mac menu bar** — the running timer, today's total and a 🔔 for new alerts, via SwiftBar.
 - **“Is this really your ticket?”** — tickets not assigned to you, or whose Task Status isn't *In Grooming* / *In Development*, get a ⚠ with the reason, and every timer start on one sends an alert.
 - **Every ticket you touched today** — time, share of the day and sessions, each linking back to Asana.
 - **Any past day** — ‹ › or pick a date (`←` `→`, `T` for today), straight from Asana.
@@ -31,7 +37,7 @@ ticking in real time, even in a background tab.
 Tracket is invite-only. Open the site to explore a live demo, then hit **Request access**. Once approved you get a login by email:
 
 1. **Log in** with the email and password you were sent.
-2. **Connect Asana** — paste a personal access token ([Asana → Developer console](https://app.asana.com/0/my-apps) → *Create new token*). It's encrypted before it's stored and only ever used to read.
+2. **Connect Asana** — paste a personal access token ([Asana → Developer console](https://app.asana.com/0/my-apps) → *Create new token*). It's encrypted before it's stored and used to read your time; the only thing it ever changes is lunch time you ask it to remove.
 3. **Install the live-timer userscript** — Settings → *Copy my userscript*. Your copy is pre-configured for your account.
    - **Safari:** [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) → enable in Safari → Settings → Extensions, allow on `app.asana.com` → extension page → **+ → New JS** → select all → paste → Save.
      Then choose **Always Allow** when Safari asks about the Tracket site. Denying it (or "Allow for One Day") silently stops the live timer.

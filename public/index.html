@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10">
 <title>Tracket</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tracket">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
@@ -36,7 +42,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 
-.wrap{position:relative;z-index:2;max-width:880px;margin:0 auto;padding:28px 20px 80px}
+.wrap{position:relative;z-index:2;max-width:880px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) 20px 80px}
 
 /* ---------- top bar ---------- */
 .top{display:flex;align-items:center;gap:14px;margin-bottom:34px}
@@ -274,7 +280,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;line-height:1.6}
 .waiting.done i{background:var(--mint);box-shadow:0 0 10px var(--mint);animation:none}
 code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);padding:2px 6px;border-radius:6px}
 @media (max-width:560px){
-  .wrap{padding:20px 16px 60px}
+  .wrap{padding:calc(20px + env(safe-area-inset-top)) 16px 60px}
   .hero{padding:26px 20px 22px;border-radius:26px}
   .pill{display:none}
   .onair .row{flex-wrap:wrap}
@@ -285,6 +291,51 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
   .onair .name{font-size:18px}
   .dur{font-size:17px}
 }
+/* ---------- alerts, auto mode, comments, lunch ---------- */
+.bell{position:relative}
+.bell .n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--rec);color:#fff;font:800 10px/18px var(--mono);text-align:center}
+.automode{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;border:1px dashed var(--line);font-size:13px;line-height:1.45;color:var(--mute)}
+.automode b{color:var(--ink);font-weight:600}
+.automode .old{color:var(--amber)}
+.automode button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:5px 10px;font:600 11px/1 var(--mono);cursor:pointer}
+.automode button:hover{border-color:var(--amber)}
+.flags{display:flex;flex-wrap:wrap;gap:0 6px}
+.warn.cmt{border-color:#a78bfa55;background:#a78bfa12;color:#c4b5fd}
+.warn.lunch{border-color:#f3efe644;background:#f3efe60a;color:var(--ink);align-items:center}
+.warn .act{margin-left:4px;border:1px solid currentColor;border-radius:6px;padding:2px 7px;font:inherit;color:inherit;cursor:pointer;background:none}
+.warn .act:hover{background:#ffffff14}
+.warn .act[disabled]{opacity:.5;pointer-events:none}
+.lunchpat{background:repeating-linear-gradient(-45deg,#f3efe6d9 0 3px,#0c0c12 3px 6px)}
+.tape .seg .lunch{position:absolute;top:0;bottom:0;right:0;width:0;background:repeating-linear-gradient(-45deg,#f3efe6d9 0 3px,#0c0c12 3px 6px);transition:width .8s cubic-bezier(.2,.9,.3,1)}
+.shift .sbar .lunchband{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(-45deg,#f3efe6bb 0 3px,transparent 3px 6px);border-radius:0}
+.legend{display:flex;justify-content:flex-end;gap:12px;font:400 10px/1 var(--mono);color:var(--dim);margin-top:8px}
+.legend i{display:inline-block;width:16px;height:8px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.notes{display:grid;gap:8px;margin:-10px 0 22px}
+.notes:empty{display:none}
+.notes .n{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;border-radius:14px;border:1px solid #ffb54744;background:#ffb5470d;color:var(--ink);font-size:13px;line-height:1.45}
+.notes .n button{margin-left:auto;border:1px solid currentColor;border-radius:10px;padding:5px 10px;font:600 11px/1 var(--mono);color:var(--amber)}
+.autocard{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;width:min(440px,calc(100vw - 32px));padding:14px 16px;border-radius:18px;background:var(--card);border:1px solid var(--amber);box-shadow:0 24px 70px -20px #000;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.autocard .row{display:flex;align-items:center;gap:12px}
+.autocard .k{font:800 10px/1 var(--mono);letter-spacing:.18em;color:var(--amber);margin-bottom:6px}
+.autocard .t{font-weight:600;font-size:15px}
+.autocard .s{font:800 30px/1 var(--mono);color:var(--amber);min-width:44px;text-align:right}
+.autocard .deny{border:1px solid var(--rec);background:#ff4d6d22;color:#ff9aac;border-radius:11px;padding:10px 16px;font-weight:700}
+.autocard .pb{height:4px;border-radius:4px;background:var(--line);margin-top:12px;overflow:hidden}
+.autocard .pb i{display:block;height:100%;background:var(--amber);transition:width .25s linear}
+.alist{display:grid;gap:8px}
+.alist .a{padding:10px 12px;border-radius:12px;background:#0c0c12;border:1px solid var(--line)}
+.alist .a.new{border-color:#ffb54766}
+.alist .a b{font-weight:600;font-size:14px}
+.alist .a p{color:var(--mute);font-size:13px;line-height:1.45;margin:3px 0 0}
+.alist .a small{display:block;color:var(--dim);font:400 11px var(--mono);margin-top:5px}
+.sw{display:flex;align-items:flex-start;gap:10px;cursor:pointer;color:var(--ink);font-size:14px;line-height:1.9}
+.sw > span{flex:1;min-width:0}
+.sw input[type=checkbox]{width:18px;height:18px;margin-top:4px;accent-color:var(--amber);flex:none}
+.sw input[type=number]{width:74px;margin:0 4px;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:6px 8px;font:400 14px var(--mono)}
+.lunchrow{display:flex;align-items:center;gap:8px;margin-bottom:12px;font:600 13px var(--mono)}
+.lunchrow input{min-width:0;flex:1;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:8px 10px;font:400 14px var(--mono);color-scheme:dark}
+.hint{display:block;font-size:12px;color:var(--dim);line-height:1.5;margin-top:6px}
+.cmd{display:block;white-space:pre-wrap;word-break:break-all;margin:8px 0;padding:10px;font-size:11px;line-height:1.5}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -297,11 +348,16 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
     <div class="hello"><span class="brand">Tracket</span><b id="greet">Hello</b><span id="date">—</span></div>
     <span class="pill" id="link" title="Userscript connection"><i></i><span id="linkText">Asana link</span></span>
     <button class="btn ghost" id="loginBtn" hidden>Log in</button>
+    <button class="iconbtn bell" id="bell" title="Alerts" aria-label="Alerts" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="n" id="bellN" hidden></span>
+    </button>
     <button class="iconbtn" id="gear" title="Settings" aria-label="Settings" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </header>
   <div id="bannerSlot"></div>
+  <div class="notes" id="notes"></div>
 
   <nav class="days">
     <button id="prev" title="Previous day (←)" aria-label="Previous day">‹</button>
@@ -316,8 +372,10 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
     <div class="goal"><span id="goalText">of an 8h day</span><b id="goalPct">0%</b></div>
     <div class="tape" id="tape"></div>
     <div class="ticks"><span>0h</span><span>2h</span><span>4h</span><span>6h</span><span>8h</span></div>
+    <div class="legend" id="legend" hidden><span><i class="lunchpat"></i>during lunch</span></div>
     <div class="verdict" id="verdict" hidden></div>
     <div class="shift" id="shift" hidden></div>
+    <div class="automode" id="automode" hidden></div>
   </section>
 
   <div id="onairWrap"><h2>On air</h2>
@@ -333,12 +391,18 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
   </footer>
 </main>
 <div class="toast" id="toast"></div>
+<div class="autocard" id="autocard" hidden></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const PALETTE = ['#ffb547','#5cf2b0','#a78bfa','#5cc8ff','#ff8fab','#f5e663','#ff7a45','#7ee081'];
 const GOAL_MIN = 8 * 60;
 const MIN_DAY_MIN = 7 * 60; // below this the day doesn't count as a full one
+// The owner's wording — keep it.
+const LINES = {
+  comment: 'Dude u forgot to mention what u did in this ticket, all good?',
+  lunch: 'Today u ran timer during lunch, wanna edit that?',
+};
 
 let data = null;       // /api/today
 let live = null;       // SSE running payload
@@ -363,10 +427,17 @@ function hm(sec){ const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60); r
 function hms(sec){ sec = Math.max(0, Math.floor(sec)); return `${pad(Math.floor(sec/3600))}:${pad(Math.floor(sec%3600/60))}:${pad(sec%60)}`; }
 const now = () => Date.now() + clockSkew;
 
+// Lunch window of the day being shown, in ms (from the member's settings).
+function lunchWin(){
+  const L = data?.lunch, day = data?.date;
+  return L && day ? { ...L, from: atTime(day, L.start), to: atTime(day, L.end) } : null;
+}
 function runningNow(){
   const r = isTodayView() ? live?.running : null;
   if (!r) return null;
-  return { ...r, sec: (now() - r.startedAt) / 1000 };
+  const L = lunchWin(), t = now();
+  const lunchSec = L ? Math.max(0, Math.min(t, L.to) - Math.max(r.startedAt, L.from)) / 1000 : 0;
+  return { ...r, sec: (t - r.startedAt) / 1000, lunchSec };
 }
 
 // ---------- odometer ----------
@@ -386,12 +457,12 @@ function setOdo(totalSec){
 
 // ---------- render ----------
 function totals(){
-  const tasks = (data?.tasks || []).map((t) => ({ ...t, sec: t.minutes * 60 }));
+  const tasks = (data?.tasks || []).map((t) => ({ ...t, sec: t.minutes * 60, lunchSec: (t.lunchMin || 0) * 60 }));
   const r = runningNow();
   if (r) {
     const hit = tasks.find((t) => t.gid === r.taskGid) || tasks.find((t) => r.taskGid.startsWith('name:') && t.name.trim() === r.taskName);
-    if (hit) { hit.sec += r.sec; hit.live = true; if (r.check !== undefined) hit.check = r.check; }
-    else tasks.push({ gid: r.taskGid, name: r.taskName, url: r.url, minutes: 0, sec: r.sec, entries: [], live: true, fresh: true, check: r.check });
+    if (hit) { hit.sec += r.sec; hit.lunchSec += r.lunchSec; hit.runLunch = r.lunchSec; hit.live = true; if (r.check !== undefined) hit.check = r.check; }
+    else tasks.push({ gid: r.taskGid, name: r.taskName, url: r.url, minutes: 0, sec: r.sec, lunchSec: r.lunchSec, runLunch: r.lunchSec, entries: [], live: true, fresh: true, check: r.check });
   }
   tasks.sort((a, b) => b.sec - a.sec);
   return { tasks, total: tasks.reduce((s, t) => s + t.sec, 0), r };
@@ -399,6 +470,14 @@ function totals(){
 
 // ⚠ chip for tickets that may not be yours (see checkTasks on the server)
 const warnChip = (c) => (c && !c.ok ? `<span class="warn" title="Are you sure this is your task? The assignee or Task Status says otherwise.">⚠ ${esc(c.reasons.join(' · '))}</span>` : '');
+// 💬 time logged that day but no comment from you on the ticket that day
+const cmtChip = (t) => (t.comment === false ? `<span class="warn cmt" title="No comment from you on this ticket that day">💬 ${esc(LINES.comment)}</span>` : '');
+// 🍽 logged time that fell inside lunch, with a button that takes it off in Asana
+function lunchChip(t){
+  if (t.lunchMin > 0) return `<span class="warn lunch">🍽 ${hm(t.lunchMin * 60)} during lunch <button class="act" data-lunch="${esc(t.gid)}">Remove lunch</button></span>`;
+  if (t.runLunch > 60) return `<span class="warn lunch">🍽 running through lunch</span>`;
+  return '';
+}
 
 function renderStatic(){
   const { tasks, total } = totals();
@@ -416,7 +495,7 @@ function renderStatic(){
         <div class="rank">${pad(i + 1)}</div>
         <div class="body">
           <span class="title">${esc(t.name)}</span>
-          ${warnChip(t.check)}
+          <div class="flags">${warnChip(t.check)}${cmtChip(t)}${lunchChip(t)}</div>
           <div class="sub"><div class="bar"><i></i></div>
             <div class="chips">${Array.from({ length: Math.min(n, 8) }, () => '<b></b>').join('')}</div>
             <span class="pct"></span></div>
@@ -469,15 +548,21 @@ function tick(){
   const want = tasks.map((t) => t.gid).join('|');
   if (tape.dataset.k !== want) {
     tape.dataset.k = want;
-    tape.innerHTML = tasks.map((t) => `<div class="seg" data-gid="${esc(t.gid)}" style="background:${colorFor(t.gid)};width:0"></div>`).join('') +
+    tape.innerHTML = tasks.map((t) => `<div class="seg" data-gid="${esc(t.gid)}" style="background:${colorFor(t.gid)};width:0"><b class="lunch"></b></div>`).join('') +
       '<i class="min" title="7h minimum"></i>';
   }
   tape.querySelector('.min').style.left = `${MIN_DAY_MIN * 60 / scale * 100}%`;
+  $('legend').hidden = !tasks.some((t) => t.lunchSec > 30);
   verdict(total);
   renderShift(total);
+  renderAuto();
+  renderAutoCard();
   tasks.forEach((t) => {
     const seg = tape.querySelector(`[data-gid="${CSS.escape(t.gid)}"]`);
-    if (seg) { seg.style.width = `${t.sec / scale * 100}%`; seg.classList.toggle('run', !!t.live); }
+    if (seg) {
+      seg.style.width = `${t.sec / scale * 100}%`; seg.classList.toggle('run', !!t.live);
+      seg.querySelector('.lunch').style.width = t.sec ? `${Math.min(1, t.lunchSec / t.sec) * 100}%` : '0';
+    }
     const row = document.querySelector(`.tk[data-gid="${CSS.escape(t.gid)}"]`);
     if (row) {
       row.querySelector('.d').textContent = t.live ? hms(t.sec) : hm(t.sec);
@@ -514,57 +599,163 @@ function verdict(total){
   if (!data) { el.hidden = true; return; }
   const level = levelOf(total);
   const today = isTodayView();
-  const ask = today && mode === 'live' && 'Notification' in window && Notification.permission === 'default';
+  const ask = today && mode === 'live' && !pushActive && (pushSupported() || 'Notification' in window) && (!('Notification' in window) || Notification.permission === 'default');
   const key = `${level}|${today}|${ask}`;
   if (el.dataset.k !== key) {
     el.dataset.k = key;
     el.className = `verdict ${level}`;
     el.innerHTML = `<span>${VERDICTS[level][today ? 'today' : 'past']}</span>${ask ? '<button id="notifyMe">🔔 Turn on reminders</button>' : ''}`;
     el.hidden = false;
-    $('notifyMe')?.addEventListener('click', async () => { try { await Notification.requestPermission(); } catch {} el.dataset.k = ''; tick(); });
+    $('notifyMe')?.addEventListener('click', async () => {
+      try { await enablePush(); if (pushActive) toast('Reminders on for this device ✦'); } catch (x) { toast(x.message.slice(0, 80)); if (isIOS) openSettings(); }
+      el.dataset.k = ''; tick();
+    });
   }
-  if (today && mode === 'live') checkAlerts(total);
 }
 
-// ---------- reminders (driven by today's duration) ----------
-// - crossing 7h, and crossing 8h: once each, the moment it happens
-// - under 7h: once if a timer stops in the last 30 min of your shift, and
-//   once exactly when your shift ends
-function notify(title, body, tag){
-  toast(title);
-  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(title, { body, tag }); } catch {}
+// ---------- reminders ----------
+// Tracket's server decides every reminder (7h/8h, shift end, ⚠ ticket, 💬 no
+// comment, 🍽 lunch, auto mode) so they also work with no tab open. Devices
+// with push turned on get them as notifications; this tab shows each new one
+// as a toast (plus a browser notification when this device has no push).
+let alertsFeed = { items: [], seen: 0 };
+let pushActive = false;
+const lastShownKey = 'tk_alert_last';
+const getLS = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const setLS = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+
+async function pollAlerts(){
+  if (mode !== 'live') return;
+  let f;
+  try { f = await api('/api/alerts'); } catch { return; }
+  const newest = f.items.length ? f.items[f.items.length - 1].id : 0;
+  const last = +getLS(lastShownKey) || 0;
+  if (last) {
+    const fresh = f.items.filter((a) => a.id > last);
+    fresh.slice(-3).forEach((a, i) => setTimeout(() => {
+      toast(a.title);
+      try { if (!pushActive && 'Notification' in window && Notification.permission === 'granted') new Notification(a.title, { body: a.body, tag: `tk${a.id}` }); } catch {}
+    }, i * 3000));
+    // seen here, so the menu bar 🔔 clears too
+    if (fresh.length && !document.hidden) f.seen = (await api('/api/alerts/seen', { json: { upTo: newest } }).catch(() => ({ seen: f.seen }))).seen;
+  }
+  if (newest) setLS(lastShownKey, String(newest));
+  alertsFeed = f;
+  renderBell();
 }
-// true the first time it's called for a key (remembered per browser)
-function once(key){
-  try { if (localStorage.getItem(key)) return false; localStorage.setItem(key, '1'); return true; }
-  catch { once.m ||= new Set(); if (once.m.has(key)) return false; once.m.add(key); return true; }
+function renderBell(){
+  const n = alertsFeed.items.filter((a) => a.id > (alertsFeed.seen || 0)).length;
+  $('bellN').hidden = !n; $('bellN').textContent = n > 9 ? '9+' : n;
 }
-function checkAlerts(total){
-  const day = data.date || todayStr, level = levelOf(total);
-  if (level === 'over' && once(`tk_8h_${day}`)) { once(`tk_7h_${day}`); notify('8h logged — that’s enough for today', VERDICTS.over.today, 'tk8'); }
-  else if (level !== 'low' && once(`tk_7h_${day}`)) notify('7h logged ✦ bare minimum done', VERDICTS.ok.today, 'tk7');
-  // a stopped timer drops out of the total for a few seconds before Asana logs
-  // it — judge "under 7h" on the day's peak so that dip can't trigger it
-  if (checkAlerts.day !== day) { checkAlerts.day = day; checkAlerts.peak = 0; }
-  checkAlerts.peak = Math.max(checkAlerts.peak, total);
-  const s = shiftFor(day), t = now();
-  if (s && levelOf(checkAlerts.peak) === 'low' && t >= s.to && t - s.to < 5 * 60000 && once(`tk_end_${day}`))
-    notify(`Shift over — ${hm(total)} logged, under 7h`, VERDICTS.low.today, 'tkend');
-}
-// Every timer start on a ticket that may not be yours gets an alert — each
-// start, not once a day, so a second start is a second chance to notice.
-function checkStartAlert(r){
-  if (mode !== 'live' || !r?.check || r.check.ok) return;
-  if (!once(`tk_own_${r.taskGid}_${r.startedAt}`)) return;
-  notify('Are you sure this is your task?', `${r.taskName || 'This ticket'} — the assignee or Task Status says otherwise: ${r.check.reasons.join(' · ')}`, `tkown${r.startedAt}`);
+async function openAlerts(){
+  const items = [...alertsFeed.items].reverse();
+  const seen = alertsFeed.seen || 0;
+  const time = (id) => new Date(id).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  const el = modal(`<h3>Alerts</h3>
+    <p class="lead">Everything Tracket reminded you about lately.${pushActive ? '' : ' <a href="#" id="alPush">Get these as notifications on this device</a>'}</p>
+    <div class="alist">${items.length ? items.map((a) => `<div class="a ${a.id > seen ? 'new' : ''}"><b>${esc(a.title)}</b>${a.body ? `<p>${esc(a.body)}</p>` : ''}<small>${time(a.id)}</small></div>`).join('') : '<p class="lead">Nothing yet.</p>'}</div>`, { wide: true });
+  el.querySelector('#alPush')?.addEventListener('click', (e) => { e.preventDefault(); openSettings(); });
+  if (items.length) { alertsFeed.seen = (await api('/api/alerts/seen', { json: { upTo: items[0].id } }).catch(() => ({ seen }))).seen; renderBell(); }
 }
 
-// Called by poll() when the running timer stops; `total` includes that timer.
-function onTimerStop(total){
-  if (mode !== 'live' || !isTodayView() || !data) return;
-  const day = data.date || todayStr, s = shiftFor(day), t = now();
-  if (s && levelOf(total) === 'low' && t >= s.to - 30 * 60000 && t < s.to && once(`tk_stop_${day}`))
-    notify(`Timer stopped at ${hm(total)} — under 7h`, VERDICTS.low.today, 'tkstop');
+// ---------- push (Web Push: desktop, Android, iPhone home-screen app → watch) ----------
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fromB64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
+function deviceName(){
+  const ua = navigator.userAgent;
+  const os = isIOS ? (/iPad/.test(ua) || !/iPhone/.test(ua) ? 'iPad' : 'iPhone') : /Android/.test(ua) ? 'Android' : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : 'Linux';
+  return `${BROWSERS[detectBrowser()] || 'Browser'} · ${os}${standalone() ? ' app' : ''}`;
+}
+async function swReg(){ return pushSupported() ? navigator.serviceWorker.register('/sw.js') : null; }
+async function checkPush(){
+  try {
+    const reg = await swReg();
+    const sub = reg && Notification.permission === 'granted' && (await reg.pushManager.getSubscription());
+    pushActive = !!sub;
+    if (sub) api('/api/push', { json: { sub: sub.toJSON(), ua: deviceName() } }).catch(() => {}); // keep it on file
+  } catch { pushActive = false; }
+}
+async function enablePush(){
+  if (!pushSupported()) {
+    if (isIOS && !standalone()) throw new Error('On iPhone/iPad: tap Share → Add to Home Screen, open Tracket from the Home Screen, log in there once, then turn notifications on in its Settings.');
+    if ('Notification' in window) { await Notification.requestPermission(); return; }
+    throw new Error('This browser can’t show notifications.');
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') throw new Error(perm === 'denied' ? 'Notifications are blocked for this site — allow them in your browser’s site settings, then try again.' : 'Notifications weren’t allowed.');
+  const reg = await swReg();
+  await navigator.serviceWorker.ready;
+  const { key } = await api('/api/push/key');
+  let sub = await reg.pushManager.getSubscription();
+  const subKey = sub?.options?.applicationServerKey;
+  if (sub && subKey && b64u(subKey) !== key) { await sub.unsubscribe(); sub = null; }
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: fromB64u(key) });
+  await api('/api/push', { json: { sub: sub.toJSON(), ua: deviceName() } });
+  pushActive = true;
+}
+async function disablePush(){
+  const reg = await swReg();
+  const sub = reg && (await reg.pushManager.getSubscription());
+  if (sub) { await api('/api/push', { method: 'DELETE', json: { endpoint: sub.endpoint } }).catch(() => {}); await sub.unsubscribe(); }
+  pushActive = false;
+}
+
+// ---------- auto mode: the 25s countdown card ----------
+function renderAutoCard(){
+  const a = mode === 'live' ? live?.auto : null;
+  const el = $('autocard');
+  if (!a || a.status !== 'pending' || renderAutoCard.denied === a.id) { el.hidden = true; el.dataset.id = ''; return; }
+  const left = a.deadline - now();
+  if (left < -60000) { el.hidden = true; return; }
+  if (el.dataset.id !== a.id) {
+    el.dataset.id = a.id;
+    el.innerHTML = `<div class="row"><div style="flex:1;min-width:0"><div class="k">AUTO MODE</div><div class="t">${esc(a.title.replace(/ in 25s/, ''))}</div><small class="hint" id="acNote"></small></div>
+      <div class="s" id="acSec"></div><button class="deny" id="acDeny">Deny</button></div><div class="pb"><i id="acBar"></i></div>`;
+    $('acDeny').onclick = async () => {
+      renderAutoCard.denied = a.id; el.hidden = true;
+      try { await api('/api/auto', { json: { id: a.id, op: 'deny' } }); toast('Denied — Tracket won’t do it today'); } catch (x) { toast(x.message); }
+    };
+    el.hidden = false;
+  }
+  const secs = Math.max(0, Math.ceil(left / 1000));
+  $('acSec').textContent = secs;
+  $('acNote').textContent = secs ? `Happens in ${secs}s in your Asana tab unless you deny it.` : 'Your Asana tab is doing it now…';
+  $('acBar').style.width = `${Math.max(0, Math.min(1, left / 25000)) * 100}%`;
+}
+
+// Auto mode status under the shift card.
+function autoSummary(p){
+  if (!p) return 'Off.';
+  const parts = [];
+  if (p.auto.cap.on) parts.push(`stops your timer at <b>${p.auto.cap.hours}h</b>`);
+  if (p.auto.lunch && p.lunch) parts.push(`stops it for lunch <b>${p.lunch.start}–${p.lunch.end}</b> and restarts it after`);
+  else if (p.lunch) parts.push(`lunch is <b>${p.lunch.start}–${p.lunch.end}</b> (no auto stop)`);
+  return parts.length ? `Auto mode ${parts.join(' · ')}.` : 'Auto mode is off.';
+}
+const scriptOld = () => hbOn() && live?.scriptV && parseFloat(live.scriptV) < 2.3;
+function renderAuto(){
+  const el = $('automode');
+  if (!data || !isTodayView() || (mode !== 'live' && mode !== 'demo')) { el.hidden = true; return; }
+  const p = mode === 'demo' ? DEMO_PREFS : meInfo?.prefs;
+  const on = p && (p.auto.cap.on || (p.auto.lunch && p.lunch));
+  const html = `<span>⚙ ${autoSummary(p)}${on && scriptOld() ? ' <span class="old">Needs the updated Asana script (v2.3).</span>' : ''}</span><button data-auto>Configure</button>`;
+  if (el.dataset.h !== html) {
+    el.dataset.h = html; el.innerHTML = html; el.hidden = false;
+    el.querySelector('[data-auto]').onclick = () => (mode === 'live' ? openAuto() : openLogin());
+  }
+}
+
+// Notes above the day: lunch time to fix, outdated script.
+function renderNotes(){
+  const out = [];
+  if (mode === 'live' && isTodayView() && data?.lunchMinutes > 0) out.push(`<div class="n">🍽 <span>${esc(LINES.lunch)} Use <b>Remove lunch</b> on the ticket below.</span></div>`);
+  if (mode === 'live' && scriptOld()) out.push(`<div class="n">⬆ <span>Your Asana script is v${esc(live.scriptV)}. Install v2.3 for auto mode.</span><button data-upd>Update</button></div>`);
+  const html = out.join('');
+  const el = $('notes');
+  if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; el.querySelector('[data-upd]')?.addEventListener('click', () => openTimerSetup(false)); }
 }
 
 // ---------- work shift ----------
@@ -572,6 +763,7 @@ let shift = null; // { days: { '1': { start: '10:00', end: '19:00' } } }, 0 = Su
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DEMO_SHIFT = { days: Object.fromEntries([1, 2, 3, 4, 5].map((d) => [d, { start: '10:00', end: '19:00' }])) };
 const shiftNow = () => (mode === 'demo' ? DEMO_SHIFT : shift);
+const DEMO_PREFS = { lunch: { start: '13:00', end: '14:00' }, auto: { cap: { on: true, hours: 7 }, lunch: true }, report: { on: false } };
 const atTime = (day, hhmm) => { const d = parseDay(day); const [h, m] = hhmm.split(':').map(Number); d.setHours(h, m, 0, 0); return d.getTime(); };
 function shiftFor(day){
   const v = shiftNow()?.days?.[parseDay(day).getDay()];
@@ -592,7 +784,13 @@ function renderShift(total){
     const s = shiftFor(day), t = now(), today = isTodayView();
     const grade = (n) => (n >= 100 ? 'good' : n >= 85 ? 'mid' : 'bad');
     const score = (n, label) => `<span class="score ${grade(n)}">${Math.min(n, 999)}<small>${label}</small></span>`;
-    const bar = (f) => `<div class="sbar"><i style="width:${Math.max(0, Math.min(1, f)) * 100}%"></i></div>`;
+    const L = lunchWin();
+    const band = () => {
+      if (!s || !L) return '';
+      const len = s.to - s.from, a = Math.max(0, (L.from - s.from) / len), b = Math.min(1, (L.to - s.from) / len);
+      return b > a ? `<b class="lunchband" style="left:${a * 100}%;width:${(b - a) * 100}%" title="Lunch ${L.start}–${L.end}"></b>` : '';
+    };
+    const bar = (f) => `<div class="sbar"><i style="width:${Math.max(0, Math.min(1, f)) * 100}%"></i>${band()}</div>`;
     if (!s) html = `<div class="row"><span><b>Day off</b> — anything logged is a bonus.</span><button data-shift>Edit shift</button></div>`;
     else {
       const hours = `${clock(s.start)} – ${clock(s.end)}`;
@@ -714,13 +912,13 @@ async function load(force){
     todayStr = body.today;
     data = body;
     lastSig = body.sig;
-    live = { running: body.running, lastHeartbeat: body.lastHeartbeat };
-    checkStartAlert(body.running);
+    live = { ...live, running: body.running, lastHeartbeat: body.lastHeartbeat };
     clockSkew = body.serverNow - Date.now();
     $('err').classList.remove('show'); retry.n = 0; clearTimeout(retry.t);
     $('synced').textContent = `Synced ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
     header();
     renderStatic();
+    renderNotes();
   } catch (e) {
       if (e.handled) return;
     const offline = !navigator.onLine || /fetch|network|ENOTFOUND|EAI_AGAIN|ECONN|timed out/i.test(e.message);
@@ -747,10 +945,11 @@ async function poll(){
     const next = await api('/api/live');
     const changed = JSON.stringify(next.running) !== JSON.stringify(live?.running);
     const stopped = live?.running && !next.running;
-    if (stopped) onTimerStop(tick.prev || 0);
+    const newAuto = next.auto?.id !== live?.auto?.id;
     clockSkew = next.serverNow - Date.now();
     live = next;
-    checkStartAlert(next.running);
+    renderNotes();
+    if (newAuto) pollAlerts();
     if (!isTodayView()) return;
     if (next.sig && lastSig && next.sig !== lastSig) load(false);   // Asana data changed
     else if (stopped) setTimeout(() => load(true), 2500);            // let Asana save the entry
@@ -791,8 +990,8 @@ function modal(html, { wide = false, closable = true } = {}){
   return el;
 }
 function closeModal(){ $('modal')?.remove(); if (modal.esc) removeEventListener('keydown', modal.esc); }
-function form(el, handler){
-  const f = el.querySelector('form');
+function form(el, handler, sel = 'form'){
+  const f = el.querySelector(sel);
   f.onsubmit = async (e) => {
     e.preventDefault();
     const btn = f.querySelector('button[type=submit],button:not([type])'); const err = f.querySelector('.formerr');
@@ -806,7 +1005,8 @@ function form(el, handler){
 
 function openLogin(){
   const el = modal(`<h3>Welcome back</h3><p class="lead">Log in with the email and password you got when your access was approved.</p>
-    <form><div class="field"><label>Email</label><input name="email" type="email" autocomplete="username" required></div>
+    <form><div class="field"><label>Email</label><input name="email" type="email" autocomplete="username" required>
+      <small class="hint">Changed it in Settings? Use the new one. Daily reports go to this address too.</small></div>
     <div class="field"><label>Password</label><input name="password" type="password" autocomplete="current-password" required></div>
     <div class="formerr"></div><button class="btn" style="width:100%">Log in</button></form>
     <p class="lead" style="margin:16px 0 0;text-align:center">No access yet? <a href="#" id="toReq">Request it</a></p>`);
@@ -817,7 +1017,8 @@ function openLogin(){
 function openRequest(){
   const el = modal(`<h3>Request access</h3><p class="lead">Tracket is members-only. Tell me who you are and I’ll get back to you by email.</p>
     <form><div class="field"><label>Name</label><input name="name" autocomplete="name" required maxlength="80"></div>
-    <div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div>
+    <div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required>
+      <small class="hint">Please enter a valid email you actually check — your login and your daily reports go there. You can change it later in Settings.</small></div>
     <div class="field"><label>Why do you want in? <span style="text-transform:none;letter-spacing:0">(optional)</span></label><textarea name="note" rows="3" maxlength="500"></textarea></div>
     <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="formerr"></div><button class="btn" style="width:100%">Send request</button></form>`);
@@ -831,7 +1032,7 @@ function openRequest(){
 
 function openConnect(){
   const el = modal(`<h3>Connect your Asana</h3>
-    <p class="lead">Tracket reads your logged time with an Asana <b>personal access token</b>. It’s encrypted before it’s stored and only ever used to <b>read</b>. Takes about a minute:</p>
+    <p class="lead">Tracket reads your logged time with an Asana <b>personal access token</b>. It’s encrypted before it’s stored and used to <b>read</b> your time — the only thing it ever changes is lunch time you ask it to remove. Takes about a minute:</p>
     <ol class="steps">
       <li>Open <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener"><b>Asana’s developer console</b></a> (log in to Asana if asked).</li>
       <li>Under <b>Personal access tokens</b>, click <b>+ Create new token</b>.</li>
@@ -932,9 +1133,32 @@ async function openSettings(){
     <div class="sec"><h4>Work shift</h4>
       <p>${shift && Object.keys(shift.days).length ? [1, 2, 3, 4, 5, 6, 0].filter((d) => shift.days[d]).map((d) => `${DAYS[d]} ${shift.days[d].start}–${shift.days[d].end}`).join(' · ') : 'Not set — add it for live progress, a score and end-of-day reminders.'}</p>
       <div class="row2"><button class="btn ghost" id="editShift">${shift ? 'Edit shift' : 'Set shift'}</button></div></div>
+    <div class="sec"><h4>Notifications <span class="status ${pushActive ? '' : 'off'}">● ${pushActive ? 'on for this device' : 'off on this device'}</span></h4>
+      <p>Reminders on this device even when Tracket is closed: 7h/8h, shift end, ⚠ tickets, 💬 missing comments, 🍽 lunch and auto mode. On a phone they reach the lock screen, and your watch if it mirrors the phone.</p>
+      ${isIOS && !standalone() ? '<p class="note-open">📱 <b>iPhone/iPad:</b> tap <b>Share → Add to Home Screen</b>, open Tracket from the Home Screen, log in there once, then turn notifications on here. (Apple only allows push for Home Screen apps.)</p>' : ''}
+      <div class="row2"><button class="btn" id="pushOn">${pushActive ? 'Send a test' : 'Turn on for this device'}</button>${pushActive ? '<button class="btn ghost" id="pushOff">Turn off here</button>' : ''}</div>
+      <small class="hint" id="pushInfo"></small></div>
+    <div class="sec"><h4>Auto mode</h4><p>${autoSummary(meInfo?.prefs)}</p>
+      <div class="row2"><button class="btn ghost" id="editAuto">Configure auto mode</button></div></div>
+    <div class="sec"><h4>Daily email report</h4>
+      <p>At the end of each day: your total, tickets, anything worth a look (under 7h, ⚠ tickets, 💬 missing comments, 🍽 lunch time, auto mode) and every reminder sent. Sent to <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b> 30 min after your shift ends, or at 20:00 on days without one.</p>
+      <label class="sw"><input type="checkbox" id="repOn" ${meInfo?.prefs?.report?.on ? 'checked' : ''}><span>Email me a daily report</span></label>
+      <div class="row2" style="margin-top:12px"><button class="btn ghost" id="repTest">Send today’s report now</button></div>
+      <small class="hint" id="repLast"></small></div>
+    <div class="sec"><h4>Email</h4><p>Your login, and where reports go. Please use a valid address you check.</p>
+      <form id="emailForm"><div class="field"><label>New email</label><input name="email" type="email" autocomplete="email" required></div>
+      <div class="field"><label>Current password</label><input name="password" type="password" autocomplete="current-password" required></div>
+      <div class="formerr"></div><button class="btn ghost" style="width:100%">Change email</button></form></div>
+    <div class="sec"><h4>Menu bar (Mac)</h4><p>Your running timer, today’s total and a 🔔 for new alerts, always visible in the Mac menu bar.</p>
+      <ol class="steps">
+        <li>Install <a href="https://swiftbar.app" target="_blank" rel="noopener"><b>SwiftBar</b></a> (free), open it, and pick a plugin folder when it asks.</li>
+        <li><button class="btn sm-inline" id="barCopy">Copy install command</button> then paste it in <b>Terminal</b> and press Return. It puts your Tracket plugin in SwiftBar’s folder.
+          <small>Or <a href="/api/menubar" download="tracket.10s.js">download the plugin</a>, drop it in that folder and run <code>chmod +x tracket.10s.js</code> there.</small></li>
+        <li><small>🔔3 in the menu bar = 3 new alerts. Open it → <b>Mark all read</b>. It refreshes every 10s.</small></li>
+      </ol></div>
     <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
       <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
-    <div class="sec"><h4>Password</h4><form>
+    <div class="sec"><h4>Password</h4><form id="pwForm">
       <div class="field"><label>Current</label><input name="current" type="password" autocomplete="current-password" required></div>
       <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
       <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
@@ -952,8 +1176,97 @@ async function openSettings(){
     await api('/api/asana', { method: 'DELETE' }); closeModal(); boot();
   };
   el.querySelector('#lo').onclick = logout;
-  form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); });
+  form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); }, '#pwForm');
+  form(el, async (v, f) => {
+    const r = await api('/api/email', { json: v });
+    meInfo.email = r.email; f.reset(); toast('Email changed — log in with it from now on'); openSettings();
+  }, '#emailForm');
+  el.querySelector('#editAuto').onclick = () => openAuto();
+  const info = el.querySelector('#pushInfo');
+  api('/api/push').then((r) => { info.textContent = r.devices.length ? `Signed up: ${r.devices.map((d) => d.ua || 'a device').join(', ')}.` : 'No devices signed up yet.'; }).catch(() => {});
+  el.querySelector('#pushOn').onclick = async (e) => {
+    e.target.disabled = true;
+    try {
+      if (pushActive) { const r = await api('/api/push/test', { json: {} }); toast(r.sent ? `Test sent to ${r.sent} device${r.sent === 1 ? '' : 's'}` : 'No device took it — try turning it off and on'); }
+      else { await enablePush(); toast(pushActive ? 'Notifications on for this device ✦' : 'Browser notifications on'); openSettings(); }
+    } catch (x) { info.textContent = x.message; }
+    e.target.disabled = false;
+  };
+  el.querySelector('#pushOff')?.addEventListener('click', async () => { await disablePush(); toast('Notifications off for this device'); openSettings(); });
+  el.querySelector('#repOn').onchange = async (e) => {
+    try { meInfo.prefs = await api('/api/prefs', { json: { report: { on: e.target.checked } } }); toast(e.target.checked ? 'Daily report on ✦' : 'Daily report off'); }
+    catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
+  };
+  const repLast = el.querySelector('#repLast');
+  const showLast = (l) => { if (l) repLast.textContent = l.ok ? `Last report sent ${new Date(l.at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} to ${l.to}.` : `Last report failed: ${l.error}`; };
+  api('/api/report').then((r) => showLast(r.last)).catch(() => {});
+  el.querySelector('#repTest').onclick = async (e) => {
+    e.target.disabled = true; repLast.textContent = 'Sending…';
+    try { const r = await api('/api/report/test', { json: {} }); repLast.textContent = r.ok ? `Sent to ${meInfo.email} — check your inbox (and spam).` : `Couldn’t send: ${r.error}`; }
+    catch (x) { repLast.textContent = x.message; }
+    e.target.disabled = false;
+  };
+  el.querySelector('#barCopy').onclick = async (e) => {
+    try {
+      const src = await (await fetch('/api/menubar', { credentials: 'same-origin' })).text();
+      const key = (src.match(/^const TRACKET_KEY = "(.*)";$/m) || [])[1];
+      if (!key) throw new Error('no key');
+      const cmd = `DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBar")"; mkdir -p "$DIR" && curl -fsSL -H 'x-tracket-key: ${key}' '${location.origin}/api/menubar' -o "$DIR/tracket.10s.js" && chmod +x "$DIR/tracket.10s.js" && echo "Tracket plugin installed in $DIR"; open -g 'swiftbar://refreshallplugins' 2>/dev/null`;
+      await navigator.clipboard.writeText(cmd); e.target.textContent = 'Copied ✓';
+    } catch { e.target.textContent = 'Copy failed — use Download'; }
+    setTimeout(() => { e.target.textContent = 'Copy install command'; }, 2500);
+  };
 }
+
+// ---------- auto mode settings ----------
+function openAuto(){
+  const p = meInfo?.prefs || DEMO_PREFS;
+  const el = modal(`<h3>Auto mode</h3>
+    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v2.3${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}.</p>
+    <div class="sec"><h4>Daily limit</h4>
+      <label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span>Stop my timer when today reaches <input type="number" id="capH" min="1" max="16" step="0.25" value="${p.auto.cap.hours}"> hours</span></label>
+      <small class="hint">7h is the minimum day. Once a day: if you deny it, or start a timer again afterwards, it won’t stop you again that day.</small></div>
+    <div class="sec"><h4>Lunch break</h4>
+      <div class="lunchrow">Lunch <input type="time" id="lS" value="${p.lunch?.start || ''}" aria-label="Lunch start"> – <input type="time" id="lE" value="${p.lunch?.end || ''}" aria-label="Lunch end"></div>
+      <label class="sw"><input type="checkbox" id="lunchAuto" ${p.auto.lunch ? 'checked' : ''}><span>Stop the timer when lunch starts, and restart it on the same ticket when lunch ends</span></label>
+      <small class="hint">Lunch times also show lunch on your day bar and flag logged time that ran through lunch, with a <b>Remove lunch</b> button on the ticket. Clear both times for no lunch. If your Asana tab is closed, nothing happens automatically.</small></div>
+    <div class="formerr" id="auErr"></div>
+    <button class="btn" id="auSave" style="width:100%;margin-top:8px">Save</button>`, { wide: true });
+  el.querySelectorAll('.lunchrow input').forEach((i) => i.addEventListener('click', () => { try { i.showPicker(); } catch {} }));
+  el.querySelector('#auSave').onclick = async (e) => {
+    const start = el.querySelector('#lS').value, end = el.querySelector('#lE').value;
+    const body = {
+      lunch: start || end ? { start, end } : null,
+      auto: { cap: { on: el.querySelector('#capOn').checked, hours: Number(el.querySelector('#capH').value) }, lunch: el.querySelector('#lunchAuto').checked },
+    };
+    e.target.disabled = true;
+    try {
+      meInfo.prefs = await api('/api/prefs', { json: body });
+      closeModal(); toast('Auto mode saved ✦'); load(true);
+    } catch (x) { el.querySelector('#auErr').textContent = x.message; e.target.disabled = false; }
+  };
+}
+
+// "Remove lunch" on a ticket: takes the lunch minutes off its Asana entries.
+async function removeLunch(gid, btn){
+  const t = (data?.tasks || []).find((x) => x.gid === gid);
+  const entries = (t?.entries || []).filter((e) => e.lunchMin > 0 && e.gid);
+  if (!entries.length) return;
+  const mins = entries.reduce((s, e) => s + e.lunchMin, 0);
+  if (!confirm(`Remove ${hm(mins * 60)} of lunch from “${t.name}”?\n\nThis edits your logged time in Asana.`)) return;
+  btn.disabled = true;
+  try {
+    for (const e of entries) await api('/api/lunch/fix', { json: { entry: e.gid, date: data.date } });
+    toast(`Removed ${hm(mins * 60)} of lunch ✦`);
+  } catch (x) { toast(x.message); }
+  load(true);
+}
+$('list').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-lunch]');
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  if (mode === 'live') removeLunch(b.dataset.lunch, b); else openLogin();
+});
 
 async function logout(){ await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ which: 'member' }) }); closeModal(); meInfo = null; enterDemo(); }
 const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
@@ -961,6 +1274,9 @@ const hbOn = () => live?.lastHeartbeat && now() - live.lastHeartbeat < 60000;
 // ---------- modes ----------
 function setChrome(){
   $('gear').hidden = mode !== 'live';
+  $('bell').hidden = mode !== 'live';
+  $('autocard').hidden = true;
+  $('notes').innerHTML = ''; $('notes').dataset.h = '';
   $('loginBtn').hidden = mode !== 'demo';
   document.querySelector('.demo-tag')?.remove();
   $('bannerSlot').innerHTML = '';
@@ -983,7 +1299,11 @@ async function boot(){
     meInfo = await api('/api/me');
   } catch { meInfo = { role: 'guest' }; }
   shift = meInfo.shift || null;
-  if (meInfo.role === 'member') { if (meInfo.asana) enterLive(); else enterConnect(); }
+  if (meInfo.role === 'member') {
+    if (meInfo.asana) enterLive(); else enterConnect();
+    await checkPush();
+    pollAlerts();
+  }
   else enterDemo();
 }
 
@@ -992,10 +1312,10 @@ function loadDemo(){
   const t0 = Date.now();
   const mk = (gid, name, mins) => ({ gid, name, url: null, minutes: mins.reduce((a, b) => a + b, 0),
     entries: mins.map((m, i) => ({ minutes: m, createdAt: new Date(t0 - (6 - i) * 3600e3).toISOString() })) });
-  const demoDay = { date: ymd(new Date()), today: ymd(new Date()), user: { name: 'Guest' },
+  const demoDay = { date: ymd(new Date()), today: ymd(new Date()), user: { name: 'Guest' }, lunch: DEMO_PREFS.lunch, lunchMinutes: 25,
     tasks: [
       mk('d1', 'Checkout › coupon totals round the wrong way', [74, 58]),
-      mk('d2', 'Onboarding › redesign the welcome screens', [66]),
+      { ...mk('d2', 'Onboarding › redesign the welcome screens', [66]), comment: false, lunchMin: 25 },
       { ...mk('d3', 'API › rate-limit the export endpoint', [41, 22]), check: { ok: false, reasons: ['Task Status is “India QC Feedback”'] } },
       mk('d4', 'Standup & sprint planning', [30]),
     ] };
@@ -1014,6 +1334,7 @@ function loadDemo(){
 }
 
 $('gear').onclick = openSettings;
+$('bell').onclick = openAlerts;
 $('loginBtn').onclick = openLogin;
 
 buildOdo();
@@ -1042,8 +1363,8 @@ addEventListener('offline', tick);
 try {
   const w = new Worker(URL.createObjectURL(new Blob(['setInterval(() => postMessage(0), 1000)'], { type: 'text/javascript' })));
   let n = 0;
-  w.onmessage = () => { tick(); if (++n % 2 === 0) poll(); };
-} catch { setInterval(tick, 1000); setInterval(poll, 2000); }
+  w.onmessage = () => { tick(); if (++n % 2 === 0) poll(); if (n % 15 === 0) pollAlerts(); };
+} catch { setInterval(tick, 1000); setInterval(poll, 2000); setInterval(pollAlerts, 15000); }
 setInterval(() => { if (mode === 'live' && isTodayView()) load(false); }, 60 * 1000); // backup
 boot();
 </script>
