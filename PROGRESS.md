@@ -159,9 +159,8 @@ before any lock write; alerts fetched only when `alertsHead` changes; menu bar f
 ## Known limits / open ideas
 
 - Verified live 2026-09-24: Web Push to Safari on the owner's Mac accepted by Apple (201); comment check matches Asana (no comments that day); owner's installed userscript updated to v2.3 in place (Asana tabs need a reload).
-- **Setup still needed by the owner:** (1) Vercel → Storage → Turso → connect (then redeploy; data copies over by itself),
-  (2) a Tracket Gmail + app password → `GMAIL_USER`/`GMAIL_APP_PASSWORD`, (3) QStash schedule every 10 min on the admin panel's
-  cron URL (after Turso), (4) SwiftBar + install command, (5) userscript v2.4 on each browser.
+- **Live since 2026-09-24 (05939df):** Turso in Mumbai (aws-ap-south-1, 53 keys copied from Upstash), functions in Mumbai (`regions: ["bom1"]` in vercel.json), Gmail sending (test report delivered to the provider), Telegram removed (code + env vars), owner's userscript v2.4 + menu bar v2.1 installed. Warm poll ≈ 80–220 ms from India. Upstash store/env vars are unused now; the owner can delete the Upstash store in Vercel → Storage.
+- **Still to do:** QStash schedule every 10 min on the admin panel's cron URL.
 - No overnight shifts. Lunch is one window for every day.
 - Auto mode relies on Asana's button labels ("Start timer" / "Stop timer"); if Asana renames them, actions fail visibly (alert).
 - Past-day ⚠ chips show a ticket's *current* assignee/status, not what it was that day.
