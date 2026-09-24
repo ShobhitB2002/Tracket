@@ -90,6 +90,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 .goal{display:flex;justify-content:space-between;font:400 12px/1 var(--mono);color:var(--mute);margin:18px 0 10px}
 .goal b{color:var(--ink);font-weight:600}
+.tape{position:relative}
+.tape .min{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35;border-radius:2px;pointer-events:none}
+.verdict{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0 0;padding:10px 14px;border-radius:14px;font:500 13px/1.45 var(--sans,inherit);border:1px solid var(--line);background:var(--card)}
+.verdict[hidden]{display:none}
+.verdict.low{border-color:#ff4d6d55;color:#ff9aac}
+.verdict.ok{border-color:#ffb54755;color:var(--amber)}
+.verdict.over{border-color:#4ade8055;color:#86efac}
+.verdict button{margin-left:auto;background:none;border:1px solid currentColor;color:inherit;border-radius:10px;padding:4px 10px;font:600 11px/1 var(--mono);cursor:pointer}
 .tape{position:relative;height:14px;border-radius:99px;background:#0c0c12;border:1px solid var(--line);overflow:hidden;display:flex}
 .tape .seg{height:100%;transition:width .8s cubic-bezier(.2,.9,.3,1);position:relative}
 .tape .seg + .seg{box-shadow:inset 2px 0 0 #0c0c12}
@@ -284,6 +292,7 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
     <div class="goal"><span id="goalText">of an 8h day</span><b id="goalPct">0%</b></div>
     <div class="tape" id="tape"></div>
     <div class="ticks"><span>0h</span><span>2h</span><span>4h</span><span>6h</span><span>8h</span></div>
+    <div class="verdict" id="verdict" hidden></div>
   </section>
 
   <div id="onairWrap"><h2>On air</h2>
@@ -304,6 +313,7 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
 const $ = (id) => document.getElementById(id);
 const PALETTE = ['#ffb547','#5cf2b0','#a78bfa','#5cc8ff','#ff8fab','#f5e663','#ff7a45','#7ee081'];
 const GOAL_MIN = 8 * 60;
+const MIN_DAY_MIN = 7 * 60; // below this the day doesn't count as a full one
 
 let data = null;       // /api/today
 let live = null;       // SSE running payload
@@ -430,8 +440,11 @@ function tick(){
   const want = tasks.map((t) => t.gid).join('|');
   if (tape.dataset.k !== want) {
     tape.dataset.k = want;
-    tape.innerHTML = tasks.map((t) => `<div class="seg" data-gid="${esc(t.gid)}" style="background:${colorFor(t.gid)};width:0"></div>`).join('');
+    tape.innerHTML = tasks.map((t) => `<div class="seg" data-gid="${esc(t.gid)}" style="background:${colorFor(t.gid)};width:0"></div>`).join('') +
+      '<i class="min" title="7h minimum"></i>';
   }
+  tape.querySelector('.min').style.left = `${MIN_DAY_MIN * 60 / scale * 100}%`;
+  verdict(total);
   tasks.forEach((t) => {
     const seg = tape.querySelector(`[data-gid="${CSS.escape(t.gid)}"]`);
     if (seg) { seg.style.width = `${t.sec / scale * 100}%`; seg.classList.toggle('run', !!t.live); }
@@ -457,6 +470,41 @@ function tick(){
     : live?.lastHeartbeat ? `Asana tab stopped reporting — if Asana is open, ${blockHint()}` : 'No Asana tab reporting — open Asana in your browser';
   if (!isTodayView()) document.title = `${hm(total)} · ${dayName(viewDay, true)} · Tracket`;
   else document.title = r ? `${hms(total)} · ● ${r.taskName}` : `${hm(total)} today · Tracket`;
+}
+
+// How the day is going against the 7h minimum and the 8h goal.
+const VERDICTS = {
+  low: { today: 'Oh no! Are you sure you wanna log out now? You want to receive that mail?', past: 'Oh no! Under the 7h minimum — that’s a day that gets the mail.' },
+  ok: { today: 'Hey man, you logged the bare minimum. You can tap out now if you want.', past: 'Bare minimum logged — 7h, you made it.' },
+  over: { today: 'You sure you know what you’re doing? That’s enough work for today!', past: 'Over 8h — that was a big one.' },
+};
+function verdict(total){
+  const el = $('verdict');
+  if (!data) { el.hidden = true; return; }
+  const min = total / 60;
+  const level = min >= GOAL_MIN ? 'over' : min >= MIN_DAY_MIN ? 'ok' : 'low';
+  const today = isTodayView();
+  const ask = level === 'low' && today && mode === 'live' && 'Notification' in window && Notification.permission === 'default';
+  const key = `${level}|${today}|${ask}`;
+  if (el.dataset.k !== key) {
+    el.dataset.k = key;
+    el.className = `verdict ${level}`;
+    el.innerHTML = `<span>${VERDICTS[level][today ? 'today' : 'past']}</span>${ask ? '<button id="notifyMe">🔔 Tell me at 7h</button>' : ''}`;
+    el.hidden = false;
+    $('notifyMe')?.addEventListener('click', async () => { try { await Notification.requestPermission(); } catch {} el.dataset.k = ''; tick(); });
+  }
+  if (today && mode === 'live' && level !== 'low') notifyMinimum(data.date || todayStr);
+}
+// Once per day, the moment today's total reaches 7h (or when you open the tab after).
+function notifyMinimum(day){
+  const flag = `tk_min_${day}`;
+  try { if (localStorage.getItem(flag)) return; localStorage.setItem(flag, '1'); } catch { if (notifyMinimum.done === day) return; }
+  notifyMinimum.done = day;
+  toast('7h logged ✦ you can tap out now');
+  try {
+    if ('Notification' in window && Notification.permission === 'granted')
+      new Notification('Tracket · 7h logged', { body: VERDICTS.ok.today, tag: flag });
+  } catch {}
 }
 
 function toast(msg){
@@ -822,6 +870,9 @@ header();
 $('prev').onclick = () => shiftDay(-1);
 $('next').onclick = () => shiftDay(1);
 $('goToday').onclick = () => setDay(null);
+// Chromium (Brave, Chrome, Edge) only opens the picker from its calendar icon,
+// which is invisible here — open it explicitly on any click.
+$('pick').addEventListener('click', (e) => { try { e.preventDefault(); e.target.showPicker(); } catch {} });
 $('pick').onchange = (e) => { const v = e.target.value; if (v) setDay(v >= (todayStr || ymd(new Date())) ? null : v); };
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
