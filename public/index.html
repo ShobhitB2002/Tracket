@@ -94,6 +94,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .tape .min{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35;border-radius:2px;pointer-events:none}
 .verdict{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0 0;padding:10px 14px;border-radius:14px;font:500 13px/1.45 var(--sans,inherit);border:1px solid var(--line);background:var(--card)}
 .verdict[hidden]{display:none}
+.shift{margin-top:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#ffffff05;font-size:13px;line-height:1.45;color:var(--mute)}
+.shift .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.shift b{color:var(--ink);font-weight:600}
+.shift .score{margin-left:auto;display:inline-flex;align-items:baseline;gap:6px;font:800 18px/1 var(--mono)}
+.shift .score small{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.shift .good{color:var(--mint)} .shift .mid{color:var(--amber)} .shift .bad{color:var(--rec)}
+.shift .sbar{position:relative;height:6px;border-radius:6px;background:var(--line);margin-top:10px;overflow:hidden}
+.shift .sbar i{position:absolute;left:0;top:0;bottom:0;background:var(--violet);border-radius:6px}
+.shift .sub{margin-top:8px;font-size:12px}
+.shift button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:5px 10px;font:600 11px/1 var(--mono);cursor:pointer}
+.shift button:hover{border-color:var(--amber)}
+.srows{display:grid;gap:8px}
+.srow{display:grid;grid-template-columns:78px 1fr auto 1fr;gap:8px;align-items:center}
+.srow label{display:flex;gap:8px;align-items:center;font:600 13px var(--mono);cursor:pointer}
+.srow input[type=time]{min-width:0;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:8px 10px;font:400 14px var(--mono);color-scheme:dark}
+.srow.off input[type=time],.srow.off span{opacity:.3;pointer-events:none}
+@media (max-width:480px){
+  .srow{grid-template-columns:56px 1fr auto 1fr;gap:6px}
+  .srow input[type=time]{padding:8px 6px;font-size:13px}
+  .srow input[type=time]::-webkit-calendar-picker-indicator{display:none} /* phones open their own picker on tap */
+}
 .verdict.low{border-color:#ff4d6d55;color:#ff9aac}
 .verdict.ok{border-color:#ffb54755;color:var(--amber)}
 .verdict.over{border-color:#4ade8055;color:#86efac}
@@ -293,6 +314,7 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
     <div class="tape" id="tape"></div>
     <div class="ticks"><span>0h</span><span>2h</span><span>4h</span><span>6h</span><span>8h</span></div>
     <div class="verdict" id="verdict" hidden></div>
+    <div class="shift" id="shift" hidden></div>
   </section>
 
   <div id="onairWrap"><h2>On air</h2>
@@ -445,6 +467,7 @@ function tick(){
   }
   tape.querySelector('.min').style.left = `${MIN_DAY_MIN * 60 / scale * 100}%`;
   verdict(total);
+  renderShift(total);
   tasks.forEach((t) => {
     const seg = tape.querySelector(`[data-gid="${CSS.escape(t.gid)}"]`);
     if (seg) { seg.style.width = `${t.sec / scale * 100}%`; seg.classList.toggle('run', !!t.live); }
@@ -478,33 +501,139 @@ const VERDICTS = {
   ok: { today: 'Hey man, you logged the bare minimum. You can tap out now if you want.', past: 'Bare minimum logged — 7h, you made it.' },
   over: { today: 'You sure you know what you’re doing? That’s enough work for today!', past: 'Over 8h — that was a big one.' },
 };
+const levelOf = (sec) => sec / 60 >= GOAL_MIN ? 'over' : sec / 60 >= MIN_DAY_MIN ? 'ok' : 'low';
 function verdict(total){
   const el = $('verdict');
   if (!data) { el.hidden = true; return; }
-  const min = total / 60;
-  const level = min >= GOAL_MIN ? 'over' : min >= MIN_DAY_MIN ? 'ok' : 'low';
+  const level = levelOf(total);
   const today = isTodayView();
-  const ask = level === 'low' && today && mode === 'live' && 'Notification' in window && Notification.permission === 'default';
+  const ask = today && mode === 'live' && 'Notification' in window && Notification.permission === 'default';
   const key = `${level}|${today}|${ask}`;
   if (el.dataset.k !== key) {
     el.dataset.k = key;
     el.className = `verdict ${level}`;
-    el.innerHTML = `<span>${VERDICTS[level][today ? 'today' : 'past']}</span>${ask ? '<button id="notifyMe">🔔 Tell me at 7h</button>' : ''}`;
+    el.innerHTML = `<span>${VERDICTS[level][today ? 'today' : 'past']}</span>${ask ? '<button id="notifyMe">🔔 Turn on reminders</button>' : ''}`;
     el.hidden = false;
     $('notifyMe')?.addEventListener('click', async () => { try { await Notification.requestPermission(); } catch {} el.dataset.k = ''; tick(); });
   }
-  if (today && mode === 'live' && level !== 'low') notifyMinimum(data.date || todayStr);
+  if (today && mode === 'live') checkAlerts(total);
 }
-// Once per day, the moment today's total reaches 7h (or when you open the tab after).
-function notifyMinimum(day){
-  const flag = `tk_min_${day}`;
-  try { if (localStorage.getItem(flag)) return; localStorage.setItem(flag, '1'); } catch { if (notifyMinimum.done === day) return; }
-  notifyMinimum.done = day;
-  toast('7h logged ✦ you can tap out now');
-  try {
-    if ('Notification' in window && Notification.permission === 'granted')
-      new Notification('Tracket · 7h logged', { body: VERDICTS.ok.today, tag: flag });
-  } catch {}
+
+// ---------- reminders (driven by today's duration) ----------
+// - crossing 7h, and crossing 8h: once each, the moment it happens
+// - under 7h: once if a timer stops in the last 30 min of your shift, and
+//   once exactly when your shift ends
+function notify(title, body, tag){
+  toast(title);
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(title, { body, tag }); } catch {}
+}
+// true the first time it's called for a key (remembered per browser)
+function once(key){
+  try { if (localStorage.getItem(key)) return false; localStorage.setItem(key, '1'); return true; }
+  catch { once.m ||= new Set(); if (once.m.has(key)) return false; once.m.add(key); return true; }
+}
+function checkAlerts(total){
+  const day = data.date || todayStr, level = levelOf(total);
+  if (level === 'over' && once(`tk_8h_${day}`)) { once(`tk_7h_${day}`); notify('8h logged — that’s enough for today', VERDICTS.over.today, 'tk8'); }
+  else if (level !== 'low' && once(`tk_7h_${day}`)) notify('7h logged ✦ bare minimum done', VERDICTS.ok.today, 'tk7');
+  // a stopped timer drops out of the total for a few seconds before Asana logs
+  // it — judge "under 7h" on the day's peak so that dip can't trigger it
+  if (checkAlerts.day !== day) { checkAlerts.day = day; checkAlerts.peak = 0; }
+  checkAlerts.peak = Math.max(checkAlerts.peak, total);
+  const s = shiftFor(day), t = now();
+  if (s && levelOf(checkAlerts.peak) === 'low' && t >= s.to && t - s.to < 5 * 60000 && once(`tk_end_${day}`))
+    notify(`Shift over — ${hm(total)} logged, under 7h`, VERDICTS.low.today, 'tkend');
+}
+// Called by poll() when the running timer stops; `total` includes that timer.
+function onTimerStop(total){
+  if (mode !== 'live' || !isTodayView() || !data) return;
+  const day = data.date || todayStr, s = shiftFor(day), t = now();
+  if (s && levelOf(total) === 'low' && t >= s.to - 30 * 60000 && t < s.to && once(`tk_stop_${day}`))
+    notify(`Timer stopped at ${hm(total)} — under 7h`, VERDICTS.low.today, 'tkstop');
+}
+
+// ---------- work shift ----------
+let shift = null; // { days: { '1': { start: '10:00', end: '19:00' } } }, 0 = Sunday
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DEMO_SHIFT = { days: Object.fromEntries([1, 2, 3, 4, 5].map((d) => [d, { start: '10:00', end: '19:00' }])) };
+const shiftNow = () => (mode === 'demo' ? DEMO_SHIFT : shift);
+const atTime = (day, hhmm) => { const d = parseDay(day); const [h, m] = hhmm.split(':').map(Number); d.setHours(h, m, 0, 0); return d.getTime(); };
+function shiftFor(day){
+  const v = shiftNow()?.days?.[parseDay(day).getDay()];
+  return v ? { ...v, from: atTime(day, v.start), to: atTime(day, v.end) } : null;
+}
+const clock = (hhmm) => new Date(atTime('2000-01-01', hhmm)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const minSec = MIN_DAY_MIN * 60;
+
+// Live shift progress + a score: 100 = exactly on pace for the 7h minimum.
+function renderShift(total){
+  const el = $('shift');
+  if (!data || (mode !== 'live' && mode !== 'demo')) { el.hidden = true; return; }
+  let html;
+  const day = data.date || viewDay || todayStr;
+  if (!shiftNow()) {
+    html = `<div class="row"><span>Add your work shift to see live progress, a score, and get a reminder before your day ends.</span><button data-shift>Set shift</button></div>`;
+  } else {
+    const s = shiftFor(day), t = now(), today = isTodayView();
+    const grade = (n) => (n >= 100 ? 'good' : n >= 85 ? 'mid' : 'bad');
+    const score = (n, label) => `<span class="score ${grade(n)}">${Math.min(n, 999)}<small>${label}</small></span>`;
+    const bar = (f) => `<div class="sbar"><i style="width:${Math.max(0, Math.min(1, f)) * 100}%"></i></div>`;
+    if (!s) html = `<div class="row"><span><b>Day off</b> — anything logged is a bonus.</span><button data-shift>Edit shift</button></div>`;
+    else {
+      const hours = `${clock(s.start)} – ${clock(s.end)}`;
+      const len = s.to - s.from;
+      if (!today || t >= s.to) {
+        const n = Math.round(total / minSec * 100);
+        html = `<div class="row"><span>Shift ${today ? 'over' : 'was'} · <b>${hours}</b></span>${score(n, n >= 100 ? 'minimum met' : 'of 7h')}</div>
+          ${bar(1)}<div class="sub">${hm(total)} logged of the 7h minimum.</div>`;
+      } else if (t < s.from) {
+        html = `<div class="row"><span>Shift <b>${hours}</b> · starts in ${hm((s.from - t) / 1000)}</span><button data-shift>Edit</button></div>${bar(0)}`;
+      } else {
+        const elapsed = t - s.from, expected = minSec * elapsed / len;
+        const n = Math.round(total / Math.max(expected, 60) * 100);
+        const projected = total * len / elapsed;
+        const need = Math.max(0, minSec - total);
+        html = `<div class="row"><span>Shift <b>${hours}</b> · ${hm((s.to - t) / 1000)} left</span>${score(n, n >= 100 ? 'on pace' : n >= 85 ? 'a bit behind' : 'behind')}</div>
+          ${bar(elapsed / len)}
+          <div class="sub">${need ? `${hm(need)} to go for 7h · ` : '7h done · '}at this pace ≈ <b>${hm(projected)}</b> by ${clock(s.end)}</div>`;
+      }
+    }
+  }
+  if (el.dataset.h !== html) {
+    el.dataset.h = html; el.innerHTML = html; el.hidden = false;
+    el.querySelector('[data-shift]')?.addEventListener('click', () => (mode === 'live' ? openShift() : openLogin()));
+  }
+}
+
+function openShift(){
+  const cur = shift?.days || DEMO_SHIFT.days;
+  const rows = [1, 2, 3, 4, 5, 6, 0].map((d) => {
+    const v = cur[d], dv = v || { start: '10:00', end: '19:00' };
+    return `<div class="srow ${v ? '' : 'off'}" data-d="${d}"><label><input type="checkbox" ${v ? 'checked' : ''}> ${DAYS[d]}</label>
+      <input type="time" class="st" value="${dv.start}" aria-label="${DAYS[d]} start"><span>–</span><input type="time" class="en" value="${dv.end}" aria-label="${DAYS[d]} end"></div>`;
+  }).join('');
+  const el = modal(`<h3>Work shift</h3>
+    <p class="lead">Tick your working days and set their hours. Tracket uses them for live progress and your score, and reminds you if you’re under 7h near the end of your shift.</p>
+    <div class="srows">${rows}</div>
+    <p class="lead" style="margin:12px 0 0"><a href="#" id="copyMon">Copy Monday’s hours to every working day</a></p>
+    <div class="formerr" id="shErr"></div>
+    <button class="btn" id="shSave" style="width:100%;margin-top:14px">Save shift</button>`);
+  el.querySelectorAll('.srow input[type=checkbox]').forEach((c) => c.onchange = () => c.closest('.srow').classList.toggle('off', !c.checked));
+  el.querySelector('#copyMon').onclick = (e) => {
+    e.preventDefault();
+    const mon = el.querySelector('.srow[data-d="1"]');
+    el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) { r.querySelector('.st').value = mon.querySelector('.st').value; r.querySelector('.en').value = mon.querySelector('.en').value; } });
+  };
+  el.querySelector('#shSave').onclick = async (e) => {
+    const days = {};
+    el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) days[r.dataset.d] = { start: r.querySelector('.st').value, end: r.querySelector('.en').value }; });
+    e.target.disabled = true;
+    try {
+      const res = await api('/api/shift', { json: { days } });
+      shift = res.shift; if (meInfo) meInfo.shift = shift;
+      closeModal(); toast('Shift saved ✦'); tick();
+    } catch (x) { el.querySelector('#shErr').textContent = x.message; e.target.disabled = false; }
+  };
 }
 
 function toast(msg){
@@ -602,6 +731,7 @@ async function poll(){
     const next = await api('/api/live');
     const changed = JSON.stringify(next.running) !== JSON.stringify(live?.running);
     const stopped = live?.running && !next.running;
+    if (stopped) onTimerStop(tick.prev || 0);
     clockSkew = next.serverNow - Date.now();
     live = next;
     if (!isTodayView()) return;
@@ -782,6 +912,9 @@ async function openSettings(){
       <div class="row2"><button class="btn" id="setupTimer">${hbOn() ? 'Install on another browser' : 'Set up live timer'}</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download script</a></div>
       <p style="margin:12px 0 0"><a href="#" id="rotate">Reset my script key</a> — if you shared your script by mistake. You’ll need to reinstall it.</p>
     </div>
+    <div class="sec"><h4>Work shift</h4>
+      <p>${shift && Object.keys(shift.days).length ? [1, 2, 3, 4, 5, 6, 0].filter((d) => shift.days[d]).map((d) => `${DAYS[d]} ${shift.days[d].start}–${shift.days[d].end}`).join(' · ') : 'Not set — add it for live progress, a score and end-of-day reminders.'}</p>
+      <div class="row2"><button class="btn ghost" id="editShift">${shift ? 'Edit shift' : 'Set shift'}</button></div></div>
     <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
       <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
     <div class="sec"><h4>Password</h4><form>
@@ -790,6 +923,7 @@ async function openSettings(){
       <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
     <div class="sec"><div class="row2">${meInfo?.admin ? '<a class="btn ghost" href="/admin">Admin panel</a>' : ''}<button class="btn ghost" id="lo">Log out</button></div></div>`, { wide: true });
   el.querySelector('#setupTimer').onclick = () => openTimerSetup(false);
+  el.querySelector('#editShift').onclick = () => openShift();
   el.querySelector('#rotate').onclick = async (e) => {
     e.preventDefault();
     if (!confirm('Reset your key? Your installed userscript will stop working until you re-install it.')) return;
@@ -831,6 +965,7 @@ async function boot(){
   try {
     meInfo = await api('/api/me');
   } catch { meInfo = { role: 'guest' }; }
+  shift = meInfo.shift || null;
   if (meInfo.role === 'member') { if (meInfo.asana) enterLive(); else enterConnect(); }
   else enterDemo();
 }

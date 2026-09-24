@@ -17,6 +17,8 @@ ticking in real time, even in a background tab.
 
 - **One number that matters** — total time logged today on a big rolling odometer, with an 8-hour day bar split by ticket.
 - **On air** — the Asana timer you're running *right now*, ticking by the second and added to the total live.
+- **Your shift, live** — set your working days and hours; see time left, a pace score (100 = on track for the 7h minimum) and where you'll land by shift end.
+- **Reminders that follow your hours** — a notification the moment you pass 7h and 8h; under 7h, a nudge if you stop a timer in your shift's last 30 minutes and again when the shift ends.
 - **Every ticket you touched today** — time, share of the day and sessions, each linking back to Asana.
 - **Any past day** — ‹ › or pick a date (`←` `→`, `T` for today), straight from Asana.
 - **The tab title ticks too** — `07:08:09 · ● Fix login bug` while you're on other sites.
