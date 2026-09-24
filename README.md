@@ -85,7 +85,7 @@ lib/routes.js     route table: public · member · admin
 lib/core.js       Asana client, day summaries, running-timer rules
 lib/users.js      members, access requests, sessions, API keys, rate limits
 lib/crypto.js     scrypt, HMAC sessions, AES-256-GCM
-lib/notify.js     access-request pings (email via Resend, Telegram)
+lib/notify.js     email: reports + access-request pings (Gmail SMTP, Resend fallback)
 lib/store.js      Turso or Upstash Redis (hosted), or a JSON file (local)
 public/           dashboard + admin panel — plain HTML/CSS/JS
 server.js         local server using the same routes

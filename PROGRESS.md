@@ -57,7 +57,7 @@ server --member's Asana PAT (AES-256-GCM at rest)--> Asana API (time_tracking_en
 ### Env vars (Vercel)
 `ADMIN_PASSWORD`, `SESSION_SECRET` (16+ chars; changing it logs everyone out, and also resets the push keys and cron URL),
 `GMAIL_USER` + `GMAIL_APP_PASSWORD` (a Gmail made for Tracket sends all email over SMTP; owner's choice, no domain), `ADMIN_EMAIL`,
-`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` (set by Vercel's Turso integration), fallback `RESEND_API_KEY`/`RESEND_FROM`, optional Telegram, optional `CRON_SECRET` (Bearer for a scheduler),
+`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` (set by Vercel's Turso integration), fallback `RESEND_API_KEY`/`RESEND_FROM`, optional `CRON_SECRET` (Bearer for a scheduler),
 optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored). The Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`. See `.env.example`.
 
 ## Features & rules (current)
