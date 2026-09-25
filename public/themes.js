@@ -16,8 +16,8 @@
       pal: ['#ff8ccf', '#7ef0d0', '#b79bff', '#ffd36e', '#8fd3ff', '#ffa8a8', '#c3f584', '#f7b2ff'] },
     manhwa: { name: 'Manhwa', desc: 'Ink panels, halftone, SFX', color: '#f4eee2', fonts: 'Bangers&family=Nunito:wght@400;600;700;800',
       pal: ['#ff4a1c', '#1e6bff', '#ffb300', '#00a86b', '#e0002a', '#5b3cc4', '#00a3c4', '#ff7ab6'] },
-    movies: { name: 'Movies', desc: 'Cinema, film grain, letterbox', color: '#07070a', fonts: 'Bebas+Neue&family=Inter:wght@400;500;600',
-      pal: ['#e3b448', '#c8102e', '#7bd88f', '#6fa8dc', '#d98ad9', '#f08a4b', '#a0a0a8', '#f4d58d'],
+    movies: { name: 'Movies', desc: 'Velvet, marquee lights, film strip', color: '#0c0406', fonts: 'Bebas+Neue&family=Limelight&family=Inter:wght@400;500;600',
+      pal: ['#f2c14e', '#d7263d', '#f5ecd9', '#e07a3f', '#9b1b30', '#c9a0ff', '#8fd694', '#ffe08a'],
       words: { list: 'Now showing', running: '● NOW PLAYING', eyebrow: 'Runtime today' } },
     coding: { name: 'Coding', desc: 'Terminal green, blinking cursor', color: '#070a07',
       pal: ['#39ff88', '#7cc4ff', '#ffd866', '#ff6188', '#ab9df2', '#78dce8', '#fc9867', '#a9dc76'],
@@ -129,6 +129,12 @@
     if (current === 'manhwa') {
       const w = { h7: 'DING!', h8: 'BOOM!', hour: 'TICK!' }[kind];
       if (w) pop('sfx', w, 1400);
+    }
+    if (current === 'movies') {
+      if (kind === 'h7') pop('credit', '<b>7 Hours</b><small>The minimum · a Tracket production</small>', 2700);
+      if (kind === 'h8') pop('credit', '<b>That’s a wrap</b><small>8 hours · roll the credits</small>', 2700);
+      if (kind === 'start' && !calm()) pop('clap', 'ACTION!', 1400);
+      if (kind === 'stop' && !calm()) pop('clap', 'CUT!', 1400);
     }
     if (current === 'games') {
       if (kind === 'h7') { pop('lvlup', 'LEVEL UP!<small>7h minimum cleared</small>', 1900); tone([[523, 0.09], [659, 0.09], [784, 0.09], [1047, 0.22]]); }

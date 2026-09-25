@@ -38,7 +38,7 @@
   --glow1:#2563eb0d; --glow2:#7c3aed0a; --glow3:transparent; --grain:0;
   --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --num:var(--mono); --display:var(--sans);
 }
-html[data-theme="light"] :is(.hero,.tk,.tile,.group,.onair,.banner,.idle,.hstats div,.verdict,.shift){box-shadow:0 1px 2px #0000000a,0 10px 30px -18px #0f172a33}
+html[data-theme="light"] :is(.hero,.tk,.tile,.group,.onair,.banner,.idle,.hstats div,.verdict,.shift,body>.wrap>section,.stat,.item){box-shadow:0 1px 2px #0000000a,0 10px 30px -18px #0f172a33}
 html[data-theme="light"] .sheet{box-shadow:0 30px 80px -30px #0f172a55}
 html[data-theme="light"] .hero::after{display:none}
 html[data-theme="light"] .odo .sep{color:#c3c8d2}
@@ -56,7 +56,7 @@ html[data-theme="light"] .demo-tag{color:#fff}
   --sans:'JetBrains Mono',ui-monospace,monospace; --mono:'JetBrains Mono',ui-monospace,monospace; --num:var(--mono); --display:var(--mono);
   --r:8px;
 }
-html[data-theme="coding"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.btn,.iconbtn,.days button,.days label,.rank,.idle,.verdict,.shift,.hstats div,.tile .ti){border-radius:6px}
+html[data-theme="coding"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.btn,.iconbtn,.days button,.days label,.rank,.idle,.verdict,.shift,.hstats div,.tile .ti,section,.stat,.item,nav.toc a){border-radius:6px}
 html[data-theme="coding"] .grain{opacity:1;mix-blend-mode:normal;background:repeating-linear-gradient(0deg,#00000038 0 1px,transparent 1px 3px)}
 html[data-theme="coding"] .tk .title::before{content:"// ";color:var(--dim)}
 html[data-theme="coding"] .eyebrow>span:first-child::before{content:"$ ";color:var(--amber)}
@@ -107,7 +107,7 @@ html[data-theme="anime"] .intro h1 em{background:linear-gradient(90deg,#ff8ccf,#
   --num:'Bangers',Impact,sans-serif; --display:'Bangers',Impact,sans-serif;
   --r:6px;
 }
-html[data-theme="manhwa"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.autocard){border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:6px}
+html[data-theme="manhwa"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.autocard,body>.wrap>section,.stat,.item){border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:6px}
 html[data-theme="manhwa"] :is(.btn,.iconbtn,.days button,.days label,.rank,.tile .ti){border:2px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink)}
 html[data-theme="manhwa"] .hero::after{background:radial-gradient(#14141422 1.2px,transparent 1.6px) 0 0/9px 9px;mask:linear-gradient(135deg,#000,transparent 55%);-webkit-mask:linear-gradient(135deg,#000,transparent 55%)}
 html[data-theme="manhwa"] .odo{letter-spacing:.01em;font-weight:400}
@@ -122,26 +122,92 @@ html[data-theme="manhwa"] .logo{transform:rotate(-4deg);border:2px solid var(--i
   -webkit-text-stroke:4px #141414;paint-order:stroke;text-shadow:7px 7px 0 #141414;animation:sfx 1.3s cubic-bezier(.2,1.6,.4,1) forwards}
 @keyframes sfx{0%{transform:translate(-50%,-50%) rotate(-12deg) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-60%) rotate(-6deg) scale(1);opacity:0}}
 
-/* ---------- Movies: cinema, grain, letterbox ---------- */
+/* ---------- Movies: velvet curtains, gold marquee, film strip, ticket stubs ---------- */
 [data-theme="movies"]{
-  --bg:#07070a; --bg2:#0d0d10; --card:#111114; --card2:#17171b; --line:#26262c;
-  --ink:#f5f1e8; --mute:#9b968c; --dim:#5c5850;
-  --amber:#e3b448; --amber2:#c8102e; --mint:#7bd88f; --rec:#e5484d; --violet:#8f7cf7;
-  --field:#09090c; --panel:#0e0e11; --scrim:#000000d9; --on-accent:#1a1204; --rec-ink:#ffa3a6;
-  --hero1:#17161b; --hero2:#0b0b0e; --onair1:#2a0f12; --onair2:#121114; --banner1:#241c0c; --switch:#26262c; --knob:#e9e4d8;
-  --glow1:#e3b44812; --glow2:#c8102e10; --glow3:transparent; --grain:.16;
+  --bg:#0c0406; --bg2:#12070a; --card:#1a0a0e; --card2:#231016; --line:#3f1c23;
+  --ink:#fbf1de; --mute:#c6ab90; --dim:#7d6250;
+  --amber:#f2c14e; --amber2:#b3121f; --mint:#8fd694; --rec:#ff4b4b; --violet:#c9a0ff;
+  --field:#0a0305; --panel:#150709; --scrim:#050102e0; --on-accent:#2a1403; --rec-ink:#ffb0a8;
+  --hero1:#1f0c11; --hero2:#0f0507; --onair1:#300b13; --onair2:#1a0a0e; --banner1:#2a1508; --switch:#3f1c23; --knob:#fbf1de;
+  --glow1:transparent; --glow2:transparent; --glow3:transparent; --grain:.13;
   --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
-  --num:'Bebas Neue',Impact,sans-serif; --display:'Bebas Neue',Impact,sans-serif;
-  --r:12px;
+  --num:'Bebas Neue',Impact,sans-serif; --display:'Limelight','Bebas Neue',serif;
+  --r:10px; --stub:70px;
 }
-html[data-theme="movies"] body::before,html[data-theme="movies"] body::after{content:"";position:fixed;left:0;right:0;height:14px;background:#000;z-index:20;pointer-events:none}
+/* the room: projector light from above, dark edges, red velvet curtains, letterbox */
+html[data-theme="movies"] .sky{inset:0;animation:none;background:
+  radial-gradient(55% 42% at 50% -6%,#f2c14e30,transparent 72%),
+  radial-gradient(130% 100% at 50% 42%,transparent 55%,#000000e0 100%)}
+html[data-theme="movies"] .sky::before,html[data-theme="movies"] .sky::after{content:"";position:fixed;top:0;bottom:0;width:clamp(10px,4.5vw,64px);
+  background:linear-gradient(180deg,#0000 70%,#0009),repeating-linear-gradient(90deg,#4a040c 0,#8a0c1b 8px,#b8182a 13px,#8a0c1b 18px,#4a040c 26px)}
+html[data-theme="movies"] .sky::before{left:0;box-shadow:8px 0 30px #000c}
+html[data-theme="movies"] .sky::after{right:0;box-shadow:-8px 0 30px #000c}
+html[data-theme="movies"] body::before,html[data-theme="movies"] body::after{content:"";position:fixed;left:0;right:0;height:12px;background:#000;z-index:20;pointer-events:none}
 html[data-theme="movies"] body::before{top:0} html[data-theme="movies"] body::after{bottom:0}
-html[data-theme="movies"] .sky{background:radial-gradient(60% 50% at 50% 0%,#e3b44814,transparent 70%),radial-gradient(120% 90% at 50% 50%,transparent 55%,#000c 100%)}
-html[data-theme="movies"] .odo{letter-spacing:0;font-weight:400;font-size:clamp(84px,19vw,170px)}
-html[data-theme="movies"] .intro h1,html[data-theme="movies"] .sheet h3,html[data-theme="movies"] .tile b{letter-spacing:.03em;font-weight:400}
-html[data-theme="movies"] .intro h1 em{background:linear-gradient(90deg,#e3b448,#f4d58d);-webkit-background-clip:text;background-clip:text}
+@media (max-width:720px){html[data-theme="movies"] .wrap{padding-left:22px;padding-right:22px}}
+
+/* type */
+html[data-theme="movies"] :is(.intro h1,.sheet h3,.ph h3,body>.wrap>h1,section h2,.top h1){font-weight:400;letter-spacing:.01em}
+html[data-theme="movies"] .intro h1 em,html[data-theme="movies"] h1 em{background:linear-gradient(180deg,#fff0b8,#f2c14e 55%,#c98d1c);-webkit-background-clip:text;background-clip:text}
+html[data-theme="movies"] .tile b,html[data-theme="movies"] .hello b{font-family:var(--num);font-size:17px;letter-spacing:.06em;font-weight:400}
+html[data-theme="movies"] h2{color:var(--amber)}
+html[data-theme="movies"] h2::before{content:"★";color:var(--amber2);font-size:13px}
+html[data-theme="movies"] .logo{background:radial-gradient(circle at 50% 50%,#1a0a0e 0 22%,transparent 23%),conic-gradient(from 0deg,#f2c14e 0 12%,#c98d1c 0 25%,#f2c14e 0 37%,#c98d1c 0 50%,#f2c14e 0 62%,#c98d1c 0 75%,#f2c14e 0 87%,#c98d1c 0);
+  border-radius:50%;color:transparent;transform:none;animation:reel 6s linear infinite}
+@keyframes reel{to{transform:rotate(360deg)}}
+html[data-theme="movies"] .btn:not(.ghost):not(.danger){background:linear-gradient(180deg,#ffe08a,#e2a93a);box-shadow:inset 0 -2px 0 #0003}
+
+/* the marquee: total in a frame of chasing bulbs */
+html[data-theme="movies"] .hero{border:2px solid #f2c14e70;box-shadow:0 0 0 7px var(--hero2),0 0 0 9px #f2c14e38,0 40px 90px -40px #f2c14e55}
+html[data-theme="movies"] .hero::after{inset:5px;border-radius:28px;padding:9px;
+  background:radial-gradient(circle,#fff2c4 0 2.4px,#f2c14e66 3.4px,transparent 5px) 0 0/22px 22px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:bulbs 1.1s steps(1) infinite}
+@keyframes bulbs{50%{background-position:11px 11px}}
+html[data-theme="movies"] .odo{letter-spacing:0;font-weight:400;font-size:clamp(84px,19vw,170px);color:#fff3d6;text-shadow:0 0 28px #f2c14e66}
+html[data-theme="movies"] .hero.ticking .odo{filter:none}
 html[data-theme="movies"] .dur,html[data-theme="movies"] .onair .clock{letter-spacing:.02em;font-weight:400}
-html[data-theme="movies"] .toast{border-radius:4px;background:#000d;color:#fff;border:0;font:500 15px/1.3 var(--sans);box-shadow:none;letter-spacing:.01em}
+
+/* the day bar as a film strip */
+html[data-theme="movies"] .tape{height:32px;padding:8px 0;border:0;border-radius:3px;background:#050102;overflow:visible}
+html[data-theme="movies"] .tape::before,html[data-theme="movies"] .tape::after{content:"";position:absolute;left:0;right:0;height:4px;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 5px,#f5e9d0bb 5px 11px,transparent 11px 16px)}
+html[data-theme="movies"] .tape::before{top:2px} html[data-theme="movies"] .tape::after{bottom:2px}
+html[data-theme="movies"] .tape .seg{border-radius:1px;box-shadow:inset 2px 0 0 #050102}
+
+/* tickets as cinema ticket stubs: notches + perforation */
+html[data-theme="movies"] .tk{border-radius:8px;border-color:#f2c14e30;background:linear-gradient(90deg,var(--card2) 0 var(--stub),var(--card) var(--stub));
+  -webkit-mask:radial-gradient(circle 9px at var(--stub) 0,#0000 97%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at var(--stub) 100%,#0000 97%,#000) bottom/100% 51% no-repeat;
+  mask:radial-gradient(circle 9px at var(--stub) 0,#0000 97%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at var(--stub) 100%,#0000 97%,#000) bottom/100% 51% no-repeat}
+html[data-theme="movies"] .tk::after{content:"";position:absolute;left:var(--stub);top:12px;bottom:12px;border-left:2px dashed #f2c14e40}
+html[data-theme="movies"] .tk:hover{transform:translateY(-2px)}
+html[data-theme="movies"] .rank{border-radius:4px;font-family:var(--num);font-size:19px;font-weight:400}
+@media (max-width:560px){html[data-theme="movies"]{--stub:58px}}
+
+/* now playing: clapperboard stripe */
+html[data-theme="movies"] .onair{border-color:#f2c14e55;padding-top:34px}
+html[data-theme="movies"] .onair::after{content:"";position:absolute;left:0;right:0;top:0;height:16px;background:repeating-linear-gradient(-55deg,#f5ecd9 0 14px,#141012 14px 28px)}
+html[data-theme="movies"] .onair::before{background:radial-gradient(#f2c14e33,transparent 70%)}
+html[data-theme="movies"] .tag{color:var(--amber)}
+
+/* subtitles for toasts */
+html[data-theme="movies"] .toast{border-radius:4px;background:#000d;color:#fff;border:0;font:500 16px/1.3 var(--sans);box-shadow:none;letter-spacing:.01em;text-shadow:0 1px 2px #000}
+
+/* moments: title cards (7h/8h) and ACTION!/CUT! */
+.credit{position:fixed;inset:0;z-index:60;pointer-events:none;display:grid;place-items:center;align-content:center;gap:14px;text-align:center;background:#000c;animation:credit 2.6s ease forwards}
+.credit b{font:400 clamp(40px,9vw,92px)/1 'Limelight',serif;color:#f2c14e;text-shadow:0 0 30px #f2c14e66}
+.credit small{font:600 12px/1 'Inter',sans-serif;letter-spacing:.42em;text-transform:uppercase;color:#fbf1de;padding:10px 0;border-top:1px solid #f2c14e66;border-bottom:1px solid #f2c14e66}
+@keyframes credit{0%{opacity:0}18%{opacity:1}78%{opacity:1}100%{opacity:0}}
+.clap{position:fixed;right:clamp(20px,6vw,80px);top:26px;z-index:60;pointer-events:none;font:400 30px/1 'Bebas Neue',Impact,sans-serif;letter-spacing:.08em;color:#141012;
+  background:#f5ecd9;padding:8px 14px 6px;border-radius:4px;box-shadow:0 8px 24px #000a;transform-origin:0 100%;animation:clap 1.3s cubic-bezier(.2,1.4,.4,1) forwards}
+.clap::before{content:"";position:absolute;left:0;right:0;top:-12px;height:12px;border-radius:3px 3px 0 0;background:repeating-linear-gradient(-55deg,#f5ecd9 0 10px,#141012 10px 20px);transform-origin:0 100%;animation:clapper .5s ease}
+@keyframes clap{0%{transform:scale(.6);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0}}
+@keyframes clapper{0%{transform:rotate(-24deg)}60%{transform:rotate(-24deg)}100%{transform:rotate(0)}}
+
+/* its picker card */
+[data-theme="movies"].thm .tp{border:1px solid #f2c14e88;box-shadow:inset 0 0 0 3px var(--hero2),inset 0 0 0 4px #f2c14e44}
+[data-theme="movies"].thm .tp .n{color:#fff3d6;text-shadow:0 0 14px #f2c14e66}
+[data-theme="movies"].thm{background:linear-gradient(90deg,#8a0c1b 0 6px,var(--bg) 6px calc(100% - 6px),#8a0c1b calc(100% - 6px))}
 
 /* ---------- Games: retro arcade, pixels, XP ---------- */
 [data-theme="games"]{
@@ -155,14 +221,14 @@ html[data-theme="movies"] .toast{border-radius:4px;background:#000d;color:#fff;b
   --num:'VT323',ui-monospace,monospace; --display:'Press Start 2P',ui-monospace,monospace;
   --r:4px;
 }
-html[data-theme="games"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.btn,.iconbtn,.days button,.days label,.rank,.tile .ti,.tape,.bar){border-radius:0}
-html[data-theme="games"] :is(.hero,.tk,.tile,.group,.onair,.banner,.hstats div){box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--line),6px 6px 0 4px #00000066}
+html[data-theme="games"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.btn,.iconbtn,.days button,.days label,.rank,.tile .ti,.tape,.bar,section,.stat,.item,nav.toc a){border-radius:0}
+html[data-theme="games"] :is(.hero,.tk,.tile,.group,.onair,.banner,.hstats div,body>.wrap>section,.stat){box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--line),6px 6px 0 4px #00000066}
 html[data-theme="games"] .btn{box-shadow:inset -3px -3px 0 #0005,inset 3px 3px 0 #fff4}
 html[data-theme="games"] .odo{font-size:clamp(96px,22vw,190px);letter-spacing:0;font-weight:400}
 html[data-theme="games"] .onair .clock,html[data-theme="games"] .dur{font-size:38px;font-weight:400}
 html[data-theme="games"] .onair .clock{font-size:46px}
-html[data-theme="games"] .intro h1{font-size:clamp(20px,4.6vw,34px);line-height:1.5;letter-spacing:0}
-html[data-theme="games"] .sheet h3,html[data-theme="games"] .ph h3{font-size:15px;line-height:1.5;letter-spacing:0}
+html[data-theme="games"] :is(.intro h1,body>.wrap>h1){font-size:clamp(20px,4.6vw,34px);line-height:1.5;letter-spacing:0}
+html[data-theme="games"] :is(.sheet h3,.ph h3,section h2,.top h1){font-size:15px;line-height:1.5;letter-spacing:0}
 html[data-theme="games"] .tile b{font-size:10px;line-height:1.5;letter-spacing:0}
 html[data-theme="games"] .banner b{font-size:12px;line-height:1.6}
 html[data-theme="games"] .onair .name{font-family:var(--sans)}
