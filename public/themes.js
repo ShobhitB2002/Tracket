@@ -25,8 +25,14 @@
     games: { name: 'Games', desc: 'Pixel arcade, XP, level ups', color: '#0d0b1f', fonts: 'Press+Start+2P&family=VT323&family=Pixelify+Sans:wght@400;600',
       pal: ['#ffd23f', '#3dff9a', '#ff3864', '#3ec6ff', '#8b5cf6', '#ff6b35', '#f4f1ff', '#b8ff3d'],
       words: { list: 'Quest log', running: '▶ QUEST ACTIVE', eyebrow: 'XP today', xp: true } },
+    guardian: { name: 'Night Guardian', desc: 'Rainy city, yellow searchlight', color: '#06070a', fonts: 'Oswald:wght@500;600;700&family=Inter:wght@400;500;600',
+      pal: ['#ffd400', '#7f8cff', '#e9ecf2', '#ff8a00', '#5a6b8c', '#b7c4dd', '#ffe98a', '#9aa3b5'],
+      words: { list: 'Case files', running: '● ON PATROL', eyebrow: 'On watch today' } },
+    alienwatch: { name: 'Alien Watch', desc: 'Lime alien tech, glowing dial', color: '#040704', fonts: 'Orbitron:wght@600;800&family=Chakra+Petch:wght@400;500;600;700',
+      pal: ['#6cff2e', '#eeffef', '#16c43a', '#8fe3ff', '#b8ff8f', '#2e8b57', '#d4ff3d', '#5ce1a0'],
+      words: { list: 'Missions', running: '● POWERED UP', eyebrow: 'Charge today' } },
   };
-  const ORDER = ['default', 'system', 'dark', 'light', 'anime', 'manhwa', 'movies', 'coding', 'games'];
+  const ORDER = ['default', 'system', 'dark', 'light', 'anime', 'manhwa', 'movies', 'coding', 'games', 'guardian', 'alienwatch'];
   const get = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
   const set = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
   const lightMq = matchMedia('(prefers-color-scheme: light)');
@@ -135,6 +141,16 @@
       if (kind === 'h8') pop('credit', '<b>That’s a wrap</b><small>8 hours · roll the credits</small>', 2700);
       if (kind === 'start' && !calm()) pop('clap', 'ACTION!', 1400);
       if (kind === 'stop' && !calm()) pop('clap', 'CUT!', 1400);
+    }
+    if (current === 'guardian') {
+      if (kind === 'start' && !calm()) pop('flash', '', 800);
+      if (kind === 'h7') pop('signal', '<b>7 Hours</b><small>The city is safe · minimum done</small>', 2700);
+      if (kind === 'h8') pop('signal', '<b>Patrol over</b><small>8 hours · go home, hero</small>', 2700);
+    }
+    if (current === 'alienwatch') {
+      if (kind === 'start' && !calm()) pop('warp', '', 1000);
+      if (kind === 'h7') pop('charge', '<b>Power up</b><small>7h minimum reached</small>', 2500);
+      if (kind === 'h8') pop('charge', '<b>Fully charged</b><small>8 hours · time to power down</small>', 2500);
     }
     if (current === 'games') {
       if (kind === 'h7') { pop('lvlup', 'LEVEL UP!<small>7h minimum cleared</small>', 1900); tone([[523, 0.09], [659, 0.09], [784, 0.09], [1047, 0.22]]); }

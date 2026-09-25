@@ -241,6 +241,95 @@ html[data-theme="games"] .logo{transform:none;border-radius:0;box-shadow:4px 4px
 .lvlup small{display:block;font-size:.35em;color:#f4f1ff;text-shadow:2px 2px 0 #0008;margin-top:12px}
 @keyframes lvl{0%{transform:translate(-50%,-10%) scale(.6);opacity:0}15%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-80%);opacity:0}}
 
+/* ---------- Night Guardian: rain-soaked city at night, yellow searchlight ---------- */
+[data-theme="guardian"]{
+  --bg:#06070a; --bg2:#0b0d12; --card:#0f1117; --card2:#151821; --line:#262b36;
+  --ink:#e9ecf2; --mute:#8f97a8; --dim:#555c6b;
+  --amber:#ffd400; --amber2:#ffae00; --mint:#7bd88f; --rec:#ff4d4d; --violet:#7f8cff;
+  --field:#05060a; --panel:#0c0e13; --scrim:#020305e0; --on-accent:#0d0b00; --rec-ink:#ffb0b0;
+  --hero1:#11141b; --hero2:#07080b; --onair1:#1c1510; --onair2:#0f1117; --banner1:#1b190b; --switch:#262b36; --knob:#e9ecf2;
+  --glow1:transparent; --glow2:transparent; --glow3:transparent; --grain:0;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --num:'Oswald',Impact,sans-serif; --display:'Oswald',Impact,sans-serif;
+  --r:4px; --cut:14px;
+}
+/* the city: searchlight sweeping a cloudy sky, skyline, rain */
+html[data-theme="guardian"] .sky{inset:0;animation:none;background:
+  radial-gradient(70% 40% at 50% 0%,#1a2130,transparent 70%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 220' preserveAspectRatio='none'%3E%3Cpath fill='%23030406' d='M0 220V150h40v-30h30v50h25V90h45v80h20v-40h35v90h30V60h18V30h14v30h18v110h40v-70h50v70h25V110h30v-30h30v140h35V70h20V40h10v30h25v150h30v-90h40v90h25V100h50v120h20v-60h30v60h35V80h30v-20h20v160h40v-70h35v70h30V120h40v100h30v-50h45v50h40V90h30v130z'/%3E%3C/svg%3E") bottom/100% 190px no-repeat,
+  linear-gradient(180deg,#0b0f18,#06070a 60%)}
+html[data-theme="guardian"] .sky::before{content:"";position:fixed;left:50%;bottom:120px;width:140vmax;height:140vmax;margin-left:-70vmax;transform-origin:50% 100%;pointer-events:none;
+  background:conic-gradient(from -8deg at 50% 100%,transparent 0deg,#fff6c21c 3deg,#fff6c230 8deg,#fff6c21c 13deg,transparent 16deg);
+  -webkit-mask:linear-gradient(0deg,#000 30%,transparent 75%);mask:linear-gradient(0deg,#000 30%,transparent 75%);
+  top:auto;height:100vh;animation:sweep 14s ease-in-out infinite alternate}
+@keyframes sweep{from{transform:rotate(-28deg)}to{transform:rotate(26deg)}}
+html[data-theme="guardian"] .grain{opacity:.5;mix-blend-mode:normal;background:repeating-linear-gradient(104deg,transparent 0 22px,#9fb0d014 22px 23px,transparent 23px 47px);background-size:120px 120px;animation:rain .5s linear infinite}
+@keyframes rain{to{background-position:-24px 120px}}
+/* armour: cut corners, yellow edge */
+html[data-theme="guardian"] :is(.hero,.tk,.tile,.group,.onair,.banner,body>.wrap>section,.stat){border-radius:0;clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+html[data-theme="guardian"] :is(.btn,.iconbtn,.days button,.days label,.rank,.tile .ti,.sheet,.hstats div,.idle,.verdict,.shift){border-radius:3px}
+html[data-theme="guardian"] .tk{border-left:3px solid var(--c)}
+html[data-theme="guardian"] .hero{border-color:#ffd40040;box-shadow:inset 0 1px 0 #ffd40030}
+html[data-theme="guardian"] .hero::after{background:linear-gradient(90deg,#ffd400,#ffd400) top left/64px 3px no-repeat,linear-gradient(90deg,#ffd400,#ffd400) bottom right/64px 3px no-repeat}
+html[data-theme="guardian"] :is(.intro h1,.sheet h3,.ph h3,body>.wrap>h1,section h2,.top h1,.tile b,.hello b){text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+html[data-theme="guardian"] .intro h1 em{background:none;color:var(--amber)}
+html[data-theme="guardian"] .odo{font-weight:600;letter-spacing:0;color:#f4f6fa;text-shadow:0 0 30px #ffd40022}
+html[data-theme="guardian"] .odo .sep{color:var(--amber)}
+html[data-theme="guardian"] .digit,html[data-theme="guardian"] .odo .sec .digit{width:.5em}
+html[data-theme="guardian"] .logo{transform:none;border-radius:50%;background:radial-gradient(circle,#fff6c2 0 30%,#ffd400 31% 58%,#1a1a1a 59%);color:transparent;box-shadow:0 0 24px #ffd40066}
+html[data-theme="guardian"] h2{color:var(--amber)}
+.flash{position:fixed;inset:0;z-index:59;pointer-events:none;background:#eaf0ff;animation:flash .7s ease-out forwards}
+@keyframes flash{0%{opacity:0}8%{opacity:.55}14%{opacity:.1}22%{opacity:.4}100%{opacity:0}}
+.signal{position:fixed;inset:0;z-index:60;pointer-events:none;display:grid;place-items:center;align-content:center;gap:12px;text-align:center;
+  background:radial-gradient(circle at 50% 42%,#fff6c255 0 12%,#ffd40022 22%,#000c 60%);animation:credit 2.6s ease forwards}
+.signal b{font:600 clamp(40px,9vw,90px)/1 'Oswald',Impact,sans-serif;letter-spacing:.06em;color:#ffd400;text-transform:uppercase;text-shadow:0 0 30px #ffd40066}
+.signal small{font:600 12px/1 'Inter',sans-serif;letter-spacing:.4em;text-transform:uppercase;color:#e9ecf2}
+[data-theme="guardian"].thm .tp{background:linear-gradient(180deg,#0b0f18,#06070a);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);border-color:#ffd40040}
+
+/* ---------- Alien Watch: lime-green alien tech, hex grid, glowing dial ---------- */
+[data-theme="alienwatch"]{
+  --bg:#040704; --bg2:#081008; --card:#0a130b; --card2:#0f1b10; --line:#1d3420;
+  --ink:#eeffef; --mute:#98c79b; --dim:#4c6e4f;
+  --amber:#6cff2e; --amber2:#16c43a; --mint:#6cff2e; --rec:#ff4d5e; --violet:#8fe3ff;
+  --field:#020402; --panel:#071007; --scrim:#010301e0; --on-accent:#031203; --rec-ink:#ffb0b8;
+  --hero1:#0c180d; --hero2:#040804; --onair1:#1a0f10; --onair2:#0a130b; --banner1:#0e1f0f; --switch:#1d3420; --knob:#eeffef;
+  --glow1:#6cff2e14; --glow2:#16c43a10; --glow3:transparent; --grain:0;
+  --sans:'Chakra Petch',ui-sans-serif,system-ui,sans-serif; --mono:'Chakra Petch',ui-monospace,monospace;
+  --num:'Orbitron',ui-monospace,monospace; --display:'Orbitron',ui-sans-serif,sans-serif;
+  --r:14px;
+}
+html[data-theme="alienwatch"] .grain{opacity:1;mix-blend-mode:normal;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath fill='none' stroke='%236cff2e' stroke-opacity='.07' d='M28 0l28 16v32L28 64 0 48V16zM28 64v33M0 16L-28 0M56 16l28-16'/%3E%3C/svg%3E")}
+/* the dial on the total: a slow-turning ring of segments */
+html[data-theme="alienwatch"] .hero{border-color:#6cff2e55;box-shadow:0 0 0 1px #6cff2e22,0 0 60px -20px #6cff2e66,inset 0 0 40px -20px #6cff2e55}
+html[data-theme="alienwatch"] .hero::after{inset:auto -90px -90px auto;width:300px;height:300px;border-radius:50%;
+  background:conic-gradient(#6cff2e55 0 8deg,transparent 8deg 22deg) ,radial-gradient(circle,transparent 58%,#6cff2e22 59% 61%,transparent 62%);
+  -webkit-mask:radial-gradient(circle,transparent 62%,#000 63% 70%,transparent 71%);mask:radial-gradient(circle,transparent 62%,#000 63% 70%,transparent 71%);animation:dial 30s linear infinite}
+@keyframes dial{to{transform:rotate(360deg)}}
+html[data-theme="alienwatch"] .odo{font-weight:800;letter-spacing:0;color:#eaffe0;text-shadow:0 0 22px #6cff2e88}
+html[data-theme="alienwatch"] .digit,html[data-theme="alienwatch"] .odo .sec .digit{width:.72em}
+html[data-theme="alienwatch"] .odo{font-size:clamp(52px,12vw,108px)}
+html[data-theme="alienwatch"] .odo .sep{color:var(--amber)}
+html[data-theme="alienwatch"] .rank{border-radius:0;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:42px}
+html[data-theme="alienwatch"] .tile .ti{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);border-radius:0}
+html[data-theme="alienwatch"] .tk:hover,html[data-theme="alienwatch"] .tile:hover{box-shadow:0 0 24px -8px var(--amber)}
+html[data-theme="alienwatch"] :is(.intro h1,.sheet h3,.ph h3,body>.wrap>h1,section h2,.top h1){letter-spacing:.01em;font-weight:800}
+html[data-theme="alienwatch"] .intro h1{font-size:clamp(28px,6vw,48px)}
+html[data-theme="alienwatch"] .tile b,html[data-theme="alienwatch"] .hello b{font-family:var(--sans);font-weight:700}
+html[data-theme="alienwatch"] .intro h1 em{background:none;color:var(--amber);text-shadow:0 0 24px #6cff2e88}
+html[data-theme="alienwatch"] .logo{transform:none;border-radius:50%;background:radial-gradient(circle,#6cff2e 0 34%,#0a130b 35% 52%,#eeffef 53% 60%,#111 61%);color:transparent;box-shadow:0 0 22px #6cff2e88}
+html[data-theme="alienwatch"] h2{color:var(--amber)}
+html[data-theme="alienwatch"] .tape{border-color:#6cff2e55;box-shadow:0 0 16px -6px #6cff2e}
+.warp{position:fixed;left:50%;top:40%;z-index:60;pointer-events:none;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;
+  border:6px solid #6cff2e;box-shadow:0 0 40px #6cff2e,inset 0 0 30px #6cff2e;animation:warp .9s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes warp{from{transform:scale(.2);opacity:1}to{transform:scale(40);opacity:0}}
+.charge{position:fixed;inset:0;z-index:60;pointer-events:none;display:grid;place-items:center;align-content:center;gap:12px;text-align:center;
+  background:radial-gradient(circle at 50% 42%,#6cff2e44,#000c 60%);animation:credit 2.4s ease forwards}
+.charge b{font:800 clamp(34px,8vw,80px)/1 'Orbitron',sans-serif;color:#b8ff8f;text-shadow:0 0 30px #6cff2e}
+.charge small{font:600 13px/1 'Chakra Petch',sans-serif;letter-spacing:.35em;text-transform:uppercase;color:#eeffef}
+[data-theme="alienwatch"].thm .tp{border-color:#6cff2e66;box-shadow:inset 0 0 24px -10px #6cff2e}
+[data-theme="alienwatch"].thm .tp .n{text-shadow:0 0 12px #6cff2e88;font-size:22px}
+
 /* ---------- theme picker ---------- */
 .thgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 @media (max-width:560px){.thgrid{grid-template-columns:repeat(2,1fr);gap:8px}.thm .tp{height:64px}.thm .tp .n{font-size:22px}}
@@ -262,7 +351,7 @@ html[data-theme="games"] .logo{transform:none;border-radius:0;box-shadow:4px 4px
 [data-theme="games"].thm .tp,[data-theme="games"].thm{border-radius:0}
 [data-theme="games"].thm .tp .n,[data-theme="movies"].thm .tp .n,[data-theme="manhwa"].thm .tp .n{font-weight:400;font-size:32px}
 
-@media (prefers-reduced-motion:reduce){.petals{display:none}}
+@media (prefers-reduced-motion:reduce){.petals{display:none}html[data-theme="guardian"] .grain{display:none}}
 
 /* narrow display digits: tighter odometer boxes */
 html[data-theme="movies"] .digit,html[data-theme="movies"] .odo .sec .digit{width:.44em}

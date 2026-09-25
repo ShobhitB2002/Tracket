@@ -124,7 +124,9 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   Work day (shift + lunch editor) · Auto mode · Notifications (push + daily report) · Mac menu bar · Account. `openShift()` /
   `openAuto()` just open those tabs. History (`openHistory`, `GET /api/history?days=14`) = one ranged Asana call for 14 days
   (cached 10 min in `hist:<from>:<to>`); falls back to cached `day:` summaries when the direct endpoint isn't available.
-- **Themes (2026-09-25):** Default (the original look), Match device, Dark, Light, Anime, Manhwa, Movies, Coding, Games.
+- **Themes (2026-09-25):** Default (the original look), Match device, Dark, Light, Anime, Manhwa, Movies, Coding, Games,
+  Night Guardian (Batman-inspired: rainy skyline, sweeping searchlight, cut-corner panels) and Alien Watch (Ben 10-inspired: lime
+  hex grid, turning dial, hexagon badges). Owner asked for Batman / Ben 10: kept original, no official logos or names (trademarks).
   `public/themes.js` (loaded in `<head>`, applies before first paint from localStorage `tk_theme`; `window.TT`) + `public/themes.css`
   (each theme = CSS variables on `[data-theme=…]`, so picker cards preview themselves; page decoration on `html[data-theme=…]`).
   Every colour in index.html is a variable (`--amber` = accent in all themes; `--on-accent` = text on it; `--num` numbers font,
