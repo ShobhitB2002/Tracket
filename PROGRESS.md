@@ -124,6 +124,15 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   Work day (shift + lunch editor) · Auto mode · Notifications (push + daily report) · Mac menu bar · Account. `openShift()` /
   `openAuto()` just open those tabs. History (`openHistory`, `GET /api/history?days=14`) = one ranged Asana call for 14 days
   (cached 10 min in `hist:<from>:<to>`); falls back to cached `day:` summaries when the direct endpoint isn't available.
+- **Themes (2026-09-25):** Default (the original look), Match device, Dark, Light, Anime, Manhwa, Movies, Coding, Games.
+  `public/themes.js` (loaded in `<head>`, applies before first paint from localStorage `tk_theme`; `window.TT`) + `public/themes.css`
+  (each theme = CSS variables on `[data-theme=…]`, so picker cards preview themselves; page decoration on `html[data-theme=…]`).
+  Every colour in index.html is a variable (`--amber` = accent in all themes; `--on-accent` = text on it; `--num` numbers font,
+  `--display` headings font). Theme fonts load from Google Fonts on demand. Saved per member in prefs `theme` (the account wins at
+  boot). Words: Movies "Now showing"/runtime, Coding `~/tickets` + `// ` + cursor, Games quest log + XP text. Moments `TT.fx('h7'|'h8'|
+  'hour'|'start'|'stop')`: Anime sparkles, Manhwa SFX (DING!/BOOM!), Games LEVEL UP + optional sounds (`tk_sound`, off by default).
+  All motion off with prefers-reduced-motion. Picker: palette button in the header (visitors too) and Settings → Appearance.
+  Guide, admin and the emails stay on the default look.
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):

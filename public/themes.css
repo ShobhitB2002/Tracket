@@ -1,0 +1,205 @@
+/* Tracket themes.
+   Every theme is a set of CSS variables on [data-theme="…"], so a theme's
+   preview card can wear it too (see openThemes in index.html). Page-wide
+   decoration is scoped to html[data-theme="…"]. "default" = the :root look.
+   Variables: see :root in index.html. --amber is the accent in every theme. */
+
+/* ---------- Default (same as :root in index.html; lets a preview card wear it) ---------- */
+[data-theme="default"]{--bg:#0b0b10; --bg2:#12121a; --card:#16161f; --card2:#1c1c28; --line:#262635;
+  --ink:#f3efe6; --mute:#8a879a; --dim:#55536a;
+  --amber:#ffb547; --mint:#5cf2b0; --rec:#ff4d6d; --violet:#a78bfa;
+  --amber2:#ff7a45; --field:#0c0c12; --panel:#101017; --scrim:#07070bcc; --on-accent:#0b0b10; --rec-ink:#ff9aac;
+  --hero1:#1b1b27; --hero2:#121219; --onair1:#2a1420; --onair2:#171320; --banner1:#2a2112; --switch:#2a2a3a; --knob:#cfcbe0;
+  --glow1:#ffb54722; --glow2:#a78bfa1f; --glow3:#5cf2b014; --grain:.07;
+  --r:22px;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --num:var(--mono); --display:var(--sans);
+}
+
+/* ---------- Dark: calm neutral grey, one blue accent ---------- */
+[data-theme="dark"]{
+  --bg:#0f1115; --bg2:#14171c; --card:#171a20; --card2:#1d2128; --line:#2a2f38;
+  --ink:#e8eaed; --mute:#9aa0aa; --dim:#5f6570;
+  --amber:#5b9cff; --amber2:#8ab8ff; --mint:#3ecf8e; --rec:#f06a6a; --violet:#a58cf5;
+  --field:#0c0e12; --panel:#13161b; --scrim:#05060acc; --on-accent:#08101f; --rec-ink:#ffb4b4;
+  --hero1:#1a1e25; --hero2:#14171c; --onair1:#261a1f; --onair2:#171a20; --banner1:#172238; --switch:#2c313b; --knob:#cfd3da;
+  --glow1:#5b9cff12; --glow2:#a58cf50c; --glow3:transparent; --grain:.025;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --num:var(--mono); --display:var(--sans);
+}
+
+/* ---------- Light: white cards, soft shadows ---------- */
+[data-theme="light"]{
+  --bg:#f3f4f7; --bg2:#eceef2; --card:#ffffff; --card2:#f7f8fa; --line:#e1e4ea;
+  --ink:#14161b; --mute:#5b6270; --dim:#9aa1ad;
+  --amber:#2563eb; --amber2:#4f8df5; --mint:#059669; --rec:#e11d48; --violet:#7c3aed;
+  --field:#f1f3f6; --panel:#f7f8fa; --scrim:#1a1d2359; --on-accent:#ffffff; --rec-ink:#be123c;
+  --hero1:#ffffff; --hero2:#f8f9fc; --onair1:#fff1f4; --onair2:#ffffff; --banner1:#eef4ff; --switch:#d5d9e0; --knob:#ffffff;
+  --glow1:#2563eb0d; --glow2:#7c3aed0a; --glow3:transparent; --grain:0;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --num:var(--mono); --display:var(--sans);
+}
+html[data-theme="light"] :is(.hero,.tk,.tile,.group,.onair,.banner,.idle,.hstats div,.verdict,.shift){box-shadow:0 1px 2px #0000000a,0 10px 30px -18px #0f172a33}
+html[data-theme="light"] .sheet{box-shadow:0 30px 80px -30px #0f172a55}
+html[data-theme="light"] .hero::after{display:none}
+html[data-theme="light"] .odo .sep{color:#c3c8d2}
+html[data-theme="light"] .onair{border-color:#fecdd3}
+html[data-theme="light"] .demo-tag{color:#fff}
+
+/* ---------- Coding: terminal green on black ---------- */
+[data-theme="coding"]{
+  --bg:#070a07; --bg2:#0b100b; --card:#0d130d; --card2:#111a11; --line:#1d2d1d;
+  --ink:#c8f7c5; --mute:#6fa56b; --dim:#3d6a3a;
+  --amber:#39ff88; --amber2:#00c96b; --mint:#39ff88; --rec:#ff5f56; --violet:#7cc4ff;
+  --field:#050805; --panel:#0a100a; --scrim:#020402d9; --on-accent:#021a0b; --rec-ink:#ff9a94;
+  --hero1:#0c140c; --hero2:#080d08; --onair1:#1a0d0c; --onair2:#0d130d; --banner1:#0d1d10; --switch:#1a281a; --knob:#9fe89b;
+  --glow1:#39ff8810; --glow2:#7cc4ff08; --glow3:transparent; --grain:0;
+  --sans:'JetBrains Mono',ui-monospace,monospace; --mono:'JetBrains Mono',ui-monospace,monospace; --num:var(--mono); --display:var(--mono);
+  --r:8px;
+}
+html[data-theme="coding"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.btn,.iconbtn,.days button,.days label,.rank,.idle,.verdict,.shift,.hstats div,.tile .ti){border-radius:6px}
+html[data-theme="coding"] .grain{opacity:1;mix-blend-mode:normal;background:repeating-linear-gradient(0deg,#00000038 0 1px,transparent 1px 3px)}
+html[data-theme="coding"] .tk .title::before{content:"// ";color:var(--dim)}
+html[data-theme="coding"] .eyebrow>span:first-child::before{content:"$ ";color:var(--amber)}
+html[data-theme="coding"] .odo::after{content:"";width:.08em;height:.78em;margin:0 0 .1em .08em;background:var(--amber);animation:blink 1.05s steps(1) infinite;align-self:flex-end}
+html[data-theme="coding"] .hero.ticking .odo{filter:drop-shadow(0 0 18px #39ff8840)}
+html[data-theme="coding"] h2{color:var(--amber)}
+html[data-theme="coding"] h2::before{content:">";color:var(--dim)}
+html[data-theme="coding"] .intro h1 em{background:none;color:var(--amber)}
+html[data-theme="coding"] .logo{transform:none;border-radius:6px}
+
+/* ---------- Anime: pastel dusk, sakura, sparkles ---------- */
+[data-theme="anime"]{
+  --bg:#1b1230; --bg2:#20163a; --card:#251a3d; --card2:#2d2049; --line:#3e2f5e;
+  --ink:#fff0f7; --mute:#c9b0da; --dim:#7f6a99;
+  --amber:#ff8ccf; --amber2:#b79bff; --mint:#7ef0d0; --rec:#ff6b9a; --violet:#b79bff;
+  --field:#150d26; --panel:#20163a; --scrim:#0d0719cc; --on-accent:#2a0d25; --rec-ink:#ffc2d6;
+  --hero1:#2c1e4a; --hero2:#1e1535; --onair1:#3b1a3f; --onair2:#251a3d; --banner1:#3a2352; --switch:#3a2c58; --knob:#f4e6ff;
+  --glow1:#ff8ccf26; --glow2:#b79bff22; --glow3:#7ef0d014; --grain:.03;
+  --sans:'M PLUS Rounded 1c',ui-rounded,system-ui,sans-serif; --mono:'M PLUS Rounded 1c',ui-rounded,system-ui,sans-serif;
+  --num:'Fredoka',ui-rounded,system-ui,sans-serif; --display:'Fredoka',ui-rounded,system-ui,sans-serif;
+  --r:28px;
+}
+html[data-theme="anime"] :is(.tk,.tile,.group,.idle,.verdict,.shift,.btn,.iconbtn,.days button,.days label){border-radius:20px}
+html[data-theme="anime"] .hero{border-radius:36px}
+html[data-theme="anime"] .rank{border-radius:50%}
+html[data-theme="anime"] .odo{letter-spacing:-.02em;font-weight:700}
+html[data-theme="anime"] .intro h1 em{background:linear-gradient(90deg,#ff8ccf,#b79bff 60%,#7ef0d0);-webkit-background-clip:text;background-clip:text}
+.petals{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.petals i{position:absolute;top:-24px;width:12px;height:10px;border-radius:12px 0 12px 0;background:linear-gradient(135deg,#ffd1ea,#ff8ccf);opacity:.75;
+  animation:petal var(--d,14s) linear var(--w,0s) infinite}
+@keyframes petal{
+  0%{transform:translate3d(0,0,0) rotate(0)}
+  50%{transform:translate3d(var(--x,60px),55vh,0) rotate(200deg)}
+  100%{transform:translate3d(calc(var(--x,60px) * -.4),108vh,0) rotate(420deg)}
+}
+.spark{position:fixed;z-index:50;pointer-events:none;font-size:18px;color:#ffd1ea;text-shadow:0 0 10px #ff8ccf;animation:spark 1.1s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes spark{from{transform:translate(0,0) scale(.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(90deg);opacity:0}}
+
+/* ---------- Manhwa: webtoon panels, ink, halftone ---------- */
+[data-theme="manhwa"]{
+  --bg:#f4eee2; --bg2:#ece4d4; --card:#fffdf8; --card2:#fff6e6; --line:#161616;
+  --ink:#141414; --mute:#4d4a45; --dim:#8c877e;
+  --amber:#ff4a1c; --amber2:#ffb300; --mint:#00a86b; --rec:#e0002a; --violet:#5b3cc4;
+  --field:#ffffff; --panel:#fffaf0; --scrim:#14141480; --on-accent:#ffffff; --rec-ink:#b00020;
+  --hero1:#fffdf8; --hero2:#fff4dc; --onair1:#ffe7df; --onair2:#fffdf8; --banner1:#fff0c2; --switch:#d9d2c3; --knob:#ffffff;
+  --glow1:transparent; --glow2:transparent; --glow3:transparent; --grain:0;
+  --sans:'Nunito',ui-sans-serif,system-ui,sans-serif; --mono:'Nunito',ui-sans-serif,system-ui,sans-serif;
+  --num:'Bangers',Impact,sans-serif; --display:'Bangers',Impact,sans-serif;
+  --r:6px;
+}
+html[data-theme="manhwa"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.autocard){border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:6px}
+html[data-theme="manhwa"] :is(.btn,.iconbtn,.days button,.days label,.rank,.tile .ti){border:2px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink)}
+html[data-theme="manhwa"] .hero::after{background:radial-gradient(#14141422 1.2px,transparent 1.6px) 0 0/9px 9px;mask:linear-gradient(135deg,#000,transparent 55%);-webkit-mask:linear-gradient(135deg,#000,transparent 55%)}
+html[data-theme="manhwa"] .odo{letter-spacing:.01em;font-weight:400}
+html[data-theme="manhwa"] .odo .sep{color:var(--amber)}
+html[data-theme="manhwa"] .intro h1,html[data-theme="manhwa"] .sheet h3{letter-spacing:.02em;font-weight:400}
+html[data-theme="manhwa"] .intro h1 em{background:none;color:var(--amber);-webkit-text-stroke:0}
+html[data-theme="manhwa"] .toast{border-radius:22px;background:#fff;color:var(--ink);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);font-family:'Bangers',Impact,sans-serif;font-weight:400;letter-spacing:.04em;font-size:17px}
+html[data-theme="manhwa"] .toast::after{content:"";position:absolute;left:28px;bottom:-12px;width:16px;height:16px;background:#fff;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:skewX(-25deg) rotate(45deg)}
+html[data-theme="manhwa"] .onair::before{display:none}
+html[data-theme="manhwa"] .logo{transform:rotate(-4deg);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.sfx{position:fixed;left:50%;top:38%;z-index:60;pointer-events:none;font:400 clamp(64px,16vw,150px)/1 'Bangers',Impact,sans-serif;letter-spacing:.03em;color:#ffdd00;
+  -webkit-text-stroke:4px #141414;paint-order:stroke;text-shadow:7px 7px 0 #141414;animation:sfx 1.3s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes sfx{0%{transform:translate(-50%,-50%) rotate(-12deg) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-60%) rotate(-6deg) scale(1);opacity:0}}
+
+/* ---------- Movies: cinema, grain, letterbox ---------- */
+[data-theme="movies"]{
+  --bg:#07070a; --bg2:#0d0d10; --card:#111114; --card2:#17171b; --line:#26262c;
+  --ink:#f5f1e8; --mute:#9b968c; --dim:#5c5850;
+  --amber:#e3b448; --amber2:#c8102e; --mint:#7bd88f; --rec:#e5484d; --violet:#8f7cf7;
+  --field:#09090c; --panel:#0e0e11; --scrim:#000000d9; --on-accent:#1a1204; --rec-ink:#ffa3a6;
+  --hero1:#17161b; --hero2:#0b0b0e; --onair1:#2a0f12; --onair2:#121114; --banner1:#241c0c; --switch:#26262c; --knob:#e9e4d8;
+  --glow1:#e3b44812; --glow2:#c8102e10; --glow3:transparent; --grain:.16;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --num:'Bebas Neue',Impact,sans-serif; --display:'Bebas Neue',Impact,sans-serif;
+  --r:12px;
+}
+html[data-theme="movies"] body::before,html[data-theme="movies"] body::after{content:"";position:fixed;left:0;right:0;height:14px;background:#000;z-index:20;pointer-events:none}
+html[data-theme="movies"] body::before{top:0} html[data-theme="movies"] body::after{bottom:0}
+html[data-theme="movies"] .sky{background:radial-gradient(60% 50% at 50% 0%,#e3b44814,transparent 70%),radial-gradient(120% 90% at 50% 50%,transparent 55%,#000c 100%)}
+html[data-theme="movies"] .odo{letter-spacing:0;font-weight:400;font-size:clamp(84px,19vw,170px)}
+html[data-theme="movies"] .intro h1,html[data-theme="movies"] .sheet h3,html[data-theme="movies"] .tile b{letter-spacing:.03em;font-weight:400}
+html[data-theme="movies"] .intro h1 em{background:linear-gradient(90deg,#e3b448,#f4d58d);-webkit-background-clip:text;background-clip:text}
+html[data-theme="movies"] .dur,html[data-theme="movies"] .onair .clock{letter-spacing:.02em;font-weight:400}
+html[data-theme="movies"] .toast{border-radius:4px;background:#000d;color:#fff;border:0;font:500 15px/1.3 var(--sans);box-shadow:none;letter-spacing:.01em}
+
+/* ---------- Games: retro arcade, pixels, XP ---------- */
+[data-theme="games"]{
+  --bg:#0d0b1f; --bg2:#120f2a; --card:#17143a; --card2:#1f1b4d; --line:#3a3470;
+  --ink:#f4f1ff; --mute:#a79fe0; --dim:#6a62a8;
+  --amber:#ffd23f; --amber2:#ff6b35; --mint:#3dff9a; --rec:#ff3864; --violet:#8b5cf6;
+  --field:#0a0820; --panel:#141134; --scrim:#06051299; --on-accent:#1a1400; --rec-ink:#ff9fb4;
+  --hero1:#1d1848; --hero2:#120f30; --onair1:#3a1030; --onair2:#17143a; --banner1:#2d2360; --switch:#2a2560; --knob:#f4f1ff;
+  --glow1:#ffd23f14; --glow2:#8b5cf61c; --glow3:#3dff9a0f; --grain:0;
+  --sans:'Pixelify Sans',ui-monospace,monospace; --mono:'Pixelify Sans',ui-monospace,monospace;
+  --num:'VT323',ui-monospace,monospace; --display:'Press Start 2P',ui-monospace,monospace;
+  --r:4px;
+}
+html[data-theme="games"] :is(.hero,.tk,.tile,.group,.sheet,.onair,.banner,.idle,.verdict,.shift,.hstats div,.btn,.iconbtn,.days button,.days label,.rank,.tile .ti,.tape,.bar){border-radius:0}
+html[data-theme="games"] :is(.hero,.tk,.tile,.group,.onair,.banner,.hstats div){box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--line),6px 6px 0 4px #00000066}
+html[data-theme="games"] .btn{box-shadow:inset -3px -3px 0 #0005,inset 3px 3px 0 #fff4}
+html[data-theme="games"] .odo{font-size:clamp(96px,22vw,190px);letter-spacing:0;font-weight:400}
+html[data-theme="games"] .onair .clock,html[data-theme="games"] .dur{font-size:38px;font-weight:400}
+html[data-theme="games"] .onair .clock{font-size:46px}
+html[data-theme="games"] .intro h1{font-size:clamp(20px,4.6vw,34px);line-height:1.5;letter-spacing:0}
+html[data-theme="games"] .sheet h3,html[data-theme="games"] .ph h3{font-size:15px;line-height:1.5;letter-spacing:0}
+html[data-theme="games"] .tile b{font-size:10px;line-height:1.5;letter-spacing:0}
+html[data-theme="games"] .banner b{font-size:12px;line-height:1.6}
+html[data-theme="games"] .onair .name{font-family:var(--sans)}
+html[data-theme="games"] .intro h1 em{background:none;color:var(--amber);text-shadow:3px 3px 0 var(--amber2)}
+html[data-theme="games"] .tape{height:18px;border:2px solid var(--ink);background:var(--field)}
+html[data-theme="games"] .tape .seg{background-image:repeating-linear-gradient(90deg,transparent 0 10px,#0006 10px 12px)!important}
+html[data-theme="games"] .logo{transform:none;border-radius:0;box-shadow:4px 4px 0 var(--amber2)}
+.lvlup{position:fixed;left:50%;top:40%;z-index:60;pointer-events:none;transform:translate(-50%,-50%);text-align:center;
+  font:400 clamp(26px,6vw,54px)/1.3 'Press Start 2P',monospace;color:#ffd23f;text-shadow:4px 4px 0 #ff6b35,8px 8px 0 #0008;animation:lvl 1.8s steps(12) forwards}
+.lvlup small{display:block;font-size:.35em;color:#f4f1ff;text-shadow:2px 2px 0 #0008;margin-top:12px}
+@keyframes lvl{0%{transform:translate(-50%,-10%) scale(.6);opacity:0}15%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-80%);opacity:0}}
+
+/* ---------- theme picker ---------- */
+.thgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+@media (max-width:560px){.thgrid{grid-template-columns:repeat(2,1fr);gap:8px}.thm .tp{height:64px}.thm .tp .n{font-size:22px}}
+.thm{display:grid;gap:8px;padding:8px;border-radius:18px;text-align:left;background:var(--bg);color:var(--ink);border:1px solid var(--line);font-family:var(--sans);transition:transform .2s,border-color .2s}
+.thm:hover{transform:translateY(-2px)}
+.thm.sel{outline:2px solid var(--amber);outline-offset:2px}
+.thm .tp{height:78px;border-radius:12px;padding:10px;display:grid;align-content:space-between;background:linear-gradient(160deg,var(--hero1),var(--hero2));border:1px solid var(--line);position:relative;overflow:hidden}
+.thm .tp .n{font:800 26px/1 var(--num);letter-spacing:-.02em;color:var(--ink)}
+.thm .tp .n em{font-style:normal;color:var(--amber)}
+.thm .tp .b{display:flex;gap:3px;height:6px}
+.thm .tp .b i{border-radius:3px}
+.thm .tp .chip{position:absolute;right:8px;top:8px;width:16px;height:16px;border-radius:5px;background:var(--amber)}
+.thm b{font:600 14px/1.2 var(--sans);padding:0 4px}
+.thm small{font:400 11px/1.35 var(--sans);color:var(--mute);padding:0 4px 4px;display:block}
+.thm .tg{display:flex;justify-content:space-between;align-items:center}
+.thm .tg .tick{display:none}
+.thm.sel .tg .tick{display:inline-block;font-size:12px;color:var(--amber);padding:0 4px}
+[data-theme="manhwa"].thm .tp{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);border-radius:4px}
+[data-theme="games"].thm .tp,[data-theme="games"].thm{border-radius:0}
+[data-theme="games"].thm .tp .n,[data-theme="movies"].thm .tp .n,[data-theme="manhwa"].thm .tp .n{font-weight:400;font-size:32px}
+
+@media (prefers-reduced-motion:reduce){.petals{display:none}}
+
+/* narrow display digits: tighter odometer boxes */
+html[data-theme="movies"] .digit,html[data-theme="movies"] .odo .sec .digit{width:.44em}
+html[data-theme="games"] .digit,html[data-theme="games"] .odo .sec .digit{width:.5em}
+html[data-theme="manhwa"] .digit,html[data-theme="manhwa"] .odo .sec .digit{width:.5em}
+html[data-theme="movies"] .sep,html[data-theme="games"] .sep,html[data-theme="manhwa"] .sep{width:.3em}
