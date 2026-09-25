@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracket timesheet</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='12' fill='%23ffb547'/><path d='M16 17V9' stroke='%230b0b10' stroke-width='3' stroke-linecap='round'/></svg>">
+<style>
+/* A printable timesheet (Print → Save as PDF). Always light, whatever the theme. */
+*{box-sizing:border-box;margin:0}
+body{font:14px/1.45 -apple-system,system-ui,'Segoe UI',sans-serif;color:#111;background:#f4f4f1;padding:24px 16px 60px}
+.page{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e3e3de;border-radius:14px;padding:32px 34px}
+.bar{max-width:900px;margin:0 auto 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar b{flex:1;font-size:13px;color:#555;min-width:160px}
+.bar input{height:36px;border:1px solid #ccc;border-radius:9px;padding:0 10px;font:inherit}
+.bar button,.bar a{height:36px;padding:0 14px;border-radius:9px;border:1px solid #ccc;background:#fff;font:600 13px inherit;color:#111;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer}
+.bar .main{background:#111;color:#fff;border-color:#111}
+h1{font-size:24px;letter-spacing:-.02em}
+.sub{color:#666;margin:4px 0 22px}
+.kpis{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:22px}
+.kpis div b{display:block;font:800 22px ui-monospace,Menlo,monospace}
+.kpis div span{font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.08em}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#777;border-bottom:2px solid #111;padding:6px 6px}
+td{padding:6px;border-bottom:1px solid #eee;vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap;font-family:ui-monospace,Menlo,monospace}
+tr.day td{background:#fafaf7;font-weight:700;border-top:1px solid #ddd}
+tr.day td.n{color:#555}
+tr.leave td{color:#777;font-style:italic}
+tfoot td{font-weight:800;border-top:2px solid #111;border-bottom:0}
+.muted{color:#888}
+.sign{display:flex;gap:40px;margin-top:40px}
+.sign div{flex:1;border-top:1px solid #999;padding-top:6px;font-size:12px;color:#777}
+@media print{body{background:#fff;padding:0}.bar{display:none}.page{border:0;border-radius:0;padding:0;max-width:none}tr{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar">
+  <b>Timesheet · print it, or Save as PDF</b>
+  <input type="date" id="from" aria-label="From"><input type="date" id="to" aria-label="To">
+  <button id="go">Show</button><a id="csv" href="#">Download CSV</a><button class="main" onclick="print()">Print / Save PDF</button>
+</div>
+<div class="page" id="page"><p class="muted">Loading…</p></div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hm = (min) => { const h = Math.floor(min / 60), m = Math.round(min % 60); return `${h}:${String(m).padStart(2, '0')}`; };
+const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
+const day = (d) => new Date(`${d}T12:00:00Z`).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const q = new URLSearchParams(location.search);
+
+async function load(){
+  const qs = new URLSearchParams({ tz: TZ }); if (q.get('from')) qs.set('from', q.get('from')); if (q.get('to')) qs.set('to', q.get('to'));
+  const res = await fetch('/api/timesheet?' + qs, { credentials: 'same-origin' });
+  const t = await res.json().catch(() => ({}));
+  if (!res.ok) { $('page').innerHTML = `<p>${res.status === 401 ? 'Log in to Tracket first, then open this page again.' : esc(t.error || 'Couldn’t load the timesheet.')}</p>`; return; }
+  $('from').value = t.from; $('to').value = t.to;
+  $('csv').href = `/api/timesheet?${new URLSearchParams({ tz: TZ, from: t.from, to: t.to, format: 'csv' })}`;
+  const byDate = {}; for (const r of t.rows) (byDate[r.date] ||= []).push(r);
+  const dates = []; for (let d = t.from; d <= t.to; d = new Date(Date.parse(`${d}T12:00:00Z`) + 864e5).toISOString().slice(0, 10)) dates.push(d);
+  const worked = dates.filter((d) => byDate[d]).length;
+  const full = dates.filter((d) => (t.byDay[d] || 0) >= 420).length;
+  let body = '';
+  for (const d of dates) {
+    const rows = byDate[d];
+    if (!rows && t.leave[d] == null) continue;
+    body += `<tr class="day${t.leave[d] != null && !rows ? ' leave' : ''}"><td colspan="2">${esc(day(d))}${t.leave[d] != null ? ` · 🌴 ${esc(t.leave[d])}` : ''}</td><td class="n">${rows ? hm(rows.reduce((a, r) => a + r.minutes, 0)) : '—'}</td></tr>`;
+    for (const r of rows || []) body += `<tr><td>${r.url ? `<a href="${esc(r.url)}" style="color:#111;text-decoration:none">${esc(r.name)}</a>` : esc(r.name)}</td><td class="muted">${esc(r.project)}</td><td class="n">${hm(r.minutes)}</td></tr>`;
+  }
+  $('page').innerHTML = `<h1>Timesheet${t.who ? ` · ${esc(t.who)}` : ''}</h1>
+    <p class="sub">${esc(day(t.from))} – ${esc(day(t.to))}${t.complete ? '' : ' · some days may be missing (open them once in Tracket)'}</p>
+    <div class="kpis"><div><b>${hm(t.total)}</b><span>total (h:mm)</span></div><div><b>${worked}</b><span>days worked</span></div><div><b>${full}</b><span>days at 7h+</span></div><div><b>${worked ? hm(t.total / worked) : '0:00'}</b><span>average day</span></div></div>
+    <table><thead><tr><th>Ticket</th><th>Project</th><th class="n">Time</th></tr></thead><tbody>${body || '<tr><td colspan="3" class="muted">No time logged in this range.</td></tr>'}</tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="n">${hm(t.total)}</td></tr></tfoot></table>
+    <div class="sign"><div>Employee</div><div>Approved by</div><div>Date</div></div>`;
+  document.title = `Timesheet ${t.from} – ${t.to}`;
+}
+$('go').onclick = () => { q.set('from', $('from').value); q.set('to', $('to').value); history.replaceState(null, '', '?' + q); load(); };
+load();
+</script>
+</body>
+</html>

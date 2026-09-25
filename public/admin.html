@@ -139,6 +139,8 @@ async function render(){
   try { d = await api('/api/admin/overview'); } catch { return; }
   const cron = await fetch('/api/admin/cron', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({}));
   const team = (await fetch('/api/admin/team', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({}))).team || [];
+  const use = await fetch('/api/admin/usage', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => null);
+  const big = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(n >= 1e4 ? 0 : 1)}K` : String(n);
   const hm = (min) => { const h = Math.floor(min / 60), m = Math.round(min % 60); return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`; };
   const lvl = (min) => (min >= 480 ? 'ok' : min >= 420 ? 'warn' : 'off');
   const pending = d.requests.filter((r) => r.status === 'pending');
@@ -157,7 +159,7 @@ async function render(){
     <h2>Team board</h2>
     <div class="list">${team.length ? team.map((t, i) => `
       <div class="item"><div><div class="who"><b>${i === 0 && t.today ? '🏆 ' : ''}${esc(t.name)}</b></div>
-        <div class="meta"><span class="tag ${t.running ? 'ok' : t.linked ? 'warn' : 'off'}">${t.running ? `● running · ${hm((Date.now() - t.since) / 60000)}` : t.linked ? 'idle' : 'Asana tab closed'}</span>
+        <div class="meta">${t.leave != null ? `<span class="tag warn">🌴 ${esc(t.leave)}</span>` : ''}<span class="tag ${t.running ? 'ok' : t.linked ? 'warn' : 'off'}">${t.running ? `● running · ${hm((Date.now() - t.since) / 60000)}` : t.linked ? 'idle' : 'Asana tab closed'}</span>
           <span class="tag ${lvl(t.today)}">today ${hm(t.today)}</span><span>7 days ${hm(t.week)}</span></div>
         <div class="tbar"><i style="width:${Math.min(100, t.today / 480 * 100)}%"></i><u></u></div></div></div>`).join('')
       : '<div class="empty">No one shares yet. Members opt in from Settings → Account → “Show me on the team board”.</div>'}</div>
@@ -189,6 +191,15 @@ async function render(){
       <div class="item"><div style="min-width:0;flex:1"><div class="who"><b>Email</b></div>
       <div class="note" id="mailNote">Checks the Gmail login (GMAIL_USER + app password) without sending anything.</div></div>
       <div class="acts"><button class="btn sm ghost" id="mailCheck">Check email</button></div></div></div>
+
+    <h2>Hosting usage</h2>
+    <div class="list">${use ? use.metrics.map((m) => `
+      <div class="item"><div style="min-width:0;flex:1"><div class="who"><b>${esc(m.label)}</b></div>
+        <div class="meta"><span>${big(m.month)} this month</span>${m.limit ? `<span>on track for ${big(m.projected)} of ${big(m.limit)} free</span><span class="tag ${m.pct >= 90 ? 'off' : m.pct >= 60 ? 'warn' : 'ok'}">${m.pct}%</span>` : ''}</div>
+        ${m.limit ? `<div class="tbar"><i style="width:${Math.min(100, m.pct)}%;background:${m.pct >= 90 ? 'var(--rec)' : m.pct >= 60 ? 'var(--amber)' : 'var(--mint)'}"></i></div>` : ''}</div></div>`).join('') + `
+      <div class="item"><div style="min-width:0;flex:1"><div class="who"><b>Emails today</b></div><div class="meta"><span>${use.emailsToday} of ${use.emailLimitPerDay} a day (Gmail)</span></div></div></div>
+      <div class="item"><div class="note">Counted by Tracket itself since ${esc(use.since || 'today')} — approximate (a few counts are lost when Vercel recycles an instance). “On track for” projects this month from the days so far. For exact numbers: Vercel → Usage, Turso → Usage.</div></div>`
+      : '<div class="empty">Usage isn’t available yet.</div>'}</div>
 
     ${past.length ? `<h2>Decided</h2><div class="list">${past.map((r) => `
       <div class="item"><div><div class="who"><b>${esc(r.name)}</b><span class="em">${esc(r.email)}</span></div>

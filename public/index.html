@@ -651,6 +651,7 @@ const ICON = {
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   palette: '<circle cx="13.5" cy="6.5" r="1.3"/><circle cx="17.5" cy="10.5" r="1.3"/><circle cx="8.5" cy="7.5" r="1.3"/><circle cx="6.5" cy="12.5" r="1.3"/><path d="M12 2a10 10 0 0 0 0 20c.93 0 1.5-.75 1.5-1.6 0-.42-.16-.8-.43-1.1-.26-.29-.42-.67-.42-1.1 0-.9.73-1.6 1.6-1.6H16a6 6 0 0 0 6-6c0-4.9-4.5-8.6-10-8.6z"/>',
+  slack: '<path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/>',
   phone: '<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/>',
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
 };
@@ -975,7 +976,8 @@ function renderDock(){
   const autoOn = !!p && (p.auto.cap.on || (p.auto.lunch && p.lunch));
   const autoSub = !p ? 'Off' : p.auto.cap.on ? `Stops at ${capLabel(p.auto.cap.hours)}` : autoOn ? 'Lunch stop on' : 'Off · set it up';
   const s = shiftNow(), sd = s && shiftFor(todayStr || ymd(new Date()));
-  const daySub = !s ? 'Add your shift' : sd ? `${sd.start}–${sd.end}${p?.lunch ? ` · 🍽 ${p.lunch.start}` : ''}` : 'Day off today';
+  const lvToday = leaveOn(todayStr || ymd(new Date()));
+  const daySub = lvToday != null ? `🌴 ${lvToday}` : !s ? 'Add your shift' : sd ? `${sd.start}–${sd.end}${p?.lunch ? ` · 🍽 ${p.lunch.start}` : ''}` : 'Day off today';
   const tile = (go, color, icon, title, sub, on, dot) => `<button class="tile ${on ? 'on' : ''}" data-go="${go}" style="--t:${color}">${dot ? '<i class="dot"></i>' : ''}<span class="ti">${ic(icon)}</span><span class="tt"><b>${title}</b><small>${sub}</small></span></button>`;
   const html = tile('auto', 'var(--amber)', 'bolt', 'Auto mode', esc(autoSub), autoOn, autoOn && scriptOld())
     + tile('day', 'var(--violet)', 'clock', 'Work day', esc(daySub), !!sd)
@@ -1000,6 +1002,9 @@ function renderNotes(){
   if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; el.querySelector('[data-upd]')?.addEventListener('click', () => openTimerSetup(false)); }
 }
 
+// ---------- leave & holidays ----------
+const leaveOn = (day) => (mode === 'live' ? meInfo?.leave?.[day] : null) ?? null;
+
 // ---------- work shift ----------
 let shift = null; // { days: { '1': { start: '10:00', end: '19:00' } } }, 0 = Sunday
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1020,7 +1025,9 @@ function renderShift(total){
   if (!data || (mode !== 'live' && mode !== 'demo')) { el.hidden = true; return; }
   let html;
   const day = data.date || viewDay || todayStr;
-  if (!shiftNow()) {
+  if (leaveOn(day) != null) {
+    html = `<div class="row"><span>🌴 <b>${esc(leaveOn(day))}</b> — you’re on leave. No reminders today${total ? `; ${hm(total)} logged anyway` : ''}.</span><button data-shift>Edit</button></div>`;
+  } else if (!shiftNow()) {
     html = `<div class="row"><span>Add your work shift to see live progress, a score, and get a reminder before your day ends.</span><button data-shift>Set shift</button></div>`;
   } else {
     const s = shiftFor(day), t = now(), today = isTodayView();
@@ -1061,6 +1068,20 @@ function renderShift(total){
 }
 
 function openShift(){ openSettings('day'); }
+// upcoming (and the last 30 days of) leave, grouped into runs of the same label
+function leaveChips(){
+  const days = Object.entries(meInfo?.leave || {}).sort(([a], [b]) => (a < b ? -1 : 1));
+  const cut = ymd(new Date(Date.now() - 30 * 864e5));
+  const runs = [];
+  for (const [d, label] of days) {
+    if (d < cut) continue;
+    const last = runs[runs.length - 1];
+    const prev = last && ymd(new Date(parseDay(last.to).getTime() + 864e5));
+    if (last && last.label === label && prev === d) { last.to = d; last.days.push(d); } else runs.push({ from: d, to: d, label, days: [d] });
+  }
+  const fmt = (d) => parseDay(d).toLocaleDateString([], { day: 'numeric', month: 'short' });
+  return runs.length ? runs.map((r) => `<span>🌴 ${esc(r.label)} · ${fmt(r.from)}${r.to !== r.from ? `–${fmt(r.to)}` : ''} <button class="linkish" data-unleave="${r.days.join(',')}" aria-label="Remove">✕</button></span>`).join('') : '<span>No leave planned</span>';
+}
 function openAuto(){ openSettings('auto'); }
 
 function toast(msg){
@@ -1357,6 +1378,7 @@ const SET_TABS = [
   { k: 'alerts', t: 'Notifications', i: 'bell' },
   { k: 'mac', t: 'Mac menu bar', i: 'laptop' },
   { k: 'phone', t: 'Phone widget', i: 'phone' },
+  { k: 'slack', t: 'Slack status', i: 'slack' },
   { k: 'look', t: 'Appearance', i: 'palette' },
   { k: 'account', t: 'Account', i: 'user' },
 ];
@@ -1423,10 +1445,26 @@ const PANES = {
         <div class="group"><div class="gh">${ic('coffee')}Lunch</div>
           <div class="lunchrow">From <input type="time" id="lS" value="${L?.start || ''}" aria-label="Lunch start"> to <input type="time" id="lE" value="${L?.end || ''}" aria-label="Lunch end"></div>
           <small class="hint">Shows lunch on your day bar and flags logged time that ran through it, with a <b>Remove lunch</b> button. Leave both empty for no lunch. To stop the timer for lunch automatically, see <a href="#" data-goto="auto">Auto mode</a>.</small></div>
+        <div class="group"><div class="gh">🌴 Leave &amp; holidays</div>
+          <p>Days off: no shift reminders, nudges, Failsafe or daily report, and they don’t break your streak.</p>
+          <div class="lunchrow">From <input type="date" id="lvF"> to <input type="date" id="lvT"></div>
+          <div class="lunchrow"><input id="lvL" placeholder="Label — Leave, Diwali, Sick…" maxlength="40" style="font-family:var(--sans)"><button class="btn ghost sm-inline" id="lvAdd" style="height:38px">Add</button></div>
+          <div class="chipsx" id="lvList">${leaveChips()}</div></div>
         <div class="savebar"><div class="formerr" id="dErr"></div><button class="btn" id="dSave">Save work day</button></div>`;
     },
     bind: (el, again) => {
       el.querySelectorAll('.srow input[type=checkbox]').forEach((c) => c.onchange = () => c.closest('.srow').classList.toggle('off', !c.checked));
+      const lvRefresh = () => { el.querySelector('#lvList').innerHTML = leaveChips(); };
+      el.querySelector('#lvAdd').onclick = async () => {
+        const from = el.querySelector('#lvF').value, to = el.querySelector('#lvT').value || from, label = el.querySelector('#lvL').value;
+        if (!from) return toast('Pick a date first');
+        try { meInfo.leave = (await api('/api/leave', { json: { add: { from, to, label } } })).days; lvRefresh(); toast('Leave added 🌴'); tick(); }
+        catch (x) { toast(x.message); }
+      };
+      el.querySelector('#lvList').onclick = async (e) => {
+        const b = e.target.closest('[data-unleave]'); if (!b) return;
+        try { meInfo.leave = (await api('/api/leave', { json: { remove: b.dataset.unleave.split(',') } })).days; lvRefresh(); tick(); } catch (x) { toast(x.message); }
+      };
       el.querySelector('#copyMon').onclick = () => {
         const mon = el.querySelector('.srow[data-d="1"]');
         el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) { r.querySelector('.st').value = mon.querySelector('.st').value; r.querySelector('.en').value = mon.querySelector('.en').value; } });
@@ -1505,7 +1543,10 @@ const PANES = {
         <small class="hint" id="repLast"></small></div>
       <div class="group"><label class="sw"><input type="checkbox" id="wkOn" ${meInfo?.prefs?.report?.weekly ? 'checked' : ''}><span class="lbl"><b>Weekly email report</b>
         <small>Your week in one email — each day against 7h, full days, and top tickets. Sent after the last shift of your week (Friday 20:00 without a shift).</small></span></label>
-        <div class="row2" style="margin-top:14px"><button class="btn ghost" id="wkTest">${ic('mail')}Send this week’s now</button></div><small class="hint" id="wkLast"></small></div>`,
+        <div class="row2" style="margin-top:14px"><button class="btn ghost" id="wkTest">${ic('mail')}Send this week’s now</button></div><small class="hint" id="wkLast"></small></div>
+      <div class="group"><label class="sw"><input type="checkbox" id="moOn" ${meInfo?.prefs?.report?.monthly ? 'checked' : ''}><span class="lbl"><b>Monthly email report</b>
+        <small>On the 1st: last month’s total, full days, each week, projects, top tickets and a link to the timesheet.</small></span></label>
+        <div class="row2" style="margin-top:14px"><button class="btn ghost" id="moTest">${ic('mail')}Send this month so far</button></div><small class="hint" id="moLast"></small></div>`,
     bind: (el, again) => {
       const info = el.querySelector('#pushInfo');
       api('/api/push').then((r) => { info.textContent = r.devices.length ? `Signed up: ${r.devices.map((d) => d.ua || 'a device').join(', ')}.` : 'No devices signed up yet.'; }).catch(() => {});
@@ -1522,6 +1563,16 @@ const PANES = {
         try { meInfo.prefs = await api('/api/prefs', { json: { nudge: { [c.dataset.nudge]: e.target.checked } } }); toast(e.target.checked ? 'Nudge on ✦' : 'Nudge off'); }
         catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
       });
+      el.querySelector('#moOn').onchange = async (e) => {
+        try { meInfo.prefs = await api('/api/prefs', { json: { report: { monthly: e.target.checked } } }); toast(e.target.checked ? 'Monthly report on ✦' : 'Monthly report off'); }
+        catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
+      };
+      el.querySelector('#moTest').onclick = async (e) => {
+        const b = e.currentTarget, out = el.querySelector('#moLast'); b.disabled = true; out.textContent = 'Sending…';
+        try { const r = await api('/api/report/monthly', { json: {} }); out.textContent = r.ok ? `Sent to ${meInfo.email} — check your inbox (and spam).` : `Couldn’t send: ${r.error}`; }
+        catch (x) { out.textContent = x.message; }
+        b.disabled = false;
+      };
       el.querySelector('#wkOn').onchange = async (e) => {
         try { meInfo.prefs = await api('/api/prefs', { json: { report: { weekly: e.target.checked } } }); toast(e.target.checked ? 'Weekly report on ✦' : 'Weekly report off'); }
         catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
@@ -1590,6 +1641,45 @@ const PANES = {
         catch { b.textContent = 'Copy failed — use download'; }
         setTimeout(() => { b.textContent = 'Copy my widget'; }, 2500);
       };
+    },
+  },
+
+  slack: {
+    html: () => {
+      const on = !!meInfo?.prefs?.slack?.on, linked = !!meInfo?.slack;
+      return `${paneHead('slack', 'Slack status', 'While your timer runs, Slack shows “🟢 On: <ticket>” — cleared when it stops.')}
+      <div class="group"><div class="gh">${ic('link')}Your Slack ${badge(linked, 'Connected', 'Not connected')}</div>
+        ${linked ? `<p>Connected. Tracket only changes your status text and emoji, and only clears a status it set.</p>
+          <label class="sw"><input type="checkbox" id="skOn" ${on ? 'checked' : ''}><span class="lbl"><b>Show my running ticket as my Slack status</b><small>Updates within seconds of a start or stop.</small></span></label>
+          <div class="lunchrow" style="margin-top:12px">Emoji <input id="skEmoji" value="${esc(meInfo?.prefs?.slack?.emoji || ':large_green_circle:')}" style="font-family:var(--mono)"></div>
+          <div class="row2"><button class="btn ghost" id="skTest">Test it (2 min)</button><button class="btn danger" id="skOff">Disconnect</button></div>`
+        : `<ol class="steps" style="margin:0 0 12px">
+            <li>Open <a href="https://api.slack.com/apps?new_app=1" target="_blank" rel="noopener"><b>api.slack.com/apps</b></a> → <b>Create New App</b> → <b>From scratch</b>. Name it <b>Tracket</b>, pick your workspace.</li>
+            <li><b>OAuth &amp; Permissions</b> → <b>User Token Scopes</b> → add <code>users.profile:write</code>.</li>
+            <li>Scroll up → <b>Install to Workspace</b> → <b>Allow</b>. (Some workspaces need an admin’s OK.)</li>
+            <li>Copy the <b>User OAuth Token</b> (starts with <code>xoxp-</code>) and paste it here.</li></ol>
+          <form id="skForm"><div class="field"><label>User OAuth Token</label><input name="token" type="password" autocomplete="off" required placeholder="xoxp-…"></div>
+          <div class="formerr"></div><button class="btn" style="width:100%">Connect Slack</button></form>
+          <small class="hint">Stored encrypted, like your Asana token. Only your own status is ever touched.</small>`}</div>`;
+    },
+    bind: (el, again) => {
+      if (el.querySelector('#skForm')) form(el, async (v) => {
+        const r = await api('/api/slack', { json: v });
+        meInfo.slack = true; meInfo.prefs = await api('/api/prefs', { json: { slack: { on: true } } });
+        toast(`Slack connected — ${r.user} @ ${r.team} ✦`); again();
+      }, '#skForm');
+      el.querySelector('#skOn')?.addEventListener('change', async (e) => {
+        try { meInfo.prefs = await api('/api/prefs', { json: { slack: { on: e.target.checked } } }); toast(e.target.checked ? 'Slack status on ✦' : 'Slack status off'); }
+        catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
+      });
+      el.querySelector('#skEmoji')?.addEventListener('change', async (e) => {
+        try { meInfo.prefs = await api('/api/prefs', { json: { slack: { emoji: e.target.value.trim() } } }); toast('Emoji saved'); } catch (x) { toast(x.message); }
+      });
+      el.querySelector('#skTest')?.addEventListener('click', async () => { try { await api('/api/slack/test', { json: {} }); toast('Check your Slack status ✦'); } catch (x) { toast(x.message); } });
+      el.querySelector('#skOff')?.addEventListener('click', async () => {
+        if (!confirm('Disconnect Slack? Your token is deleted from Tracket.')) return;
+        await api('/api/slack', { method: 'DELETE' }); meInfo.slack = false; again();
+      });
     },
   },
 
@@ -1789,13 +1879,13 @@ function drawPip(c){
 async function openHistory(tab){
   tab = tab || getLS('tk_hist_tab') || 'days';
   const el = modal(`${paneHead('chart', 'History & insights', 'Your days, your weeks, and where the time went.')}
-    <div class="htabs" id="htabs"><button data-h="days">Last 14 days</button><button data-h="weeks">Weeks</button><button data-h="ins">Insights</button></div>
+    <div class="htabs" id="htabs"><button data-h="days">Last 14 days</button><button data-h="weeks">Weeks</button><button data-h="ins">Insights</button><button data-h="exp">Export</button></div>
     <div class="hist" id="hist"><div class="skel"></div></div>`, { wide: true, focus: false });
   const show = (k) => {
     setLS('tk_hist_tab', k);
     el.querySelectorAll('[data-h]').forEach((b) => b.classList.toggle('on', b.dataset.h === k));
     const box = el.querySelector('#hist'); box.innerHTML = '<div class="skel"></div>';
-    (k === 'days' ? histDays : k === 'weeks' ? histWeeks : histInsights)(box).catch((x) => { box.innerHTML = `<p class="lead">Couldn’t load that: ${esc(x.message)}</p>`; });
+    (k === 'days' ? histDays : k === 'weeks' ? histWeeks : k === 'exp' ? histExport : histInsights)(box).catch((x) => { box.innerHTML = `<p class="lead">Couldn’t load that: ${esc(x.message)}</p>`; });
   };
   el.querySelector('#htabs').onclick = (e) => { const b = e.target.closest('[data-h]'); if (b) show(b.dataset.h); };
   show(tab);
@@ -1809,7 +1899,7 @@ function demoDays(n){
 async function historyData(n){
   const h = mode === 'demo' ? demoDays(n) : await api(`/api/history?days=${n}`);
   const today = todayStr || ymd(new Date());
-  return h.days.map((d) => d.date === today ? { ...d, minutes: Math.max(d.minutes || 0, Math.round(totals().total / 60)) } : d);
+  return h.days.map((d) => ({ ...(d.date === today ? { ...d, minutes: Math.max(d.minutes || 0, Math.round(totals().total / 60)) } : d), leave: leaveOn(d.date) }));
 }
 // full days (7h+) in a row, counting back from the last working day
 function streakOf(days){
@@ -1819,7 +1909,7 @@ function streakOf(days){
     if (d.minutes == null) break;
     if (d.minutes >= MIN_DAY_MIN) n++;
     else if (i === days.length - 1 && d.minutes < MIN_DAY_MIN) continue; // today may still be going
-    else if (we && !d.minutes) continue; // weekends off don't break it
+    else if ((we || d.leave != null) && !d.minutes) continue; // weekends off and leave don't break it
     else break;
   }
   return n;
@@ -1827,7 +1917,7 @@ function streakOf(days){
 async function histDays(box){
   const days = await historyData(14);
   const today = todayStr || ymd(new Date()), cur = viewDay || today;
-  const known = days.filter((d) => d.minutes != null), worked = known.filter((d) => d.minutes > 0);
+  const known = days.filter((d) => d.minutes != null), worked = known.filter((d) => d.minutes > 0 && d.leave == null);
   const avg = worked.length ? worked.reduce((s, d) => s + d.minutes, 0) / worked.length : 0;
   const top = Math.max(9 * 60, ...known.map((d) => d.minutes));
   box.innerHTML = `<div class="hstats">
@@ -1835,8 +1925,8 @@ async function histDays(box){
       <div><b>${worked.filter((d) => d.minutes >= MIN_DAY_MIN).length}<span style="color:var(--dim)">/${worked.length}</span></b><small>days at 7h or more</small></div>
       <div><b>${streakOf(days)} 🔥</b><small>full days in a row</small></div></div>
     <div class="hchart"><div class="l7" style="bottom:${MIN_DAY_MIN / top * 100}%"><span>7h</span></div>
-      ${days.map((d) => `<div class="hcol ${d.date === cur ? 'sel' : ''}" data-d="${d.date}" title="${esc(dayName(d.date, true))}: ${d.minutes == null ? 'not loaded yet' : hm(d.minutes * 60)}">
-        <span class="hv">${d.minutes ? `${Math.floor(d.minutes / 60)}:${pad(d.minutes % 60)}` : ''}</span>
+      ${days.map((d) => `<div class="hcol ${d.date === cur ? 'sel' : ''}" data-d="${d.date}" title="${esc(dayName(d.date, true))}: ${d.leave != null ? `${esc(d.leave)} · ` : ''}${d.minutes == null ? 'not loaded yet' : hm(d.minutes * 60)}">
+        <span class="hv">${d.minutes ? `${Math.floor(d.minutes / 60)}:${pad(d.minutes % 60)}` : d.leave != null ? '🌴' : ''}</span>
         <div class="hb ${d.minutes == null ? 'none' : ''}" style="--c:${levelColor(d.minutes || 0)};height:0"></div></div>`).join('')}</div>
     <div class="hdays">${days.map((d) => { const x = parseDay(d.date); return `<span class="${x.getDay() % 6 === 0 ? 'we' : ''}"><b>${x.toLocaleDateString([], { weekday: 'narrow' })}</b>${x.getDate()}</span>`; }).join('')}</div>
     <div class="hkey"><span><i style="background:var(--rec)"></i>under 7h</span><span><i style="background:var(--amber)"></i>7h+</span><span><i style="background:var(--mint)"></i>8h+</span><span>Tap a day to open it</span></div>`;
@@ -1854,7 +1944,7 @@ async function histWeeks(box){
     w.days.push(d);
   }
   const rows = weeks.slice(-8).map((w) => {
-    const worked = w.days.filter((d) => d.minutes > 0), total = w.days.reduce((s, d) => s + (d.minutes || 0), 0);
+    const worked = w.days.filter((d) => d.minutes > 0 && d.leave == null), total = w.days.reduce((s, d) => s + (d.minutes || 0), 0);
     return { ...w, total, worked: worked.length, full: worked.filter((d) => d.minutes >= MIN_DAY_MIN).length, avg: worked.length ? total / worked.length : 0 };
   });
   const top = Math.max(40 * 60, ...rows.map((r) => r.total));
@@ -1884,6 +1974,27 @@ async function histInsights(box, range){
     ${d.complete ? '' : '<p class="hint">Some days aren’t loaded yet — open them once to include them.</p>'}`;
   box.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => { box.innerHTML = '<div class="skel"></div>'; histInsights(box, b.dataset.r).catch((x) => { box.innerHTML = `<p class="lead">${esc(x.message)}</p>`; }); });
 }
+// Timesheet export: a range → CSV download, or the printable page (Save as PDF).
+async function histExport(box){
+  const t = parseDay(todayStr || ymd(new Date()));
+  const mon = (d) => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+  const add = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const presets = {
+    week: [mon(t), t], lastweek: [add(mon(t), -7), add(mon(t), -1)],
+    month: [new Date(t.getFullYear(), t.getMonth(), 1), t], lastmonth: [new Date(t.getFullYear(), t.getMonth() - 1, 1), new Date(t.getFullYear(), t.getMonth(), 0)],
+  };
+  box.innerHTML = `<div class="htabs"><button data-p="week" class="on">This week</button><button data-p="lastweek">Last week</button><button data-p="month">This month</button><button data-p="lastmonth">Last month</button></div>
+    <div class="lunchrow">From <input type="date" id="exF"> to <input type="date" id="exT"></div>
+    <div class="row2" style="margin-top:6px"><button class="btn" id="exPdf">${ic('download')}Timesheet (print / PDF)</button><button class="btn ghost" id="exCsv">${ic('download')}CSV for Excel / Sheets</button></div>
+    <p class="hint" style="margin-top:12px">One row per day and ticket, with its project — up to 62 days. The PDF page has sign-off lines for approval.</p>`;
+  const f = box.querySelector('#exF'), to = box.querySelector('#exT');
+  const pick = (k) => { f.value = ymd(presets[k][0]); to.value = ymd(presets[k][1]); box.querySelectorAll('[data-p]').forEach((b) => b.classList.toggle('on', b.dataset.p === k)); };
+  box.querySelectorAll('[data-p]').forEach((b) => b.onclick = () => pick(b.dataset.p));
+  pick('week');
+  const qs = (extra) => new URLSearchParams({ tz: TZ, from: f.value, to: to.value, ...extra });
+  box.querySelector('#exPdf').onclick = () => { if (mode !== 'live') return openLogin(); window.open(`/timesheet.html?${qs({})}`, '_blank'); };
+  box.querySelector('#exCsv').onclick = () => { if (mode !== 'live') return openLogin(); location.href = `/api/timesheet?${qs({ format: 'csv' })}`; };
+}
 const DEMO_INSIGHTS = { total: 2280, complete: true,
   projects: [{ name: 'Checkout revamp', minutes: 910 }, { name: 'Mobile app', minutes: 640 }, { name: 'Platform', minutes: 420 }, { name: 'Meetings', minutes: 310 }],
   tags: [{ name: 'Android', minutes: 700 }, { name: 'iOS', minutes: 520 }, { name: 'P1', minutes: 480 }, { name: 'Backend', minutes: 390 }],
@@ -1902,6 +2013,8 @@ function commands(){
   L.push({ t: 'History — last 14 days', i: 'chart', k: 'H', run: () => openHistory('days') });
   L.push({ t: 'Weeks', i: 'chart', run: () => openHistory('weeks') });
   L.push({ t: 'Insights — where my time went', i: 'chart', run: () => openHistory('ins') });
+  L.push({ t: 'Export timesheet (PDF / CSV)', i: 'download', run: () => openHistory('exp') });
+  if (live_) L.push({ t: 'Add leave or a holiday', i: 'cal', run: () => openSettings('day') });
   L.push({ t: 'Go to today', i: 'cal', k: 'T', run: () => setDay(null) });
   L.push({ t: 'Previous day', i: 'cal', k: '←', run: () => shiftDay(-1) });
   if (live_) {

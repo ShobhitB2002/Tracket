@@ -2,7 +2,7 @@
   "name": "tracket",
   "version": "3.0.0",
   "private": true,
-  "description": "Members-only, dark-mode live dashboard for Asana time tracking \u2014 today's tickets, the running timer and your total, in real time.",
+  "description": "Members-only, dark-mode live dashboard for Asana time tracking — today's tickets, the running timer and your total, in real time.",
   "license": "SEE LICENSE IN LICENSE",
   "author": "Shobhit Bansal",
   "repository": {
@@ -11,7 +11,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "for f in server.js lib/*.js api/*.js tracket.user.js tracket.menubar.js; do node --check $f || exit 1; done"
+    "check": "for f in server.js lib/*.js api/*.js tracket.user.js tracket.menubar.js; do node --check $f || exit 1; done",
+    "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=18"

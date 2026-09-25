@@ -161,6 +161,17 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   totals, never tickets.
 - **Command bar** ⌘K / Ctrl K, shortcuts S P H , ? T ← →; **tour** (`startTour`, once per browser: `tk_tour`); offline banner;
   ticket-shaped skeletons.
+- **Leave & holidays** (`lib/leave.js`, `u:<id>:leave = {days:{date:label}}`, `/api/leave`, Settings → Work day): no shift, reminders,
+  nudges, Failsafe or daily report (unless time was logged); streaks, weekly/monthly stats and the team board treat them as leave.
+- **Timesheet export** (`core.timesheet`, `GET /api/timesheet?from&to&format=csv|json`, ≤62 days; `public/timesheet.html` prints /
+  saves as PDF, always light). History → Export. `rangeTotals` also returns `cells` (day|gid → minutes).
+- **Monthly email** (`report.monthly`): sent on the 1st after 09:00 for the month before; `POST /api/report/monthly` = month so far.
+- **Slack status** (`lib/slack.js`): member's own Slack app user token (`users.profile:write`), encrypted at `u:<id>:slack`; synced
+  on every start/stop from `/api/event`, with `evaluate` as a backup; only clears a status Tracket set (`slackst.set`).
+- **Hosting usage** (`lib/usage.js`, admin → Hosting usage, `GET /api/admin/usage`): requests, DB reads/writes (`store.ops`), Asana,
+  email, push counted per instance and added to `use:<UTC day>` at most once a minute; projected against the free-tier limits.
+- **Tests:** `npm test` (node:test, zero deps; each file uses its own store via `TRACKET_DATA_FILE`), `npm run check`; GitHub
+  Actions runs both on Node 18/20/22 for every push (`.github/workflows/test.yml`).
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
