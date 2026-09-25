@@ -135,6 +135,28 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
   'hour'|'start'|'stop')`: Anime sparkles, Manhwa SFX (DING!/BOOM!), Games LEVEL UP + optional sounds (`tk_sound`, off by default).
   All motion off with prefers-reduced-motion. Picker: palette button in the header (visitors too) and Settings → Appearance.
   Guide and admin load themes.js/themes.css too (same variables; they follow the saved theme from localStorage). Emails stay default.
+- **Start / Stop from Tracket (2026-09-25):** hero button, ▶ on each ticket (start or switch), ⌘K, `S`, menu bar items, pop-out.
+  `POST /api/control {action:'start'|'stop', gid?}` → `alerts.command` makes a `kind:'manual'` action (no countdown, no Deny,
+  `patience` 90s, key `m<ts>` in `auto:<day>`) through the same claim → press → result pipeline; `switch` = stop `stopGid` then
+  start `gid`. Plain Start = `core.nextTicket` (most recent logged ticket not completed; `/api/next`, cached). Manual successes
+  add no alert; failures do. Fast path: userscript v2.6 also runs on the Tracket site; the dashboard sets `data-tracket-action`
+  on `<html>`, the script copies it to userscript storage (`tracket-relay`, GM.setValue) and every Asana tab reads it each second.
+- **Failsafe (auto mode):** `auto.failsafe` — any timer outside the shift (or past the daily limit when that's on) gets a
+  `kind:'failsafe'` stop, key `fs<startedAt>` (every run), 10s countdown, `noDeny` (deny → `locked`). Manual Start outside the
+  shift is refused. **Nudges** (`nudge.idle`, `nudge.late`, both default on): 20 min with nothing running in the shift (needs a
+  fresh heartbeat, not at lunch; `rt.idleFrom`), and a timer still running 15 min after the shift / 21:00.
+- **Weekly email** (`report.weekly`): `report.maybeSendWeekly` on the last shift weekday (Fri without a shift), 30 min after it
+  ends; `POST /api/report/weekly` sends now. Uses `core.rangeTotals` (one ranged Asana call).
+- **History modal:** Days (14, streak), Weeks (8, from `/api/history?days=56`), Insights (`/api/insights?range=week|month`:
+  per project — subtasks inherit the parent's —, per tag, top tickets with "Estimated time" custom field vs `actual_time_minutes`,
+  over-estimate list; ticket details cached in `tmeta` 6h).
+- **Pop-out mini timer:** Document Picture-in-Picture (Chromium) with Start/Stop, else canvas → video PiP (Safari). Can't be
+  tested in the Claude built-in browser (blocked there).
+- **Phone widget:** `tracket.widget.js` (Scriptable), served filled-in at `/api/widget`; reads `/api/bar` with the member key.
+- **Team board (admin):** `GET /api/admin/team` — only members with `team.share` on (Settings → Account); status + today/7-day
+  totals, never tickets.
+- **Command bar** ⌘K / Ctrl K, shortcuts S P H , ? T ← →; **tour** (`startTour`, once per browser: `tk_tour`); offline banner;
+  ticket-shaped skeletons.
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
@@ -153,7 +175,7 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 
 Production: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `GMAIL_USER` (tracket.vuseia@gmail.com), `GMAIL_APP_PASSWORD`;
 Production + Preview: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. Removed: all Upstash/KV vars, Telegram, `RESEND_API_KEY`
-(Resend code stays as an unused fallback). Owner's installed copies: userscript v2.4 (Safari Userscripts), menu bar v2.1 (v2.5 / v2.2 released 2026-09-25)
+(Resend code stays as an unused fallback). Owner's installed copies: userscript v2.6 (Safari Userscripts), menu bar v2.3 (updated in place 2026-09-25)
 (`~/Documents/SwiftBar/tracket.js`).
 
 ## Free-tier budget (target: ≤10 members, all free)

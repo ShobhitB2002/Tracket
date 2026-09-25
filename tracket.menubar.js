@@ -1,7 +1,7 @@
 #!/usr/bin/osascript -l JavaScript
 // <swiftbar.type>streamable</swiftbar.type>
 // <swiftbar.title>Tracket</swiftbar.title>
-// <swiftbar.version>2.2</swiftbar.version>
+// <swiftbar.version>2.3</swiftbar.version>
 // <swiftbar.author>Tracket</swiftbar.author>
 // <swiftbar.desc>Your running Asana timer (to the second), today's total and Tracket alerts in the menu bar.</swiftbar.desc>
 // <swiftbar.hideAbout>true</swiftbar.hideAbout>
@@ -52,6 +52,12 @@ function run(argv) {
   // tells the running copy to fetch again right away.
   if (argv[0] === 'seen') { try { curl('POST', '/api/alerts/seen', { upTo: 9e15 }); } catch (e) {} writeFile(cache, ''); return ''; }
   if (argv[0] === 'refresh') { writeFile(cache, ''); return ''; }
+  if (argv[0] === 'start' || argv[0] === 'stop') {
+    let msg = '';
+    try { const out = curl('POST', '/api/control', { action: argv[0] }).split('\n'); const code = out.pop(); if (code !== '200') msg = (JSON.parse(out.join('\n')).error || code); } catch (e) { msg = 'Can’t reach Tracket'; }
+    if (msg) app.displayNotification(msg, { withTitle: 'Tracket' });
+    writeFile(cache, ''); return '';
+  }
   if (argv[0] === 'deny') { try { curl('POST', '/api/auto', { id: argv[1], op: 'deny' }); } catch (e) {} writeFile(cache, ''); return ''; }
 
   let c = null, problem = null;
@@ -157,6 +163,10 @@ function run(argv) {
   }
 
   function act(a) {
+    if (a.action === 'switch') {
+      const err = act({ ...a, id: a.id + ':stop', action: 'stop', gid: a.stopGid });
+      return err || act({ ...a, id: a.id + ':start', action: 'start' });
+    }
     let refs = tabRefs();
     // a tab already showing the button first
     refs.sort((x, y) => { const has = (r) => { try { return r.run(HAS_STOP) === true ? 0 : 1; } catch (e) { return 2; } }; return has(x) - has(y); });
@@ -165,7 +175,7 @@ function run(argv) {
     const end = Date.now() + 30000;
     let last = '';
     while (Date.now() < end) {
-      try { last = tab.run(STEP(a.id, a.action, a.gid)); } catch (e) { last = 'error'; }
+      try { last = tab.run(STEP(a.id, a.action, a.action === 'stop' ? a.stopGid || a.gid : a.gid)); } catch (e) { last = 'error'; }
       if (last === 'done') return null;
       delay(1);
     }
@@ -184,7 +194,7 @@ function run(argv) {
     let j = null;
     try { const out = curl('POST', '/api/auto', { id: a.id, op: 'claim' }).split('\n'); out.pop(); j = JSON.parse(out.join('\n')); } catch (e) {}
     if (!j || !j.go) return false; // a tab got there first (or it's no longer needed); the next fetch shows it
-    emit(`⏹ ${a.action === 'stop' ? 'Stopping' : 'Restarting'} your timer… | font=Menlo size=12`);
+    emit(`⏹ ${a.action === 'stop' ? 'Stopping' : a.action === 'switch' ? 'Switching' : 'Starting'} your timer… | font=Menlo size=12`);
     const err = act(j.rec || a);
     try { curl('POST', '/api/auto', { id: a.id, op: 'result', ok: !err, error: err || undefined }); } catch (e) {}
     return true;
@@ -212,9 +222,9 @@ function run(argv) {
     const tag = au ? `⏹${auLeft ? auLeft + 's' : '…'} ` : '';
     L.push(c.running ? `${tag}${bell}● ${hms(runSec)} · ${hms(total)} | font=Menlo size=12` : `${tag}${bell}◔ ${hm(total)}`);
     L.push('---');
-    if (au) L.push(`Auto mode: ${clean(au.title.replace(/ in 25s/, ''))} | color=#ffb547`, `Deny | ${action('deny', au.id)}`, '---');
-    if (c.running) L.push(`● ${clean(c.running.name || 'Untitled task')} | href=${c.running.url} length=60 color=#ff4d6d`, `Running for ${hms(runSec)} | size=12 font=Menlo`);
-    else L.push('Nothing ticking | color=gray');
+    if (au && au.kind !== 'manual') L.push(`${au.kind === 'failsafe' ? 'Failsafe' : 'Auto mode'}: ${clean(au.title.replace(/ in \d+s/, ''))} | color=#ffb547`, ...(au.noDeny ? [] : [`Deny | ${action('deny', au.id)}`]), '---');
+    if (c.running) L.push(`● ${clean(c.running.name || 'Untitled task')} | href=${c.running.url} length=60 color=#ff4d6d`, `Running for ${hms(runSec)} | size=12 font=Menlo`, `■ Stop timer | ${action('stop')}`);
+    else L.push('Nothing ticking | color=gray', ...(c.next ? [`▶ Start “${clean(c.next.name)}” | ${action('start')} length=60`] : []));
     const status = total >= 8 * 3600 ? '8h goal done ✦' : total >= 7 * 3600 ? '7h minimum done' : `${hm(7 * 3600 - total)} to 7h`;
     L.push(`Today ${hms(total)} · ${status} | size=12`);
     if (!c.linked) L.push('Asana tab isn’t reporting — live timer paused | color=#ff9f0a size=12');

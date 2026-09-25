@@ -82,6 +82,9 @@ input:focus{border-color:var(--amber)}
 
 h1,section h2,.top h1,.top .t b{font-family:var(--display)}
 .stat b{font-family:var(--num)}
+.tbar{position:relative;height:6px;border-radius:6px;background:var(--field);margin-top:10px;overflow:hidden;max-width:360px}
+.tbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--amber)}
+.tbar u{position:absolute;top:0;bottom:0;left:87.5%;width:2px;background:var(--ink);opacity:.4}
 </style>
 <link rel="stylesheet" href="/themes.css">
 </head>
@@ -135,6 +138,9 @@ async function render(){
   let d;
   try { d = await api('/api/admin/overview'); } catch { return; }
   const cron = await fetch('/api/admin/cron', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({}));
+  const team = (await fetch('/api/admin/team', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({}))).team || [];
+  const hm = (min) => { const h = Math.floor(min / 60), m = Math.round(min % 60); return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`; };
+  const lvl = (min) => (min >= 480 ? 'ok' : min >= 420 ? 'warn' : 'off');
   const pending = d.requests.filter((r) => r.status === 'pending');
   const past = d.requests.filter((r) => r.status !== 'pending').slice(0, 20);
   const active = d.members.filter((m) => m.status === 'active');
@@ -147,6 +153,14 @@ async function render(){
       <div class="stat"><b>${active.length}</b><span>Members</span></div>
       <div class="stat"><b>${d.members.filter((m) => m.asana).length}</b><span>Asana linked</span></div>
     </div>
+
+    <h2>Team board</h2>
+    <div class="list">${team.length ? team.map((t, i) => `
+      <div class="item"><div><div class="who"><b>${i === 0 && t.today ? '🏆 ' : ''}${esc(t.name)}</b></div>
+        <div class="meta"><span class="tag ${t.running ? 'ok' : t.linked ? 'warn' : 'off'}">${t.running ? `● running · ${hm((Date.now() - t.since) / 60000)}` : t.linked ? 'idle' : 'Asana tab closed'}</span>
+          <span class="tag ${lvl(t.today)}">today ${hm(t.today)}</span><span>7 days ${hm(t.week)}</span></div>
+        <div class="tbar"><i style="width:${Math.min(100, t.today / 480 * 100)}%"></i><u></u></div></div></div>`).join('')
+      : '<div class="empty">No one shares yet. Members opt in from Settings → Account → “Show me on the team board”.</div>'}</div>
 
     <h2>Access requests</h2>
     <div class="list">${pending.length ? pending.map((r) => `

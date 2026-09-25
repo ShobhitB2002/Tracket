@@ -96,7 +96,8 @@ h1,section h2,.top h1,.top .t b{font-family:var(--display)}
   <nav class="toc" aria-label="Sections">
     <a href="#start">1 · Getting started</a><a href="#shift">2 · Work shift</a><a href="#notify">3 · Notifications</a>
     <a href="#auto">4 · Auto mode</a><a href="#lunch">5 · Lunch</a><a href="#comment">6 · Comments</a>
-    <a href="#email">7 · Daily email</a><a href="#menubar">8 · Mac menu bar</a><a href="#help">9 · Problems?</a>
+    <a href="#email">7 · Emails</a><a href="#menubar">8 · Mac menu bar</a><a href="#control">9 · Start/stop & pop-out</a>
+    <a href="#history">10 · History & insights</a><a href="#phone">11 · Phone widget</a><a href="#keys">12 · Shortcuts</a><a href="#help">13 · Problems?</a>
   </nav>
 
   <section id="start">
@@ -232,12 +233,14 @@ h1,section h2,.top h1,.top .t b{font-family:var(--display)}
   </section>
 
   <section id="email">
-    <h2><i>📧</i> Daily email report <span class="time">≈ 30 sec</span></h2>
+    <h2><i>📧</i> Email reports <span class="time">≈ 30 sec</span></h2>
     <ol class="steps">
-      <li>⚙ <b>Settings → Daily email report</b> → tick <b>Email me a daily report</b>.</li>
-      <li>Click <b>Send today’s report now</b> to see what it looks like (check spam the first time and mark it “not spam”).</li>
+      <li>⚙ <b>Settings → Notifications</b> → switch on <b>Daily email report</b> and/or <b>Weekly email report</b>.</li>
+      <li>Click <b>Send today’s report now</b> (or <b>this week’s</b>) to see what it looks like — check spam the first time and mark it “not spam”.</li>
     </ol>
-    <p>It arrives 30 minutes after your shift ends (or at 8 pm on days without a shift): your total, every ticket, anything worth a second look, and all reminders of the day. It goes to your login email — change it in ⚙ <b>Settings → Email</b>.</p>
+    <p><b>Daily:</b> 30 minutes after your shift ends (8 pm without a shift) — your total, every ticket, anything worth a second look, and all reminders of the day.</p>
+    <p><b>Weekly:</b> after the last shift of your week (Friday 8 pm without a shift) — each day against 7h, how many full days, and your top tickets.</p>
+    <p>Both go to your login email — change it in ⚙ <b>Settings → Account</b>.</p>
   </section>
 
   <section id="menubar">
@@ -260,6 +263,52 @@ h1,section h2,.top h1,.top .t b{font-family:var(--display)}
     </table>
     <div class="tip">New data arrives about once a minute; the seconds tick on their own. Choose <b>Refresh now</b> in the menu if you want it sooner.</div>
     <div class="tip">To start SwiftBar automatically: open SwiftBar’s menu → <b>Preferences → Launch at login</b>.</div>
+  </section>
+
+  <section id="control">
+    <h2><i>▶</i> Start, stop &amp; pop out <span class="time">≈ 1 min</span></h2>
+    <p>The big button at the top right of your total starts and stops your Asana timer — Tracket presses Asana’s own button in your Asana tab, so everything is logged in Asana as usual.</p>
+    <ul>
+      <li><b>Start</b> uses the last ticket you logged time on that isn’t marked complete. The button shows which one.</li>
+      <li>Hover a ticket in the list and press <b>▶</b> to start it — or to <b>switch</b> the running timer to it.</li>
+      <li>The <b>▢</b> next to it pops out a <b>mini timer</b> that stays on top of your other windows (Chrome, Brave, Edge: with its own Start/Stop; Safari: a picture-in-picture clock).</li>
+      <li>The Mac menu bar has <b>▶ Start</b> / <b>■ Stop</b> too.</li>
+    </ul>
+    <div class="warn">It needs an Asana tab open with the Tracket script (v2.6 is fastest — it hears the button instantly). If Safari has put Asana to sleep, the Mac menu bar steps in.</div>
+    <h3>Failsafe</h3>
+    <p>In <b>⚙ Auto mode</b>, <b>Failsafe</b> never lets a timer run outside your shift hours (or past your daily limit, if that’s on): it’s stopped after a 10-second warning, with no Deny, every time. Starting a timer from Tracket outside your shift is blocked too.</p>
+    <h3>Nudges</h3>
+    <p>Tracket also pings you when <b>nothing has been running for 20 minutes</b> during your shift, and when a timer is <b>still running after your shift</b>. Turn either off in <b>Settings → Notifications</b>.</p>
+  </section>
+
+  <section id="history">
+    <h2><i>📊</i> History &amp; insights</h2>
+    <p>Tap the <b>History</b> tile:</p>
+    <ul>
+      <li><b>Last 14 days</b> — a bar per day (red under 7h, amber 7h+, green 8h+), your average and your streak of full days. Tap a day to open it.</li>
+      <li><b>Weeks</b> — your last 8 weeks: totals, full days and your average day.</li>
+      <li><b>Insights</b> — where the time went in the last 7 or 30 days: by project, by tag, your most-worked tickets, and tickets that went <b>over their “Estimated time”</b>.</li>
+    </ul>
+  </section>
+
+  <section id="phone">
+    <h2><i>📱</i> Phone widget <span class="time">≈ 3 min</span></h2>
+    <p>On iPhone and iPad, today’s total and the running timer can sit on your Home Screen, ticking live. You need the free <b>Scriptable</b> app — follow <b>Settings → Phone widget</b>, it’s four taps.</p>
+  </section>
+
+  <section id="keys">
+    <h2><i>⌨</i> Shortcuts</h2>
+    <table>
+      <tr><th>Press</th><th>To</th></tr>
+      <tr><td><kbd>⌘K</kbd> / <kbd>Ctrl K</kbd></td><td>Command bar — start a ticket, switch theme, open any setting…</td></tr>
+      <tr><td><kbd>S</kbd></td><td>Start / stop the timer</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Pop out the mini timer</td></tr>
+      <tr><td><kbd>H</kbd></td><td>History &amp; insights</td></tr>
+      <tr><td><kbd>,</kbd></td><td>Settings</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>T</kbd></td><td>Previous / next day, today</td></tr>
+      <tr><td><kbd>?</kbd></td><td>This list</td></tr>
+    </table>
+    <div class="tip">New here? <b>Settings → Account → Take the tour</b> shows you around in 30 seconds.</div>
   </section>
 
   <section id="help">

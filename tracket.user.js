@@ -2,13 +2,17 @@
 // @name         Tracket · Asana timer bridge
 // @namespace    https://github.com/ShobhitB2002/Tracket
 // @description  Sends your running Asana timer to your Tracket dashboard, live, and runs Tracket's auto mode.
-// @version      2.5
+// @version      2.6
 // @homepageURL  https://github.com/ShobhitB2002/Tracket
 // @match        https://app.asana.com/*
 // @exclude      https://app.asana.com/-/*
 // @noframes
 // @grant        GM.xmlHttpRequest
 // @grant        GM_xmlhttpRequest
+// @grant        GM.setValue
+// @grant        GM.getValue
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @connect      localhost
 // @connect      vercel.app
 // @connect      *
@@ -27,7 +31,23 @@ const TRACKET_KEY = '';
   'use strict';
   if (window.top !== window.self) return; // ignore Asana's embedded iframes
 
-  const VERSION = '2.5';
+  // Userscript storage, shared by this script in every tab (Asana's and
+  // Tracket's), so the dashboard can hand a Start/Stop to Asana right away.
+  const RELAY = 'tracket-relay';
+  const gmSet = (k, v) => { try { if (typeof GM !== 'undefined' && GM.setValue) return GM.setValue(k, v); if (typeof GM_setValue !== 'undefined') GM_setValue(k, v); } catch {} };
+  const gmGet = async (k) => { try { if (typeof GM !== 'undefined' && GM.getValue) return await GM.getValue(k, null); if (typeof GM_getValue !== 'undefined') return GM_getValue(k, null); } catch {} return null; };
+
+  // On the Tracket dashboard: pass along whatever action it shows (data-tracket-action).
+  if (location.hostname !== 'app.asana.com') {
+    const de = document.documentElement;
+    de.setAttribute('data-tracket-relay', '1'); // lets the dashboard know it has a fast path
+    const send = () => { const v = de.getAttribute('data-tracket-action'); if (v) gmSet(RELAY, JSON.stringify({ v, at: Date.now() })); };
+    new MutationObserver(send).observe(de, { attributes: true, attributeFilter: ['data-tracket-action'] });
+    send();
+    return;
+  }
+
+  const VERSION = '2.6';
   const BASE = TRACKET_URL.replace(/\/+$/, '');
   const SERVER = BASE + '/api/event';
   const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
@@ -269,6 +289,7 @@ const TRACKET_KEY = '';
     if (!auto || auto.id !== a.id) {
       auto = a; claimAfter = 0; clearInterval(countT); countT = setInterval(tickCountdown, 250); tickCountdown();
       if (!shared) share({ a, skew });
+      if (a.kind === 'manual' && !document.hidden) flash(`Tracket: ${a.title}`);
     }
   }
   function onShared(raw) {
@@ -301,12 +322,12 @@ const TRACKET_KEY = '';
   // (the reader can lag in a background tab)
   const stopped = () => read().state === 'none' || (!stopBtn() && !!startBtn());
 
-  async function doStop(a) {
+  async function doStop(a, { stay } = {}) {
     let b = stopBtn(), opened = false;
     if (!b) {
       // no Stop button on screen: open the running ticket in this tab
       const t = read();
-      const gid = (t.state === 'running' && t.taskGid) || a.gid;
+      const gid = (t.state === 'running' && t.taskGid) || a.stopGid || a.gid;
       if (!gid) return 'Asana’s stop button wasn’t found in this tab';
       history.pushState(null, '', `/0/0/${gid}/f`);
       dispatchEvent(new PopStateEvent('popstate'));
@@ -317,7 +338,7 @@ const TRACKET_KEY = '';
     clickOnce(b);
     let ok = await waitFor(stopped, 3000);
     if (!ok) { const again = stopBtn(); if (again) pressDown(again); ok = await waitFor(stopped, 4000); }
-    if (ok && opened) setTimeout(() => history.back(), 800); // back to where you were
+    if (ok && opened && !stay) setTimeout(() => history.back(), 800); // back to where you were
     return ok ? null : 'Asana didn’t stop the timer';
   }
 
@@ -351,8 +372,8 @@ const TRACKET_KEY = '';
     api('/api/auto', { id: a.id, op: 'result', ok: !err, error: err || undefined });
     share({ closed: a.id });
     acting = false; auto = null; hideCountdown();
-    const verb = a.action === 'stop' ? 'stop' : 'restart';
-    flash(err ? `Tracket couldn’t ${verb} your timer: ${err}. Please do it by hand.` : a.action === 'stop' ? 'Tracket stopped your timer ✦' : 'Tracket restarted your timer ✦', !!err);
+    const verb = a.action === 'stop' ? 'stop' : a.action === 'switch' ? 'switch' : a.kind === 'manual' ? 'start' : 'restart';
+    flash(err ? `Tracket couldn’t ${verb} your timer: ${err}. Please do it by hand.` : a.action === 'stop' ? 'Tracket stopped your timer ✦' : a.action === 'switch' ? 'Tracket switched your timer ✦' : 'Tracket started your timer ✦', !!err);
   }
 
   function claim(a) {
@@ -362,7 +383,10 @@ const TRACKET_KEY = '';
       if (!j.go) { if (j.status !== 'pending') { auto = null; hideCountdown(); } return; }
       acting = true;
       card(a, null, a.action === 'stop' ? 'Stopping your timer…' : 'Restarting your timer…');
-      (a.action === 'stop' ? doStop(a) : doStart(a)).then((err) => finish(a, err), (e) => finish(a, String(e).slice(0, 80)));
+      const run = a.action === 'stop' ? doStop(a)
+        : a.action === 'switch' ? doStop(a, { stay: true }).then((err) => (err && read().state === 'running' ? err : doStart(a)))
+        : doStart(a);
+      run.then((err) => finish(a, err), (e) => finish(a, String(e).slice(0, 80)));
     });
   }
 
@@ -370,13 +394,13 @@ const TRACKET_KEY = '';
     if (!auto) return hideCountdown();
     if (acting) return;
     const left = auto.deadline - (Date.now() + skew);
-    card(auto, left);
+    if (auto.kind !== 'manual') card(auto, left);
     // First go: the tab you're looking at, then background tabs (+1.5s); for a
     // stop, tabs showing Asana's Stop button before tabs that must open the ticket
     // (+3s). The server lets exactly one of them act.
     const wait = (document.hidden ? 1500 : 0) + (auto.action === 'stop' && !stopBtn() ? 3000 : 0);
     if (left <= -wait && Date.now() > claimAfter) claim(auto);
-    if (left < -PATIENCE) { auto = null; hideCountdown(); }
+    if (left < -(auto.patience || PATIENCE)) { auto = null; hideCountdown(); }
   }
 
   function hideCountdown() { clearInterval(countT); countT = null; document.getElementById('tracket-auto')?.remove(); }
@@ -404,12 +428,12 @@ const TRACKET_KEY = '';
       };
       document.body.appendChild(el);
     }
-    el.querySelector('[data-t]').textContent = a.title.replace(/ in 25s/, '');
+    el.querySelector('[data-t]').textContent = a.title.replace(/ in \d+s/, '');
     const secs = left == null ? null : Math.max(0, Math.ceil(left / 1000));
     el.querySelector('[data-s]').textContent = secs == null ? '' : String(secs);
-    el.querySelector('[data-n]').textContent = note || (secs ? `Happens in ${secs}s unless you deny it.` : 'Doing it now…');
-    el.querySelector('[data-b]').style.width = left == null ? '0%' : `${Math.max(0, Math.min(1, left / 25000)) * 100}%`;
-    el.querySelector('[data-deny]').style.display = acting ? 'none' : '';
+    el.querySelector('[data-n]').textContent = note || (secs ? (a.noDeny ? `Happens in ${secs}s — Failsafe is on, so it can’t be denied.` : `Happens in ${secs}s unless you deny it.`) : 'Doing it now…');
+    el.querySelector('[data-b]').style.width = left == null ? '0%' : `${Math.max(0, Math.min(1, left / Math.max(1, a.deadline - (a.issuedAt || a.deadline - 25000)))) * 100}%`;
+    el.querySelector('[data-deny]').style.display = acting || a.noDeny ? 'none' : '';
   }
 
   function flash(msg, bad) {
@@ -431,6 +455,17 @@ const TRACKET_KEY = '';
       startOn(it.gid).then((err) => finish({ id: it.id, action: 'start' }, err));
     }
   } catch {}
+
+  // Actions relayed from an open Tracket dashboard (see the top of this file).
+  let relayAt = 0;
+  setInterval(async () => {
+    const raw = await gmGet(RELAY);
+    if (!raw) return;
+    let r = null; try { r = JSON.parse(raw); } catch {}
+    if (!r || r.at <= relayAt || Date.now() - r.at > 120000) return;
+    relayAt = r.at;
+    try { const a = JSON.parse(r.v); if (a && a.status === 'pending') onAuto(a, a.serverNow); } catch {}
+  }, 1000);
 
   // Poll fast, and also react instantly to the page reader updating.
   setInterval(check, 1000);
