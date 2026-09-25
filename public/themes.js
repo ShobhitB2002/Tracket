@@ -31,8 +31,37 @@
     alienwatch: { name: 'Alien Watch', desc: 'Lime alien tech, glowing dial', color: '#040704', fonts: 'Orbitron:wght@600;800&family=Chakra+Petch:wght@400;500;600;700',
       pal: ['#6cff2e', '#eeffef', '#16c43a', '#8fe3ff', '#b8ff8f', '#2e8b57', '#d4ff3d', '#5ce1a0'],
       words: { list: 'Missions', running: '● POWERED UP', eyebrow: 'Charge today' } },
+    cyberpunk: { name: 'Cyberpunk', desc: 'Neon rain, glitches', color: '#07010f', fonts: 'Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Audiowide',
+      pal: ['#ff2a6d', '#05d9e8', '#f9f871', '#00ff9f', '#b967ff', '#ff9e00', '#d1f7ff', '#ff6ec7'],
+      words: { list: 'Gigs', running: '● JACKED IN', eyebrow: 'Uptime today' } },
+    synthwave: { name: 'Synthwave', desc: '80s sunset, neon grid', color: '#12002b', fonts: 'Righteous&family=Inter:wght@400;500;600',
+      pal: ['#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96', '#ff9e64', '#ff4f8b', '#7df9ff'] },
+    space: { name: 'Space', desc: 'Stars, a planet, shooting stars', color: '#03040c', fonts: 'Exo+2:wght@400;500;600;700',
+      pal: ['#8ab4ff', '#c792ff', '#7af0c8', '#ffcf70', '#ff8fb1', '#5ee7ff', '#e8ecff', '#a3e635'],
+      words: { list: 'Mission log', running: '● IN ORBIT', eyebrow: 'Flight time today' } },
+    ocean: { name: 'Ocean', desc: 'Deep blue, waves, bubbles', color: '#021a2b', fonts: 'Quicksand:wght@500;600;700',
+      pal: ['#4fd1ff', '#2ee6c5', '#9ab8ff', '#ffd27a', '#ff9aa8', '#7ff0ff', '#c3f0ff', '#8ce99a'] },
+    forest: { name: 'Forest', desc: 'Moss, fog, falling leaves', color: '#0b140d', fonts: 'Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700',
+      pal: ['#9be564', '#e6b85c', '#7cc7a0', '#d98f5a', '#b7a6e8', '#f2d98b', '#5fa86b', '#c9e89a'] },
+    notebook: { name: 'Notebook', desc: 'Lined paper, sticky notes', color: '#f7f3e8', fonts: 'Patrick+Hand&family=Caveat:wght@600;700',
+      pal: ['#1f4fd1', '#e04f5f', '#2e8b57', '#f2a900', '#7a4fd1', '#0e9aa7', '#e07b39', '#555f6d'],
+      words: { list: 'Today’s notes', eyebrow: 'Hours written today' } },
+    rpg: { name: 'Fantasy RPG', desc: 'Parchment, crimson, gold', color: '#e8d6ae', fonts: 'Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700',
+      pal: ['#8c1c13', '#b8860b', '#3f7d20', '#4b3b8f', '#a0522d', '#1f6f8b', '#6b4226', '#c2410c'],
+      words: { list: 'Quests', running: '⚔ ON A QUEST', eyebrow: 'Hours adventured' } },
+    cricket: { name: 'Cricket', desc: 'Floodlights, LED scoreboard', color: '#04120b', fonts: 'Teko:wght@400;500;600&family=Inter:wght@400;500;600',
+      pal: ['#ffd23f', '#52e08a', '#ff5d5d', '#8fd3ff', '#f1fff4', '#ff9f43', '#b18cff', '#3ddbd9'],
+      words: { list: 'Innings', running: '🏏 AT THE CREASE', eyebrow: 'On the pitch today' } },
+    festive: { name: 'Festive', desc: 'String lights, diyas, winter snow', color: '#14061a', fonts: 'Playfair+Display:wght@600;700&family=Nunito:wght@400;600;700',
+      pal: ['#ffb13b', '#ff5e7e', '#6ee7a8', '#c49bff', '#ffd166', '#5ec8ff', '#ff8a5b', '#f5f5f5'] },
+    eink: { name: 'E-ink', desc: 'Pure black and white, no motion', color: '#f2f2ee', fonts: 'IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600',
+      pal: ['#111111', '#444444', '#666666', '#888888', '#222222', '#555555', '#777777', '#333333'] },
+    halloween: { name: 'Halloween', desc: 'Moon, fog, bats, pumpkins', color: '#0e0714', fonts: 'Creepster&family=Nunito:wght@400;600;700',
+      pal: ['#ff7a1a', '#9b5de5', '#9be15d', '#ffd23f', '#ff4d4d', '#5ec8ff', '#fdf1e6', '#c77dff'],
+      words: { list: 'Haunted tickets', running: '🎃 HAUNTING', eyebrow: 'Hours survived today' } },
   };
-  const ORDER = ['default', 'system', 'dark', 'light', 'anime', 'manhwa', 'movies', 'coding', 'games', 'guardian', 'alienwatch'];
+  const ORDER = ['default', 'system', 'dark', 'light', 'anime', 'manhwa', 'movies', 'coding', 'games', 'guardian', 'alienwatch',
+    'cyberpunk', 'synthwave', 'space', 'ocean', 'forest', 'notebook', 'rpg', 'cricket', 'festive', 'eink', 'halloween'];
   const get = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
   const set = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
   const lightMq = matchMedia('(prefers-color-scheme: light)');
@@ -73,32 +102,39 @@
   lightMq.addEventListener?.('change', () => { if (choice === 'system') apply('system'); });
 
   // ---------- scenery (always-on decoration) ----------
+  // drifting particles per theme: [kind, count]; festive snows in Dec–Feb
+  const winter = () => [11, 0, 1].includes(new Date().getMonth());
+  const PARTS = { anime: ['petals', 14], ocean: ['bubbles', 18], forest: ['leaves', 12], halloween: ['bats', 5] };
   function setupScene() {
     if (!document.body) return;
-    document.querySelector('.petals')?.remove();
-    if (current === 'anime' && !calm()) {
-      const box = document.createElement('div');
-      box.className = 'petals'; box.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 14; i++) {
-        const p = document.createElement('i');
-        p.style.left = `${Math.random() * 100}%`;
-        p.style.setProperty('--d', `${11 + Math.random() * 10}s`);
-        p.style.setProperty('--w', `${-Math.random() * 20}s`);
-        p.style.setProperty('--x', `${(Math.random() - 0.3) * 160}px`);
-        p.style.transform = `scale(${0.6 + Math.random() * 0.7})`;
-        box.appendChild(p);
-      }
-      document.body.appendChild(box);
+    document.querySelectorAll('.petals,.parts').forEach((el) => el.remove());
+    const cfg = current === 'festive' ? [winter() ? 'snow' : 'embers', 26] : PARTS[current];
+    if (!cfg || calm()) return;
+    const [kind, n] = cfg;
+    const box = document.createElement('div');
+    box.className = kind === 'petals' ? 'petals' : `parts ${kind}`; box.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement('i');
+      p.style.left = kind === 'bats' ? '-60px' : `${Math.random() * 100}%`;
+      p.style.setProperty('--d', `${(kind === 'bats' ? 18 : kind === 'snow' ? 10 : 11) + Math.random() * 10}s`);
+      p.style.setProperty('--w', `${-Math.random() * (kind === 'bats' ? 30 : 20)}s`);
+      p.style.setProperty('--x', `${(Math.random() - 0.3) * 160}px`);
+      p.style.setProperty('--s', `${3 + Math.random() * (kind === 'bubbles' ? 14 : 4)}px`);
+      p.style.setProperty('--y', `${8 + Math.random() * 40}%`);
+      if (kind === 'petals' || kind === 'leaves') p.style.transform = `scale(${0.6 + Math.random() * 0.7})`;
+      box.appendChild(p);
     }
+    document.body.appendChild(box);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupScene); else setupScene();
 
   // ---------- moments: 'h7', 'h8', 'hour', 'start', 'stop' ----------
-  function burst(el, n) {
+  function burst(el, n, glyphs = ['✦', '✧', '❀', '♡'], colors = null) {
     const r = (el || document.body).getBoundingClientRect();
     for (let i = 0; i < n; i++) {
       const s = document.createElement('span');
-      s.className = 'spark'; s.textContent = ['✦', '✧', '❀', '♡'][i % 4];
+      s.className = colors ? 'spark fw' : 'spark'; s.textContent = glyphs[i % glyphs.length];
+      if (colors) s.style.color = colors[i % colors.length];
       s.style.left = `${r.left + r.width * (0.2 + Math.random() * 0.6)}px`;
       s.style.top = `${r.top + r.height * (0.3 + Math.random() * 0.4)}px`;
       const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 120;
@@ -151,6 +187,52 @@
       if (kind === 'start' && !calm()) pop('warp', '', 1000);
       if (kind === 'h7') pop('charge', '<b>Power up</b><small>7h minimum reached</small>', 2500);
       if (kind === 'h8') pop('charge', '<b>Fully charged</b><small>8 hours · time to power down</small>', 2500);
+    }
+    const card = (b, sm) => pop('bigcard', `<b>${b}</b><small>${sm}</small>`, 2700);
+    if (current === 'cyberpunk') {
+      if (kind === 'start' && !calm()) { document.documentElement.classList.add('glitching'); setTimeout(() => document.documentElement.classList.remove('glitching'), 480); }
+      if (kind === 'h7') card('7H // DONE', 'Minimum cleared · jack out soon');
+      if (kind === 'h8') card('OVERCLOCKED', '8 hours · cool down, runner');
+    }
+    if (current === 'synthwave') {
+      if (kind === 'h7') card('Totally rad', '7 hours · minimum cleared');
+      if (kind === 'h8') card('Max power', '8 hours · hit rewind tomorrow');
+    }
+    if (current === 'space') {
+      if (kind === 'start' && !calm()) pop('shoot', '', 1200);
+      if (kind === 'h7') card('Orbit reached', '7 hours · minimum done');
+      if (kind === 'h8') card('Touchdown', '8 hours · mission complete');
+    }
+    if (current === 'ocean') {
+      if (kind === 'start' && !calm()) burst(odo, 12, ['○', '◦', '°']);
+      if (kind === 'h7') card('High tide', '7 hours · minimum done');
+      if (kind === 'h8') card('Surface!', '8 hours · come up for air');
+    }
+    if (current === 'forest') {
+      if (kind === 'h7') card('Deep roots', '7 hours grown 🌱');
+      if (kind === 'h8') card('Full bloom', '8 hours · rest in the shade');
+    }
+    if (current === 'notebook') {
+      if (kind === 'h7') pop('stamp', '7h ✓<small>minimum done</small>', 2300);
+      if (kind === 'h8') pop('stamp', 'A+<small>8 hours · pens down</small>', 2300);
+    }
+    if (current === 'rpg') {
+      if (kind === 'h7') card('Quest complete', '+7 hours of glory');
+      if (kind === 'h8') card('Legendary', '8 hours · rest at the inn');
+    }
+    if (current === 'cricket') {
+      if (kind === 'hour') card('FOUR!', 'Another hour to the boundary');
+      if (kind === 'h7') card('CENTURY! 💯', '7 hours · raise the bat');
+      if (kind === 'h8') card('Player of the match', '8 hours · walk off to applause');
+    }
+    if (current === 'festive') {
+      const fw = ['✺', '✹', '✸', '✦', '❋'], cols = ['#ffd166', '#ff5e7e', '#6ee7a8', '#c49bff', '#5ec8ff'];
+      if (kind === 'h7') { burst(odo, 28, fw, cols); card('Celebrate!', '7 hours · minimum done'); }
+      if (kind === 'h8') { burst(odo, 40, fw, cols); card('Festival day', '8 hours · light it up'); }
+    }
+    if (current === 'halloween') {
+      if (kind === 'h7') card('BOO!', '7 hours survived');
+      if (kind === 'h8') card('Midnight', '8 hours · fly home');
     }
     if (current === 'games') {
       if (kind === 'h7') { pop('lvlup', 'LEVEL UP!<small>7h minimum cleared</small>', 1900); tone([[523, 0.09], [659, 0.09], [784, 0.09], [1047, 0.22]]); }

@@ -127,6 +127,10 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 - **Themes (2026-09-25):** Default (the original look), Match device, Dark, Light, Anime, Manhwa, Movies, Coding, Games,
   Night Guardian (Batman-inspired: rainy skyline, sweeping searchlight, cut-corner panels) and Alien Watch (Ben 10-inspired: lime
   hex grid, turning dial, hexagon badges). Owner asked for Batman / Ben 10: kept original, no official logos or names (trademarks).
+  Plus Cyberpunk, Synthwave, Space, Ocean, Forest, Notebook, Fantasy RPG, Cricket, Festive (string lights; snow Dec–Feb, embers
+  otherwise), E-ink (no colour, no motion) and Halloween. Shared pieces: `.parts` particles (bubbles/leaves/snow/embers/bats, set
+  in themes.js `PARTS`) and `.bigcard` title cards that wear the theme's accent + display font. Keyframe names must not clash with
+  index.html's (a `rise` clash once sent the ticket rows flying).
   `public/themes.js` (loaded in `<head>`, applies before first paint from localStorage `tk_theme`; `window.TT`) + `public/themes.css`
   (each theme = CSS variables on `[data-theme=…]`, so picker cards preview themselves; page decoration on `html[data-theme=…]`).
   Every colour in index.html is a variable (`--amber` = accent in all themes; `--on-accent` = text on it; `--num` numbers font,
