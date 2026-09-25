@@ -733,15 +733,17 @@ function renderAutoCard(){
 }
 
 // Auto mode status under the shift card.
+// the daily limit, e.g. 7 → "7h", 7.5 → "7h 30m"
+const capLabel = (hours) => { const m = Math.round(hours * 60); return m % 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m / 60}h`; };
 function autoSummary(p){
   if (!p) return 'Off.';
   const parts = [];
-  if (p.auto.cap.on) parts.push(`stops your timer at <b>${p.auto.cap.hours}h</b>`);
+  if (p.auto.cap.on) parts.push(`stops your timer at <b>${capLabel(p.auto.cap.hours)}</b>`);
   if (p.auto.lunch && p.lunch) parts.push(`stops it for lunch <b>${p.lunch.start}–${p.lunch.end}</b> and restarts it after`);
   else if (p.lunch) parts.push(`lunch is <b>${p.lunch.start}–${p.lunch.end}</b> (no auto stop)`);
   return parts.length ? `Auto mode ${parts.join(' · ')}.` : 'Auto mode is off.';
 }
-const SCRIPT_V = '2.4'; // current userscript version
+const SCRIPT_V = '2.5'; // current userscript version
 const scriptOld = () => hbOn() && live?.scriptV && parseFloat(live.scriptV) < parseFloat(SCRIPT_V);
 function renderAuto(){
   const el = $('automode');
@@ -1235,9 +1237,9 @@ async function openSettings(){
 function openAuto(){
   const p = meInfo?.prefs || DEMO_PREFS;
   const el = modal(`<h3>Auto mode</h3>
-    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v${SCRIPT_V}${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}.</p>
+    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v${SCRIPT_V}${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}. On a Mac, the Tracket menu bar (v2.2) also steps in when Safari has put your Asana tabs to sleep.</p>
     <div class="sec"><h4>Daily limit</h4>
-      <label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span>Stop my timer when today reaches <input type="number" id="capH" min="1" max="16" step="0.25" value="${p.auto.cap.hours}"> hours</span></label>
+      <label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span>Stop my timer when today reaches <input type="number" id="capH" min="1" max="16" step="1" value="${Math.floor(Math.round(p.auto.cap.hours * 60) / 60)}" aria-label="Hours"> h <input type="number" id="capM" min="0" max="59" step="1" value="${Math.round(p.auto.cap.hours * 60) % 60}" aria-label="Minutes"> min</span></label>
       <small class="hint">7h is the minimum day. Once a day: if you deny it, or start a timer again afterwards, it won’t stop you again that day.</small></div>
     <div class="sec"><h4>Lunch break</h4>
       <div class="lunchrow">Lunch <input type="time" id="lS" value="${p.lunch?.start || ''}" aria-label="Lunch start"> – <input type="time" id="lE" value="${p.lunch?.end || ''}" aria-label="Lunch end"></div>
@@ -1250,7 +1252,7 @@ function openAuto(){
     const start = el.querySelector('#lS').value, end = el.querySelector('#lE').value;
     const body = {
       lunch: start || end ? { start, end } : null,
-      auto: { cap: { on: el.querySelector('#capOn').checked, hours: Number(el.querySelector('#capH').value) }, lunch: el.querySelector('#lunchAuto').checked },
+      auto: { cap: { on: el.querySelector('#capOn').checked, hours: Number(el.querySelector('#capH').value) + Number(el.querySelector('#capM').value || 0) / 60 }, lunch: el.querySelector('#lunchAuto').checked },
     };
     e.target.disabled = true;
     try {

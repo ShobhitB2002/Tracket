@@ -154,7 +154,7 @@ footer{margin-top:40px;color:var(--dim);font:400 12px var(--mono);text-align:cen
       <tr><th>When</th><th>What you get</th></tr>
       <tr><td>7h / 8h logged</td><td>“7h logged — bare minimum done”, then “8h — that’s enough for today”</td></tr>
       <tr><td>End of shift, under 7h</td><td>A heads-up in the last 30 minutes, and at shift end</td></tr>
-      <tr><td>⚠ Maybe not your ticket</td><td>Every time you start a timer on a ticket assigned to someone else, or with the wrong Task Status</td></tr>
+      <tr><td>⚠ Maybe not your ticket</td><td>Every time you start a timer on a ticket assigned to someone else, with the wrong Task Status, or sitting in the wrong board section (anything but In Grooming / In Development)</td></tr>
       <tr><td>💬 No comment</td><td>When you stop a timer on a ticket you haven’t commented on today</td></tr>
       <tr><td>🍽 Lunch</td><td>If your timer ran during lunch</td></tr>
       <tr><td>⚙ Auto mode</td><td>Before and after it stops or restarts your timer</td></tr>
@@ -193,19 +193,20 @@ footer{margin-top:40px;color:var(--dim);font:400 12px var(--mono);text-align:cen
     <h2><i>⚙</i> Auto mode <span class="time">≈ 1 min</span></h2>
     <p>Tracket can press Asana’s timer buttons for you:</p>
     <ul>
-      <li><b>Daily limit</b> — stop your timer when today reaches a number of hours (7 by default).</li>
+      <li><b>Daily limit</b> — stop your timer when today reaches a time you pick, in hours and minutes (7h by default).</li>
       <li><b>Lunch</b> — stop the timer when lunch starts, and start it again on the same ticket when lunch ends.</li>
     </ul>
     <h3>Turn it on</h3>
     <ol class="steps">
       <li>On the dashboard, find <b>⚙ Auto mode</b> under your shift → <b>Configure</b>.</li>
-      <li>Tick <b>Stop my timer when today reaches…</b> and pick the hours.</li>
+      <li>Tick <b>Stop my timer when today reaches…</b> and pick the hours and minutes.</li>
       <li>For lunch: set your lunch start and end, then tick <b>Stop the timer when lunch starts…</b></li>
       <li>Click <b>Save</b>.</li>
     </ol>
     <h3>What happens</h3>
     <p>Before doing anything, a card appears in your Asana tab and in Tracket: <b>“Stopping your timer — 7h reached · 25”</b> with a countdown and a <b>Deny</b> button. You also get a notification. Do nothing and it happens after 25 seconds; tap <b>Deny</b> and it won’t, for the rest of the day.</p>
-    <div class="warn">It only works while an <b>Asana tab is open</b> with the latest Tracket script. If Asana is closed, nothing happens automatically — on purpose, so Tracket never changes your time on its own.</div>
+    <p>Any open Asana tab can do it — if the Stop button isn’t on screen, the tab opens your ticket first and presses Stop there. If Safari has put your Asana tabs to sleep, the stop happens as soon as one wakes up (up to 10 minutes later), and on a Mac the <a href="#menubar">Tracket menu bar</a> steps in a few seconds after the countdown instead.</p>
+    <div class="warn">It only works while an <b>Asana tab is open</b> with the latest Tracket script (or the Mac menu bar is running). If Asana is closed, nothing happens automatically — on purpose, so Tracket never changes your time on its own.</div>
   </section>
 
   <section id="lunch">

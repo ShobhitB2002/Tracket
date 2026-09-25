@@ -2,7 +2,7 @@
 // @name         Tracket · Asana timer bridge
 // @namespace    https://github.com/ShobhitB2002/Tracket
 // @description  Sends your running Asana timer to your Tracket dashboard, live, and runs Tracket's auto mode.
-// @version      2.4
+// @version      2.5
 // @homepageURL  https://github.com/ShobhitB2002/Tracket
 // @match        https://app.asana.com/*
 // @exclude      https://app.asana.com/-/*
@@ -27,7 +27,7 @@ const TRACKET_KEY = '';
   'use strict';
   if (window.top !== window.self) return; // ignore Asana's embedded iframes
 
-  const VERSION = '2.4';
+  const VERSION = '2.5';
   const BASE = TRACKET_URL.replace(/\/+$/, '');
   const SERVER = BASE + '/api/event';
   const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } })();
@@ -131,7 +131,7 @@ const TRACKET_KEY = '';
           if (r.status === 401) return fail('This script’s key is no longer valid — reinstall it from Tracket → Settings.');
           if (r.status >= 200 && r.status < 300) {
             ok();
-            try { const j = JSON.parse(r.responseText); onAuto(j.auto, j.now); } catch {}
+            try { const j = JSON.parse(r.responseText); if (j.beatIn) fastUntil = Date.now() + 60000; onAuto(j.auto, j.now); } catch {}
             return;
           }
           if (r.status === 0) return fail(blocked);
@@ -170,6 +170,8 @@ const TRACKET_KEY = '';
   // One Asana tab is the leader (the one you look at wins); the others stay
   // quiet unless something changes. Kept in Asana's localStorage, shared by tabs.
   const BEAT_MS = 60000;
+  const FAST_MS = 10000;  // when Tracket says the daily limit is close
+  let fastUntil = 0;
   const LEAD = 'tracket-leader';
   const me = Math.random().toString(36).slice(2);
   function isLeader() {
@@ -212,8 +214,11 @@ const TRACKET_KEY = '';
     const key = running ? `R${running.startedAt}` : previous ? `S${previous.startedAt}` : `-${t.state}`;
     const now = Date.now();
     // Changes go out at once from any tab. The "still here" heartbeat comes from
-    // one tab only (the leader), every 60s — every 2s while auto mode counts down.
-    const beatDue = auto ? now - lastBeat > 2000 : isLeader() && now - lastBeat > BEAT_MS;
+    // one tab only (the leader), every 60s (10s near the daily limit) — and from
+    // every tab every 2s while auto mode counts down (5s once it's due).
+    const beatDue = auto
+      ? now - lastBeat > (auto.deadline - (now + skew) > 0 ? 2000 : 5000)
+      : isLeader() && now - lastBeat > (now < fastUntil ? FAST_MS : BEAT_MS);
     if (key !== lastKey || beatDue) {
       if (key !== lastKey) log(running ? `running: ${running.taskName || running.taskGid}` : previous ? 'stopped' : `no timer (${t.state})`);
       post({ running, previous, visible, diag: { v: VERSION, state: t.state, visible, reader: !!document.documentElement.getAttribute(ATTR + '-alive') } });
@@ -224,11 +229,16 @@ const TRACKET_KEY = '';
 
   // ---------------------------------------------------------------------------
   // 3) Auto mode. Tracket's answer can carry an action (stop at X hours, stop
-  //    for lunch, restart after lunch). This tab shows a 25-second countdown
-  //    with Deny; when it runs out, one tab claims the action and presses
-  //    Asana's own timer button. Denying in Tracket or here cancels it.
+  //    for lunch, restart after lunch). The tab that hears it passes it to every
+  //    other Asana tab (localStorage), and each shows a 25-second countdown with
+  //    Deny. When it runs out, one tab claims the action and presses Asana's own
+  //    timer button, opening the ticket first if no Stop button is on screen.
+  //    Tabs keep trying for PATIENCE (Safari freezes background tabs for a
+  //    while). Denying in Tracket or here cancels it.
   // ---------------------------------------------------------------------------
   const INTENT = 'tracket-auto-start';
+  const SHARE = 'tracket-auto';
+  const PATIENCE = 10 * 60000;
   let auto = null;          // action being counted down
   let skew = 0;             // server clock − ours
   let acting = false;
@@ -248,14 +258,30 @@ const TRACKET_KEY = '';
     } catch { if (cb) cb(null); }
   }
 
-  function onAuto(a, serverNow) {
+  function share(v) { try { localStorage.setItem(SHARE, JSON.stringify({ ...v, at: Date.now() })); } catch {} }
+  function onAuto(a, serverNow, shared) {
     if (serverNow) skew = serverNow - Date.now();
     if (acting) return;
-    if (!a || a.status !== 'pending' || denied.has(a.id)) { if (auto) hideCountdown(); auto = null; return; }
-    if (!auto || auto.id !== a.id) { auto = a; claimAfter = 0; clearInterval(countT); countT = setInterval(tickCountdown, 250); tickCountdown(); }
+    if (!a || a.status !== 'pending' || denied.has(a.id)) {
+      if (auto) { if (!shared) share({ closed: auto.id }); hideCountdown(); }
+      auto = null; return;
+    }
+    if (!auto || auto.id !== a.id) {
+      auto = a; claimAfter = 0; clearInterval(countT); countT = setInterval(tickCountdown, 250); tickCountdown();
+      if (!shared) share({ a, skew });
+    }
   }
+  function onShared(raw) {
+    let v = null; try { v = JSON.parse(raw || 'null'); } catch {}
+    if (!v || Date.now() - v.at > PATIENCE) return;
+    if (v.closed) { if (auto?.id === v.closed && !acting) { denied.add(v.closed); auto = null; hideCountdown(); } return; }
+    if (v.a && !denied.has(v.a.id)) onAuto(v.a, v.skew != null ? Date.now() + v.skew : null, true);
+  }
+  addEventListener('storage', (e) => { if (e.key === SHARE) onShared(e.newValue); });
+  try { onShared(localStorage.getItem(SHARE)); } catch {}
 
-  const stopBtn = () => document.querySelector('[aria-label="Stop timer"], .ActiveTimerStopButton');
+  // The popout in the corner has no Stop button; the ticket's own pane does.
+  const stopBtn = () => document.querySelector('[aria-label="Stop timer"], .ActiveTimerStopButton, .ActiveTimerStopButton-label');
   const startBtn = () => document.querySelector('[aria-label="Start timer"]');
   const target = (el) => (el && (el.closest('[role=button],button') || el));
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -271,14 +297,28 @@ const TRACKET_KEY = '';
     }
   }
 
-  async function doStop() {
-    const b = stopBtn();
-    if (!b) return 'Asana’s stop button wasn’t found in this tab';
+  // stopped = the reader says so, or the ticket's pane swapped Stop for Start
+  // (the reader can lag in a background tab)
+  const stopped = () => read().state === 'none' || (!stopBtn() && !!startBtn());
+
+  async function doStop(a) {
+    let b = stopBtn(), opened = false;
+    if (!b) {
+      // no Stop button on screen: open the running ticket in this tab
+      const t = read();
+      const gid = (t.state === 'running' && t.taskGid) || a.gid;
+      if (!gid) return 'Asana’s stop button wasn’t found in this tab';
+      history.pushState(null, '', `/0/0/${gid}/f`);
+      dispatchEvent(new PopStateEvent('popstate'));
+      opened = true;
+      b = await waitFor(stopBtn, 12000);
+      if (!b) return 'Asana’s stop button wasn’t found, even with the ticket open';
+    }
     clickOnce(b);
-    if (await waitFor(() => read().state === 'none', 3000)) return null;
-    const again = stopBtn();
-    if (again) pressDown(again);
-    return (await waitFor(() => read().state === 'none', 4000)) ? null : 'Asana didn’t stop the timer';
+    let ok = await waitFor(stopped, 3000);
+    if (!ok) { const again = stopBtn(); if (again) pressDown(again); ok = await waitFor(stopped, 4000); }
+    if (ok && opened) setTimeout(() => history.back(), 800); // back to where you were
+    return ok ? null : 'Asana didn’t stop the timer';
   }
 
   async function startOn(gid) {
@@ -309,20 +349,20 @@ const TRACKET_KEY = '';
 
   function finish(a, err) {
     api('/api/auto', { id: a.id, op: 'result', ok: !err, error: err || undefined });
+    share({ closed: a.id });
     acting = false; auto = null; hideCountdown();
     const verb = a.action === 'stop' ? 'stop' : 'restart';
     flash(err ? `Tracket couldn’t ${verb} your timer: ${err}. Please do it by hand.` : a.action === 'stop' ? 'Tracket stopped your timer ✦' : 'Tracket restarted your timer ✦', !!err);
   }
 
   function claim(a) {
-    if (a.action === 'stop' && !(read().state === 'running' && stopBtn())) { claimAfter = Date.now() + 2000; return card(a, null, 'Waiting for the Asana tab that shows your timer…'); }
     claimAfter = Date.now() + 1500;
     api('/api/auto', { id: a.id, op: 'claim' }, (j) => {
       if (!j || auto?.id !== a.id) return;
       if (!j.go) { if (j.status !== 'pending') { auto = null; hideCountdown(); } return; }
       acting = true;
       card(a, null, a.action === 'stop' ? 'Stopping your timer…' : 'Restarting your timer…');
-      (a.action === 'stop' ? doStop() : doStart(a)).then((err) => finish(a, err), (e) => finish(a, String(e).slice(0, 80)));
+      (a.action === 'stop' ? doStop(a) : doStart(a)).then((err) => finish(a, err), (e) => finish(a, String(e).slice(0, 80)));
     });
   }
 
@@ -331,9 +371,12 @@ const TRACKET_KEY = '';
     if (acting) return;
     const left = auto.deadline - (Date.now() + skew);
     card(auto, left);
-    // the tab you're looking at gets first go; background tabs wait 1.5s more
-    if (left <= (document.hidden ? -1500 : 0) && Date.now() > claimAfter) claim(auto);
-    if (left < -60000) { auto = null; hideCountdown(); }
+    // First go: the tab you're looking at, then background tabs (+1.5s); for a
+    // stop, tabs showing Asana's Stop button before tabs that must open the ticket
+    // (+3s). The server lets exactly one of them act.
+    const wait = (document.hidden ? 1500 : 0) + (auto.action === 'stop' && !stopBtn() ? 3000 : 0);
+    if (left <= -wait && Date.now() > claimAfter) claim(auto);
+    if (left < -PATIENCE) { auto = null; hideCountdown(); }
   }
 
   function hideCountdown() { clearInterval(countT); countT = null; document.getElementById('tracket-auto')?.remove(); }
@@ -356,6 +399,7 @@ const TRACKET_KEY = '';
         const id = auto?.id; if (!id) return;
         denied.add(id);
         api('/api/auto', { id, op: 'deny' });
+        share({ closed: id });
         auto = null; hideCountdown(); flash('Denied — Tracket won’t do it today.');
       };
       document.body.appendChild(el);

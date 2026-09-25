@@ -78,14 +78,19 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 - **Web Push:** Settings → Notifications → *Turn on for this device*. iPhone/iPad need Tracket added to the Home Screen
   (iOS 16.4+) and a login inside that app. Watches get them through the phone's notification mirroring. Chrome/Android show a
   **Deny** button on auto-mode notifications (service worker posts `/api/auto` deny); Safari has no buttons.
-- **Auto mode** (prefs `auto.cap {on, hours}` default 7h, `auto.lunch` + `lunch {start,end}`), configured from the ⚙ row under the shift card:
+- **Auto mode** (prefs `auto.cap {on, hours}` default 7h, to the minute since 2026-09-25 (e.g. 7.5); `auto.lunch` + `lunch {start,end}`), configured from the ⚙ row under the shift card:
   - cap: timer running and today ≥ X h → offer "stop". lunchStop: running inside lunch → "stop". lunchResume: lunch stop
     was done, nothing running, within 30 min after lunch end → "start" on the same ticket
-  - each kind at most once a day (a Deny or a restart means it won't come back). Only offered while the Asana tab reports (fresh heartbeat)
+  - each kind at most once a day (a Deny or a restart means it won't come back). Offered from userscript heartbeats, or from `/api/bar?act=1`
+    (a menu bar that can drive the browser). Within 3 min of the cap the event reply carries `beatIn` → the leader tab beats every 10s
   - 25s countdown (`COUNTDOWN`) shown in the Asana tab (userscript card with Deny) and on the dashboard; push too
-  - whoever takes `lock:autoclaim:<id>` first decides: a tab's claim (after the deadline; visible tab first, background +1.5s),
-    a Deny, or the timeout (deadline + 45s → missed). Result → `autost:<id>` + an alert
-  - the userscript presses Asana's own buttons: Stop = `[aria-label="Stop timer"]` / `.ActiveTimerStopButton`,
+  - the tab that hears the offer shares it with every Asana tab via localStorage `tracket-auto` (closed ids too), so all show the countdown
+  - whoever takes `lock:autoclaim:<id>` first decides: a tab's claim (after the deadline; visible +0, background +1.5s, no Stop button
+    on screen +3s), the menu bar (deadline + 6s), a Deny, or the timeout (deadline + `PATIENCE` 10 min → missed; was 45s before v2.5).
+    Result → `autost:<id>` + an alert. Claimed but no result in 90s → failed
+  - the userscript presses Asana's own buttons: Stop = `[aria-label="Stop timer"]` / `.ActiveTimerStopButton(-label)` — these exist
+    only in the running ticket's pane; the corner popout (`.TimeTrackingActiveTimerPopOut`) has **no** Stop button, so with no Stop
+    on screen the tab opens the ticket (pushState), stops, then goes back.
     Start = `[aria-label="Start timer"]` in the task pane (opens the task via pushState, else loads it and finishes after reload).
     A plain click first; a pointer/mouse press only if Asana ignored it (never both, to avoid a double toggle)
   - no fallback by design: if the Asana tab is closed nothing happens (owner's call: risky to edit time on our own)
@@ -101,20 +106,25 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 - **Scheduler:** `/api/cron?key=<cronKey>` (key derived from SESSION_SECRET; the admin panel shows the URL) runs `evaluate` for
   every member and sweeps expired rows. Point Upstash QStash (Schedules, every 10 min = 144 msgs/day, free tier) or cron-job.org at it. Without it,
   reminders and reports still run whenever an Asana tab, dashboard or the menu bar is open.
-- **Menu bar (Mac):** SwiftBar *streamable* plugin `tracket.js` (v2): one long-running process redraws every second (`~~~` frames),
+- **Menu bar (Mac):** SwiftBar *streamable* plugin `tracket.js` (v2; v2.2 adds the auto-mode backup below): one long-running process redraws every second (`~~~` frames),
   fetches `/api/bar` once a minute, counts the timer locally → title `🔔2 ● 0:47:12 · 6:47:12` (Menlo, so digits don't wobble).
   Menu actions (`seen`, `refresh`) run the file again with an argument and empty the cache file to make the loop refetch.
   Settings → Menu bar → *Copy install command* (also removes the old `tracket.10s.js`).
   v2.1 real-time: every 2s it reads `data-tracket-timer` from open Asana tabs in Safari/Chrome/Brave/Edge over Apple Events
   (needs "Allow JavaScript from Apple Events" + macOS Automation permission for SwiftBar); any change → fetch now and again
   after 4s. Can't see tabs → fetches every 30s and shows how to enable it.
+  v2.2 auto-mode backup: fetches with `act=1`, every 10s within 3 min of the cap and every 3s while an action is pending; shows
+  `⏹25s` + a Deny item; 6s after the deadline it claims and presses Asana's button over Apple Events (tab with a Stop button first,
+  else opens the ticket in the first Asana tab, else a new Safari tab), then posts the result.
 - **Email:** `lib/notify.js` sends through Gmail SMTP (implicit TLS 465, AUTH PLAIN, multipart text+HTML, UTF-8 subject) when
   `GMAIL_USER`/`GMAIL_APP_PASSWORD` are set, else Resend. Also used for access-request pings to `ADMIN_EMAIL`.
   Admin panel → Scheduler → *Check email* logs in to Gmail and quits (nothing sent). Tracket's Gmail: tracket.vuseia@gmail.com.
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
-  OK = assigned to me AND the custom field "Task Status" is "In Grooming" or "In Development". Otherwise a ⚠ chip
+  OK = assigned to me AND the custom field "Task Status" is "In Grooming" or "In Development" AND (since 2026-09-25) the ticket's own
+  board section (`memberships.section.name`) is one of those too. No sections (typical subtask) → section not checked; the parent is
+  deliberately ignored (it's often a sprint container sitting in "Groomed"). Otherwise a ⚠ chip
   appears on the row and On Air card, and an alert fires on **every** timer start (by design, the owner wants it repeated).
   No Task Status field → the assignee is still checked, and it's flagged "No Task Status field — are you sure that's acceptable?"
   Checks never throw (so there are no false warnings when Asana fails).
@@ -127,7 +137,7 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 
 Production: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `GMAIL_USER` (tracket.vuseia@gmail.com), `GMAIL_APP_PASSWORD`;
 Production + Preview: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. Removed: all Upstash/KV vars, Telegram, `RESEND_API_KEY`
-(Resend code stays as an unused fallback). Owner's installed copies: userscript v2.4 (Safari Userscripts), menu bar v2.1
+(Resend code stays as an unused fallback). Owner's installed copies: userscript v2.4 (Safari Userscripts), menu bar v2.1 (v2.5 / v2.2 released 2026-09-25)
 (`~/Documents/SwiftBar/tracket.js`).
 
 ## Free-tier budget (target: ≤10 members, all free)
@@ -162,6 +172,7 @@ before any lock write; alerts fetched only when `alertsHead` changes; menu bar f
 | 2026-09-24 | 9a7e8c1 | Flag tickets that may not be yours (assignee / Task Status) |
 | 2026-09-24 | 618b632 | Server-side alerts engine, Web Push (phone lock screen + watch, Home Screen app), auto mode (7h cap, lunch stop/restart, 25s countdown + Deny), lunch on the day bar + Remove lunch, 💬 missing-comment check, daily email report, change email, Mac menu bar (SwiftBar), scheduler URL in admin, userscript v2.3 |
 | 2026-09-24 | (see git log) | Free-tier pass: Turso store with auto-copy from Upstash, batched reads, adaptive polling, one heartbeat tab (userscript v2.4), Gmail SMTP email, streamable menu bar with seconds, `/guide` for members, grammar-tidied messages (f7db29a) |
+| 2026-09-25 | (see git log) | **Bug:** 7h auto stop → "No Asana tab answered in time". **Root causes** (checked live in the owner's Safari): the offer only reached the one tab whose heartbeat triggered it; the stop needs Asana's Stop button, which exists only in the ticket's pane, never in the corner popout, so that tab waited forever; Safari froze the background tab (its reader was 26s stale); 45s patience. Fix: userscript v2.5 (share across tabs, open ticket to stop, 10 min patience, faster beats near the cap), menu bar v2.2 backup, cap in hours + minutes, board-section check |
 
 ## Known limits / open ideas
 
