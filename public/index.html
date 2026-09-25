@@ -112,12 +112,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .shift button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:5px 10px;font:600 11px/1 var(--mono);cursor:pointer}
 .shift button:hover{border-color:var(--amber)}
 .srows{display:grid;gap:8px}
-.srow{display:grid;grid-template-columns:78px 1fr auto 1fr;gap:8px;align-items:center}
+.srow{display:grid;grid-template-columns:100px 1fr auto 1fr;gap:8px;align-items:center}
 .srow label{display:flex;gap:8px;align-items:center;font:600 13px var(--mono);cursor:pointer}
 .srow input[type=time]{min-width:0;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:8px 10px;font:400 14px var(--mono);color-scheme:dark}
 .srow.off input[type=time],.srow.off span{opacity:.3;pointer-events:none}
 @media (max-width:480px){
-  .srow{grid-template-columns:56px 1fr auto 1fr;gap:6px}
+  .srow{grid-template-columns:92px 1fr auto 1fr;gap:6px}
   .srow input[type=time]{padding:8px 6px;font-size:13px}
   .srow input[type=time]::-webkit-calendar-picker-indicator{display:none} /* phones open their own picker on tap */
 }
@@ -294,11 +294,6 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
 /* ---------- alerts, auto mode, comments, lunch ---------- */
 .bell{position:relative}
 .bell .n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--rec);color:#fff;font:800 10px/18px var(--mono);text-align:center}
-.automode{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;border:1px dashed var(--line);font-size:13px;line-height:1.45;color:var(--mute)}
-.automode b{color:var(--ink);font-weight:600}
-.automode .old{color:var(--amber)}
-.automode button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:5px 10px;font:600 11px/1 var(--mono);cursor:pointer}
-.automode button:hover{border-color:var(--amber)}
 .flags{display:flex;flex-wrap:wrap;gap:0 6px}
 .warn.cmt{border-color:#a78bfa55;background:#a78bfa12;color:#c4b5fd}
 .warn.lunch{border-color:#f3efe644;background:#f3efe60a;color:var(--ink);align-items:center}
@@ -336,6 +331,118 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
 .lunchrow input{min-width:0;flex:1;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:8px 10px;font:400 14px var(--mono);color-scheme:dark}
 .hint{display:block;font-size:12px;color:var(--dim);line-height:1.5;margin-top:6px}
 .cmd{display:block;white-space:pre-wrap;word-break:break-all;margin:8px 0;padding:10px;font-size:11px;line-height:1.5}
+
+/* ---------- icons ---------- */
+.ic{width:18px;height:18px;flex:none}
+h2 .ic{width:14px;height:14px;color:var(--dim)}
+
+/* ---------- quick dock (home) ---------- */
+.dock{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:-12px 0 28px}
+.tile{--t:var(--amber);position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border-radius:18px;text-align:left;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--t) 10%,var(--card)),var(--card) 70%);border:1px solid var(--line);
+  transition:transform .2s cubic-bezier(.3,1.5,.5,1),border-color .2s}
+.tile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--t) 60%,var(--line))}
+.tile:active{transform:scale(.97)}
+.tile .ti{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--t);
+  background:color-mix(in srgb,var(--t) 16%,transparent);border:1px solid color-mix(in srgb,var(--t) 35%,transparent)}
+.tile .ti .ic{width:19px;height:19px}
+.tile .tt{min-width:0;display:grid;gap:3px}
+.tile b{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.tile small{font:500 11px/1.3 var(--mono);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.on small{color:var(--t)}
+.tile .dot{position:absolute;top:10px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--t);box-shadow:0 0 10px var(--t)}
+@media (max-width:720px){.dock{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- switches (all checkboxes in .sw) ---------- */
+.sw input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;width:40px;height:24px;margin:2px 0 0;border-radius:99px;flex:none;cursor:pointer;
+  background:#2a2a3a;border:1px solid var(--line);transition:background .2s,border-color .2s}
+.sw input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#cfcbe0;transition:transform .25s cubic-bezier(.3,1.5,.5,1),background .2s}
+.sw input[type=checkbox]:checked{background:var(--amber);border-color:var(--amber)}
+.sw input[type=checkbox]:checked::after{transform:translateX(16px);background:var(--bg)}
+.sw input[type=checkbox]:disabled{opacity:.4;cursor:not-allowed}
+.sw input[type=checkbox]:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.sw{line-height:1.5;align-items:center}
+.sw .lbl b{display:block;font-weight:600}
+.sw .lbl small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+
+/* ---------- settings: tabbed panel ---------- */
+.sheet.settings{max-width:880px;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.set{display:grid;grid-template-columns:210px 1fr;min-height:min(620px,calc(100vh - 32px));max-height:calc(100vh - 32px)}
+.snav{padding:22px 12px;border-right:1px solid var(--line);background:#101017;display:flex;flex-direction:column;gap:4px;overflow:auto}
+.snav .who{padding:4px 10px 16px;font-size:12px;color:var(--mute);line-height:1.4;word-break:break-all}
+.snav .who b{display:block;color:var(--ink);font-size:18px;letter-spacing:-.02em;margin-bottom:2px;word-break:normal}
+.snav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--mute);font-size:14px;font-weight:500;text-align:left;transition:background .15s,color .15s}
+.snav button:hover{background:var(--card2);color:var(--ink)}
+.snav button.on{background:color-mix(in srgb,var(--amber) 14%,transparent);color:var(--ink)}
+.snav button.on .ic{color:var(--amber)}
+.snav button .st{margin-left:auto;flex:none;width:7px;height:7px;padding:0;border-radius:50%;background:var(--rec)}
+.snav button .st.on{background:var(--mint)}
+.snav .grow{flex:1}
+.snav a.guide{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--mute);font-size:13px}
+.snav a.guide:hover{color:var(--amber)}
+.spane{padding:26px 28px 28px;overflow:auto}
+.ph{display:flex;gap:14px;align-items:flex-start;margin:0 40px 20px 0}
+.ph .pi{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;color:var(--amber);background:#ffb5471a;border:1px solid #ffb54740}
+.ph .pi .ic{width:22px;height:22px}
+.ph h3{margin:0 0 4px}
+.ph p{color:var(--mute);font-size:14px;line-height:1.5}
+.group{padding:16px 18px;border-radius:18px;background:#101017;border:1px solid var(--line);margin-bottom:12px}
+.group .gh{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-weight:600;font-size:15px}
+.group .gh .ic{color:var(--mute);width:16px;height:16px}
+.group p{color:var(--mute);font-size:14px;line-height:1.5;margin:0 0 12px}
+.group p:last-child{margin-bottom:0}
+.group .row2{margin-top:4px}
+.badge{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--mono);padding:5px 9px;border-radius:99px;color:var(--rec);background:#ff4d6d14;border:1px solid #ff4d6d40;white-space:nowrap}
+.badge.on{color:var(--mint);background:#5cf2b012;border-color:#5cf2b040}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.linkish{color:var(--amber);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.linkish.danger{color:#ff9aac}
+.savebar{position:sticky;bottom:-28px;margin:16px -28px -28px;padding:14px 28px 18px;background:linear-gradient(180deg,transparent,var(--card) 30%);display:flex;align-items:center;gap:12px}
+.savebar .btn{flex:1}
+.savebar .formerr{margin:0;flex:1}
+.capin{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--mono);color:var(--mute)}
+.capin input{width:64px;border-radius:10px;border:1px solid var(--line);background:#0c0c12;color:var(--ink);padding:8px 10px;font:600 15px var(--mono);text-align:center}
+.capin input:focus{border-color:var(--amber);outline:none}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
+.flow div{padding:12px;border-radius:14px;background:#0c0c12;border:1px solid var(--line);font-size:12px;line-height:1.45;color:var(--mute)}
+.flow div b{display:block;color:var(--ink);font-size:13px;margin-bottom:3px}
+.flow div i{font:800 11px/1 var(--mono);color:var(--amber);font-style:normal;display:block;margin-bottom:8px}
+@media (max-width:720px){
+  .set{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .snav{flex-direction:row;padding:14px 12px 10px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;gap:6px;scrollbar-width:none}
+  .snav::-webkit-scrollbar{display:none}
+  .snav::after{content:"";flex:0 0 40px}
+  .snav .who,.snav .grow,.snav a.guide{display:none}
+  .snav button{flex:none;padding:8px 12px;font-size:13px;white-space:nowrap}
+  .snav button .st{margin-left:2px}
+  .spane{padding:20px 16px 24px}
+  .savebar{bottom:-24px;margin:16px -16px -24px;padding:12px 16px 16px}
+  .flow{grid-template-columns:1fr}
+  .ph{margin-right:36px}
+}
+
+/* ---------- history ---------- */
+.hist{margin-top:4px}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.hstats div{padding:14px;border-radius:16px;background:#101017;border:1px solid var(--line)}
+.hstats b{display:block;font:800 22px/1 var(--mono);letter-spacing:-.03em}
+.hstats small{display:block;margin-top:6px;font:500 11px/1.3 var(--mono);color:var(--mute);letter-spacing:.04em}
+.hchart{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;align-items:end;height:200px;padding:0 2px;border-bottom:1px solid var(--line)}
+.hchart .l7{position:absolute;left:0;right:0;border-top:1px dashed #f3efe655;pointer-events:none}
+.hchart .l7 span{position:absolute;left:-2px;top:-16px;font:600 10px var(--mono);color:var(--mute)}
+.hcol{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer;border-radius:8px;position:relative}
+.hcol:hover .hb{filter:brightness(1.2)}
+.hcol .hb{width:100%;max-width:34px;border-radius:8px 8px 3px 3px;background:var(--c);min-height:3px;transition:height .7s cubic-bezier(.2,.9,.3,1)}
+.hcol .hb.none{background:repeating-linear-gradient(-45deg,#ffffff14 0 4px,transparent 4px 8px);border:1px dashed var(--line)}
+.hcol .hv{font:600 10px var(--mono);color:var(--mute);margin-bottom:6px;white-space:nowrap}
+.hcol.sel .hb{box-shadow:0 0 0 2px var(--ink)}
+.hdays{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin-top:8px}
+.hdays span{text-align:center;font:600 10px/1.3 var(--mono);color:var(--dim)}
+.hdays span b{display:block;color:var(--mute);font-size:11px}
+.hdays span.we{opacity:.55}
+.hkey{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font:500 11px var(--mono);color:var(--mute)}
+.hkey i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+@media (max-width:560px){.hcol .hv{display:none}.hstats b{font-size:18px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -358,6 +465,7 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
   </header>
   <div id="bannerSlot"></div>
   <div class="notes" id="notes"></div>
+  <nav class="dock" id="dock" aria-label="Quick settings" hidden></nav>
 
   <nav class="days">
     <button id="prev" title="Previous day (←)" aria-label="Previous day">‹</button>
@@ -375,13 +483,12 @@ code{font:400 12px var(--mono);background:#0c0c12;border:1px solid var(--line);p
     <div class="legend" id="legend" hidden><span><i class="lunchpat"></i>during lunch</span></div>
     <div class="verdict" id="verdict" hidden></div>
     <div class="shift" id="shift" hidden></div>
-    <div class="automode" id="automode" hidden></div>
   </section>
 
-  <div id="onairWrap"><h2>On air</h2>
+  <div id="onairWrap"><h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/></svg>On air</h2>
   <div id="running"></div></div>
 
-  <h2><span id="listTitle">Today's tickets</span> <span class="count" id="count"></span></h2>
+  <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span id="listTitle">Today's tickets</span> <span class="count" id="count"></span></h2>
   <div class="list" id="list"><div class="skel"></div><div class="skel"></div></div>
   <div class="err" id="err"></div>
 
@@ -432,6 +539,27 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<'
 function hm(sec){ const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60); return h ? `${h}h ${pad(m)}m` : `${m}m`; }
 function hms(sec){ sec = Math.max(0, Math.floor(sec)); return `${pad(Math.floor(sec/3600))}:${pad(Math.floor(sec%3600/60))}:${pad(sec%60)}`; }
 const now = () => Date.now() + clockSkew;
+
+// Line icons (24px grid, drawn with currentColor).
+const ICON = {
+  pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  laptop: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  coffee: '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+  key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+};
+const ic = (n) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
 
 // Lunch window of the day being shown, in ms (from the member's settings).
 function lunchWin(){
@@ -561,7 +689,7 @@ function tick(){
   $('legend').hidden = !tasks.some((t) => t.lunchSec > 30);
   verdict(total);
   renderShift(total);
-  renderAuto();
+  renderDock();
   renderAutoCard();
   tasks.forEach((t) => {
     const seg = tape.querySelector(`[data-gid="${CSS.escape(t.gid)}"]`);
@@ -613,7 +741,7 @@ function verdict(total){
     el.innerHTML = `<span>${VERDICTS[level][today ? 'today' : 'past']}</span>${ask ? '<button id="notifyMe">🔔 Turn on reminders</button>' : ''}`;
     el.hidden = false;
     $('notifyMe')?.addEventListener('click', async () => {
-      try { await enablePush(); if (pushActive) toast('Reminders on for this device ✦'); } catch (x) { toast(x.message.slice(0, 80)); if (isIOS) openSettings(); }
+      try { await enablePush(); if (pushActive) toast('Reminders on for this device ✦'); } catch (x) { toast(x.message.slice(0, 80)); if (isIOS) openSettings('alerts'); }
       el.dataset.k = ''; tick();
     });
   }
@@ -660,7 +788,7 @@ async function openAlerts(){
   const el = modal(`<h3>Alerts</h3>
     <p class="lead">Everything Tracket reminded you about lately.${pushActive ? '' : ' <a href="#" id="alPush">Get these as notifications on this device</a>'}</p>
     <div class="alist">${items.length ? items.map((a) => `<div class="a ${a.id > seen ? 'new' : ''}"><b>${esc(a.title)}</b>${a.body ? `<p>${esc(a.body)}</p>` : ''}<small>${time(a.id)}</small></div>`).join('') : '<p class="lead">Nothing yet.</p>'}</div>`, { wide: true });
-  el.querySelector('#alPush')?.addEventListener('click', (e) => { e.preventDefault(); openSettings(); });
+  el.querySelector('#alPush')?.addEventListener('click', (e) => { e.preventDefault(); openSettings('alerts'); });
   if (items.length) { alertsFeed.seen = (await api('/api/alerts/seen', { json: { upTo: items[0].id } }).catch(() => ({ seen }))).seen; renderBell(); }
 }
 
@@ -732,29 +860,31 @@ function renderAutoCard(){
   $('acBar').style.width = `${Math.max(0, Math.min(1, left / 25000)) * 100}%`;
 }
 
-// Auto mode status under the shift card.
 // the daily limit, e.g. 7 → "7h", 7.5 → "7h 30m"
 const capLabel = (hours) => { const m = Math.round(hours * 60); return m % 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m / 60}h`; };
-function autoSummary(p){
-  if (!p) return 'Off.';
-  const parts = [];
-  if (p.auto.cap.on) parts.push(`stops your timer at <b>${capLabel(p.auto.cap.hours)}</b>`);
-  if (p.auto.lunch && p.lunch) parts.push(`stops it for lunch <b>${p.lunch.start}–${p.lunch.end}</b> and restarts it after`);
-  else if (p.lunch) parts.push(`lunch is <b>${p.lunch.start}–${p.lunch.end}</b> (no auto stop)`);
-  return parts.length ? `Auto mode ${parts.join(' · ')}.` : 'Auto mode is off.';
-}
 const SCRIPT_V = '2.5'; // current userscript version
 const scriptOld = () => hbOn() && live?.scriptV && parseFloat(live.scriptV) < parseFloat(SCRIPT_V);
-function renderAuto(){
-  const el = $('automode');
-  if (!data || !isTodayView() || (mode !== 'live' && mode !== 'demo')) { el.hidden = true; return; }
+// Quick tiles under the header: auto mode, work day, history, guide.
+function renderDock(){
+  const el = $('dock');
+  if (mode !== 'live' && mode !== 'demo') { el.hidden = true; el.dataset.h = ''; return; }
   const p = mode === 'demo' ? DEMO_PREFS : meInfo?.prefs;
-  const on = p && (p.auto.cap.on || (p.auto.lunch && p.lunch));
-  const html = `<span>⚙ ${autoSummary(p)}${on && scriptOld() ? ` <span class="old">Needs the updated Asana script (v${SCRIPT_V}).</span>` : ''}</span><button data-auto>Configure</button>`;
-  if (el.dataset.h !== html) {
-    el.dataset.h = html; el.innerHTML = html; el.hidden = false;
-    el.querySelector('[data-auto]').onclick = () => (mode === 'live' ? openAuto() : openLogin());
-  }
+  const autoOn = !!p && (p.auto.cap.on || (p.auto.lunch && p.lunch));
+  const autoSub = !p ? 'Off' : p.auto.cap.on ? `Stops at ${capLabel(p.auto.cap.hours)}` : autoOn ? 'Lunch stop on' : 'Off · set it up';
+  const s = shiftNow(), sd = s && shiftFor(todayStr || ymd(new Date()));
+  const daySub = !s ? 'Add your shift' : sd ? `${sd.start}–${sd.end}${p?.lunch ? ` · 🍽 ${p.lunch.start}` : ''}` : 'Day off today';
+  const tile = (go, color, icon, title, sub, on, dot) => `<button class="tile ${on ? 'on' : ''}" data-go="${go}" style="--t:${color}">${dot ? '<i class="dot"></i>' : ''}<span class="ti">${ic(icon)}</span><span class="tt"><b>${title}</b><small>${sub}</small></span></button>`;
+  const html = tile('auto', 'var(--amber)', 'bolt', 'Auto mode', esc(autoSub), autoOn, autoOn && scriptOld())
+    + tile('day', 'var(--violet)', 'clock', 'Work day', esc(daySub), !!sd)
+    + tile('hist', 'var(--mint)', 'chart', 'History', 'Last 14 days')
+    + `<a class="tile" href="/guide" target="_blank" style="--t:#5cc8ff"><span class="ti">${ic('book')}</span><span class="tt"><b>Guide</b><small>How it all works</small></span></a>`;
+  if (el.dataset.h === html) return;
+  el.dataset.h = html; el.innerHTML = html; el.hidden = false;
+  el.querySelectorAll('[data-go]').forEach((b) => b.onclick = () => {
+    const go = b.dataset.go;
+    if (go === 'hist') return openHistory();
+    mode === 'live' ? openSettings(go) : openLogin();
+  });
 }
 
 // Notes above the day: lunch time to fix, outdated script.
@@ -827,36 +957,8 @@ function renderShift(total){
   }
 }
 
-function openShift(){
-  const cur = shift?.days || DEMO_SHIFT.days;
-  const rows = [1, 2, 3, 4, 5, 6, 0].map((d) => {
-    const v = cur[d], dv = v || { start: '10:00', end: '19:00' };
-    return `<div class="srow ${v ? '' : 'off'}" data-d="${d}"><label><input type="checkbox" ${v ? 'checked' : ''}> ${DAYS[d]}</label>
-      <input type="time" class="st" value="${dv.start}" aria-label="${DAYS[d]} start"><span>–</span><input type="time" class="en" value="${dv.end}" aria-label="${DAYS[d]} end"></div>`;
-  }).join('');
-  const el = modal(`<h3>Work shift</h3>
-    <p class="lead">Tick your working days and set their hours. Tracket uses them for live progress and your score, and reminds you if you’re under 7h near the end of your shift.</p>
-    <div class="srows">${rows}</div>
-    <p class="lead" style="margin:12px 0 0"><a href="#" id="copyMon">Copy Monday’s hours to every working day</a></p>
-    <div class="formerr" id="shErr"></div>
-    <button class="btn" id="shSave" style="width:100%;margin-top:14px">Save shift</button>`);
-  el.querySelectorAll('.srow input[type=checkbox]').forEach((c) => c.onchange = () => c.closest('.srow').classList.toggle('off', !c.checked));
-  el.querySelector('#copyMon').onclick = (e) => {
-    e.preventDefault();
-    const mon = el.querySelector('.srow[data-d="1"]');
-    el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) { r.querySelector('.st').value = mon.querySelector('.st').value; r.querySelector('.en').value = mon.querySelector('.en').value; } });
-  };
-  el.querySelector('#shSave').onclick = async (e) => {
-    const days = {};
-    el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) days[r.dataset.d] = { start: r.querySelector('.st').value, end: r.querySelector('.en').value }; });
-    e.target.disabled = true;
-    try {
-      const res = await api('/api/shift', { json: { days } });
-      shift = res.shift; if (meInfo) meInfo.shift = shift;
-      closeModal(); toast('Shift saved ✦'); tick();
-    } catch (x) { el.querySelector('#shErr').textContent = x.message; e.target.disabled = false; }
-  };
-}
+function openShift(){ openSettings('day'); }
+function openAuto(){ openSettings('auto'); }
 
 function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
@@ -990,18 +1092,18 @@ async function api(path, opts = {}){
 }
 
 // ---------- modals ----------
-function modal(html, { wide = false, closable = true } = {}){
+function modal(html, { wide = false, closable = true, cls = '', focus = true } = {}){
   closeModal();
   const el = document.createElement('div');
   el.className = 'modal'; el.id = 'modal';
-  el.innerHTML = `<div class="sheet ${wide ? 'wide' : ''}" role="dialog" aria-modal="true">${closable ? '<button class="x" data-close aria-label="Close">×</button>' : ''}${html}</div>`;
+  el.innerHTML = `<div class="sheet ${wide ? 'wide' : ''} ${cls}" role="dialog" aria-modal="true">${closable ? '<button class="x" data-close aria-label="Close">×</button>' : ''}${html}</div>`;
   if (closable) {
     el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-close]')) closeModal(); });
     modal.esc = (e) => { if (e.key === 'Escape') closeModal(); };
     addEventListener('keydown', modal.esc);
   }
   document.body.appendChild(el);
-  setTimeout(() => el.querySelector('input:not(.hp)')?.focus(), 60);
+  if (focus) setTimeout(() => el.querySelector('input:not(.hp)')?.focus(), 60);
   return el;
 }
 function closeModal(){ $('modal')?.remove(); if (modal.esc) removeEventListener('keydown', modal.esc); }
@@ -1138,127 +1240,272 @@ function openTimerSetup(first){
   }, 2000);
 }
 
-async function openSettings(){
-  const el = modal(`<h3>Settings</h3><p class="lead">Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b> · <a href="/guide" target="_blank">📖 Step-by-step guide</a></p>
-    <div class="sec"><h4>Live timer <span class="status ${hbOn() ? '' : 'off'}">${hbOn() ? '● connected' : '● not connected'}</span></h4>
-      <p>A small browser script sends your running Asana timer here. Your copy is already linked to your account.</p>
-      <div class="row2"><button class="btn" id="setupTimer">${hbOn() ? 'Install on another browser' : 'Set up live timer'}</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">Download script</a></div>
-      <p style="margin:12px 0 0"><a href="#" id="rotate">Reset my script key</a> — if you shared your script by mistake. You’ll need to reinstall it.</p>
-    </div>
-    <div class="sec"><h4>Work shift</h4>
-      <p>${shift && Object.keys(shift.days).length ? [1, 2, 3, 4, 5, 6, 0].filter((d) => shift.days[d]).map((d) => `${DAYS[d]} ${shift.days[d].start}–${shift.days[d].end}`).join(' · ') : 'Not set — add it for live progress, a score and end-of-day reminders.'}</p>
-      <div class="row2"><button class="btn ghost" id="editShift">${shift ? 'Edit shift' : 'Set shift'}</button></div></div>
-    <div class="sec"><h4>Notifications <span class="status ${pushActive ? '' : 'off'}">● ${pushActive ? 'on for this device' : 'off on this device'}</span></h4>
-      <p>Reminders on this device even when Tracket is closed: 7h/8h, shift end, ⚠ tickets, 💬 missing comments, 🍽 lunch and auto mode. On a phone they reach the lock screen, and your watch if it mirrors the phone.</p>
-      ${isIOS && !standalone() ? '<p class="note-open">📱 <b>iPhone/iPad:</b> tap <b>Share → Add to Home Screen</b>, open Tracket from the Home Screen, log in there once, then turn notifications on here. (Apple only allows push for Home Screen apps.)</p>' : ''}
-      <div class="row2"><button class="btn" id="pushOn">${pushActive ? 'Send a test' : 'Turn on for this device'}</button>${pushActive ? '<button class="btn ghost" id="pushOff">Turn off here</button>' : ''}</div>
-      <small class="hint" id="pushInfo"></small></div>
-    <div class="sec"><h4>Auto mode</h4><p>${autoSummary(meInfo?.prefs)}</p>
-      <div class="row2"><button class="btn ghost" id="editAuto">Configure auto mode</button></div></div>
-    <div class="sec"><h4>Daily email report</h4>
-      <p>At the end of each day: your total, tickets, anything worth a look (under 7h, ⚠ tickets, 💬 missing comments, 🍽 lunch time, auto mode) and every reminder sent. Sent to <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b> 30 min after your shift ends, or at 20:00 on days without one.</p>
-      <label class="sw"><input type="checkbox" id="repOn" ${meInfo?.prefs?.report?.on ? 'checked' : ''}><span>Email me a daily report</span></label>
-      <div class="row2" style="margin-top:12px"><button class="btn ghost" id="repTest">Send today’s report now</button></div>
-      <small class="hint" id="repLast"></small></div>
-    <div class="sec"><h4>Email</h4><p>Your login, and where reports go. Please use a valid address you check.</p>
-      <form id="emailForm"><div class="field"><label>New email</label><input name="email" type="email" autocomplete="email" required></div>
-      <div class="field"><label>Current password</label><input name="password" type="password" autocomplete="current-password" required></div>
-      <div class="formerr"></div><button class="btn ghost" style="width:100%">Change email</button></form></div>
-    <div class="sec"><h4>Menu bar (Mac)</h4><p>Your running timer, today’s total and a 🔔 for new alerts, always visible in the Mac menu bar.</p>
-      <ol class="steps">
-        <li>Install <a href="https://swiftbar.app" target="_blank" rel="noopener"><b>SwiftBar</b></a> (free), open it, and pick a plugin folder when it asks.</li>
-        <li><button class="btn sm-inline" id="barCopy">Copy install command</button> then paste it in <b>Terminal</b> and press Return. It puts your Tracket plugin in SwiftBar’s folder.
-          <small>Or <a href="/api/menubar" download="tracket.js">download the plugin</a>, drop it in that folder and run <code>chmod +x tracket.js</code> there.</small></li>
-        <li><small>The running timer ticks every second. 🔔3 = 3 new alerts: open it → <b>Mark all read</b>. New data arrives about once a minute (<b>Refresh now</b> in the menu for sooner).</small></li>
-      </ol></div>
-    <div class="sec"><h4>Asana <span class="status">● connected</span></h4>
-      <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
-    <div class="sec"><h4>Password</h4><form id="pwForm">
-      <div class="field"><label>Current</label><input name="current" type="password" autocomplete="current-password" required></div>
-      <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
-      <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
-    <div class="sec"><div class="row2">${meInfo?.admin ? '<a class="btn ghost" href="/admin">Admin panel</a>' : ''}<button class="btn ghost" id="lo">Log out</button></div></div>`, { wide: true });
-  el.querySelector('#setupTimer').onclick = () => openTimerSetup(false);
-  el.querySelector('#editShift').onclick = () => openShift();
-  el.querySelector('#rotate').onclick = async (e) => {
-    e.preventDefault();
-    if (!confirm('Reset your key? Your installed userscript will stop working until you re-install it.')) return;
-    await api('/api/apikey', { json: {} }); toast('New key — re-install your userscript');
+// ---------- settings: one panel, a tab per topic ----------
+const SET_TABS = [
+  { k: 'timer', t: 'Live timer', i: 'pulse' },
+  { k: 'day', t: 'Work day', i: 'clock' },
+  { k: 'auto', t: 'Auto mode', i: 'bolt' },
+  { k: 'alerts', t: 'Notifications', i: 'bell' },
+  { k: 'mac', t: 'Mac menu bar', i: 'laptop' },
+  { k: 'account', t: 'Account', i: 'user' },
+];
+const paneHead = (i, title, text) => `<header class="ph"><span class="pi">${ic(i)}</span><div><h3>${title}</h3><p>${text}</p></div></header>`;
+const badge = (ok, yes, no) => `<span class="badge ${ok ? 'on' : ''}">${ok ? yes : no}</span>`;
+const tabDot = (k) => (k === 'timer' ? `<i class="st ${hbOn() ? 'on' : ''}" title="${hbOn() ? 'Connected' : 'Not connected'}"></i>`
+  : k === 'alerts' ? `<i class="st ${pushActive ? 'on' : ''}" title="${pushActive ? 'On for this device' : 'Off on this device'}"></i>` : '');
+
+function openSettings(tab){
+  if (mode !== 'live') return openLogin();
+  tab = SET_TABS.some((x) => x.k === tab) ? tab : SET_TABS.some((x) => x.k === getLS('tk_set_tab')) ? getLS('tk_set_tab') : 'timer';
+  const el = modal(`<div class="set"><aside class="snav" role="tablist" aria-label="Settings">
+      <div class="who"><b>Settings</b>${esc(meInfo?.email || '')}</div>
+      ${SET_TABS.map((x) => `<button role="tab" data-tab="${x.k}">${ic(x.i)}<span>${x.t}</span>${tabDot(x.k)}</button>`).join('')}
+      <span class="grow"></span>
+      <a class="guide" href="/guide" target="_blank">${ic('book')}Step-by-step guide</a>
+    </aside><div class="spane" id="spane" role="tabpanel"></div></div>`, { cls: 'settings', focus: false });
+  const show = (k) => {
+    setLS('tk_set_tab', k);
+    el.querySelectorAll('[data-tab]').forEach((b) => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); if (on) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+    const pane = el.querySelector('#spane');
+    pane.innerHTML = PANES[k].html();
+    pane.scrollTop = 0;
+    pane.querySelectorAll('[data-goto]').forEach((a) => a.onclick = (e) => { e.preventDefault(); show(a.dataset.goto); });
+    PANES[k].bind(pane, () => show(k));
   };
-  el.querySelector('#replace').onclick = () => openConnect();
-  el.querySelector('#disc').onclick = async () => {
-    if (!confirm('Disconnect Asana? Your token is deleted from Tracket.')) return;
-    await api('/api/asana', { method: 'DELETE' }); closeModal(); boot();
-  };
-  el.querySelector('#lo').onclick = logout;
-  form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); }, '#pwForm');
-  form(el, async (v, f) => {
-    const r = await api('/api/email', { json: v });
-    meInfo.email = r.email; f.reset(); toast('Email changed — log in with it from now on'); openSettings();
-  }, '#emailForm');
-  el.querySelector('#editAuto').onclick = () => openAuto();
-  const info = el.querySelector('#pushInfo');
-  api('/api/push').then((r) => { info.textContent = r.devices.length ? `Signed up: ${r.devices.map((d) => d.ua || 'a device').join(', ')}.` : 'No devices signed up yet.'; }).catch(() => {});
-  el.querySelector('#pushOn').onclick = async (e) => {
-    e.target.disabled = true;
-    try {
-      if (pushActive) { const r = await api('/api/push/test', { json: {} }); toast(r.sent ? `Test sent to ${r.sent} device${r.sent === 1 ? '' : 's'}` : 'No device took it — try turning it off and on'); }
-      else { await enablePush(); toast(pushActive ? 'Notifications on for this device ✦' : 'Browser notifications on'); openSettings(); }
-    } catch (x) { info.textContent = x.message; }
-    e.target.disabled = false;
-  };
-  el.querySelector('#pushOff')?.addEventListener('click', async () => { await disablePush(); toast('Notifications off for this device'); openSettings(); });
-  el.querySelector('#repOn').onchange = async (e) => {
-    try { meInfo.prefs = await api('/api/prefs', { json: { report: { on: e.target.checked } } }); toast(e.target.checked ? 'Daily report on ✦' : 'Daily report off'); }
-    catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
-  };
-  const repLast = el.querySelector('#repLast');
-  const showLast = (l) => { if (l) repLast.textContent = l.ok ? `Last report sent ${new Date(l.at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} to ${l.to}.` : `Last report failed: ${l.error}`; };
-  api('/api/report').then((r) => showLast(r.last)).catch(() => {});
-  el.querySelector('#repTest').onclick = async (e) => {
-    e.target.disabled = true; repLast.textContent = 'Sending…';
-    try { const r = await api('/api/report/test', { json: {} }); repLast.textContent = r.ok ? `Sent to ${meInfo.email} — check your inbox (and spam).` : `Couldn’t send: ${r.error}`; }
-    catch (x) { repLast.textContent = x.message; }
-    e.target.disabled = false;
-  };
-  el.querySelector('#barCopy').onclick = async (e) => {
-    try {
-      const src = await (await fetch('/api/menubar', { credentials: 'same-origin' })).text();
-      const key = (src.match(/^const TRACKET_KEY = "(.*)";$/m) || [])[1];
-      if (!key) throw new Error('no key');
-      const cmd = `DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBar")"; mkdir -p "$DIR" && curl -fsSL -H 'x-tracket-key: ${key}' '${location.origin}/api/menubar' -o "$DIR/tracket.js" && chmod +x "$DIR/tracket.js" && rm -f "$DIR/tracket.10s.js" && echo "Tracket plugin installed in $DIR"; open -g 'swiftbar://refreshallplugins' 2>/dev/null`;
-      await navigator.clipboard.writeText(cmd); e.target.textContent = 'Copied ✓';
-    } catch { e.target.textContent = 'Copy failed — use Download'; }
-    setTimeout(() => { e.target.textContent = 'Copy install command'; }, 2500);
-  };
+  el.querySelector('.snav').onclick = (e) => { const b = e.target.closest('[data-tab]'); if (b) show(b.dataset.tab); };
+  show(tab);
 }
 
-// ---------- auto mode settings ----------
-function openAuto(){
-  const p = meInfo?.prefs || DEMO_PREFS;
-  const el = modal(`<h3>Auto mode</h3>
-    <p class="lead">Tracket can press Asana’s timer buttons for you. Every auto action first shows a <b>25-second countdown</b> in your Asana tab and here, plus a notification — tap <b>Deny</b> to cancel it. It needs an Asana tab open with the Tracket script v${SCRIPT_V}${scriptOld() ? ' <b style="color:var(--amber)">(yours is older — update it in Settings)</b>' : ''}. On a Mac, the Tracket menu bar (v2.2) also steps in when Safari has put your Asana tabs to sleep.</p>
-    <div class="sec"><h4>Daily limit</h4>
-      <label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span>Stop my timer when today reaches <input type="number" id="capH" min="1" max="16" step="1" value="${Math.floor(Math.round(p.auto.cap.hours * 60) / 60)}" aria-label="Hours"> h <input type="number" id="capM" min="0" max="59" step="1" value="${Math.round(p.auto.cap.hours * 60) % 60}" aria-label="Minutes"> min</span></label>
-      <small class="hint">7h is the minimum day. Once a day: if you deny it, or start a timer again afterwards, it won’t stop you again that day.</small></div>
-    <div class="sec"><h4>Lunch break</h4>
-      <div class="lunchrow">Lunch <input type="time" id="lS" value="${p.lunch?.start || ''}" aria-label="Lunch start"> – <input type="time" id="lE" value="${p.lunch?.end || ''}" aria-label="Lunch end"></div>
-      <label class="sw"><input type="checkbox" id="lunchAuto" ${p.auto.lunch ? 'checked' : ''}><span>Stop the timer when lunch starts, and restart it on the same ticket when lunch ends</span></label>
-      <small class="hint">Lunch times also show lunch on your day bar and flag logged time that ran through lunch, with a <b>Remove lunch</b> button on the ticket. Clear both times for no lunch. If your Asana tab is closed, nothing happens automatically.</small></div>
-    <div class="formerr" id="auErr"></div>
-    <button class="btn" id="auSave" style="width:100%;margin-top:8px">Save</button>`, { wide: true });
-  el.querySelectorAll('.lunchrow input').forEach((i) => i.addEventListener('click', () => { try { i.showPicker(); } catch {} }));
-  el.querySelector('#auSave').onclick = async (e) => {
-    const start = el.querySelector('#lS').value, end = el.querySelector('#lE').value;
-    const body = {
-      lunch: start || end ? { start, end } : null,
-      auto: { cap: { on: el.querySelector('#capOn').checked, hours: Number(el.querySelector('#capH').value) + Number(el.querySelector('#capM').value || 0) / 60 }, lunch: el.querySelector('#lunchAuto').checked },
-    };
-    e.target.disabled = true;
-    try {
-      meInfo.prefs = await api('/api/prefs', { json: body });
-      closeModal(); toast('Auto mode saved ✦'); load(true);
-    } catch (x) { el.querySelector('#auErr').textContent = x.message; e.target.disabled = false; }
+const PANES = {
+  timer: {
+    html: () => `${paneHead('pulse', 'Live timer', 'A tiny script in your browser watches your Asana tab and sends the running timer here, to the second.')}
+      <div class="group"><div class="gh">${ic('link')}Asana tab ${badge(hbOn(), 'Connected', 'Not connected')}</div>
+        <p>${hbOn() ? `Your Asana tab is reporting${live?.scriptV ? ` with script v${esc(live.scriptV)}` : ''}. Keep one Asana tab open — it can sit in the background.` : 'No Asana tab is reporting right now. Set up the script (about 2 minutes), then keep one Asana tab open.'}</p>
+        ${scriptOld() ? `<p class="note-open">⬆ <b>Update available.</b> Script v${SCRIPT_V} makes auto mode reliable — reinstall it with the button below, then reload Asana.</p>` : ''}
+        <div class="row2"><button class="btn" id="setupTimer">${hbOn() && !scriptOld() ? 'Install on another browser' : scriptOld() ? 'Update my script' : 'Set up live timer'}</button><a class="btn ghost" href="/api/userscript?tz=${encodeURIComponent(TZ)}" download="tracket.user.js">${ic('download')}Download</a></div></div>
+      <div class="group"><div class="gh">${ic('key')}Script key</div>
+        <p>Shared your script by mistake? Reset its key. The script you installed stops working until you reinstall it.</p>
+        <button class="linkish danger" id="rotate">Reset my script key</button></div>`,
+    bind: (el) => {
+      el.querySelector('#setupTimer').onclick = () => openTimerSetup(false);
+      el.querySelector('#rotate').onclick = async () => {
+        if (!confirm('Reset your key? Your installed userscript will stop working until you re-install it.')) return;
+        await api('/api/apikey', { json: {} }); toast('New key — re-install your userscript');
+      };
+    },
+  },
+
+  day: {
+    html: () => {
+      const cur = shift?.days || {};
+      const rows = [1, 2, 3, 4, 5, 6, 0].map((d) => {
+        const dv = cur[d] || { start: '10:00', end: '19:00' };
+        return `<div class="srow ${cur[d] ? '' : 'off'}" data-d="${d}"><label class="sw"><input type="checkbox" ${cur[d] ? 'checked' : ''} aria-label="${DAYS[d]}"> ${DAYS[d]}</label>
+          <input type="time" class="st" value="${dv.start}" aria-label="${DAYS[d]} start"><span>–</span><input type="time" class="en" value="${dv.end}" aria-label="${DAYS[d]} end"></div>`;
+      }).join('');
+      const L = meInfo?.prefs?.lunch;
+      return `${paneHead('clock', 'Work day', 'Your shift and lunch. Tracket uses them for live progress, your pace score, end-of-day reminders and the lunch check.')}
+        <div class="group"><div class="gh">${ic('cal')}Shift</div>
+          <p>Switch on your working days and set their hours.</p>
+          <div class="srows">${rows}</div>
+          <p style="margin:12px 0 0"><button class="linkish" id="copyMon">Copy Monday’s hours to every working day</button></p></div>
+        <div class="group"><div class="gh">${ic('coffee')}Lunch</div>
+          <div class="lunchrow">From <input type="time" id="lS" value="${L?.start || ''}" aria-label="Lunch start"> to <input type="time" id="lE" value="${L?.end || ''}" aria-label="Lunch end"></div>
+          <small class="hint">Shows lunch on your day bar and flags logged time that ran through it, with a <b>Remove lunch</b> button. Leave both empty for no lunch. To stop the timer for lunch automatically, see <a href="#" data-goto="auto">Auto mode</a>.</small></div>
+        <div class="savebar"><div class="formerr" id="dErr"></div><button class="btn" id="dSave">Save work day</button></div>`;
+    },
+    bind: (el, again) => {
+      el.querySelectorAll('.srow input[type=checkbox]').forEach((c) => c.onchange = () => c.closest('.srow').classList.toggle('off', !c.checked));
+      el.querySelector('#copyMon').onclick = () => {
+        const mon = el.querySelector('.srow[data-d="1"]');
+        el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) { r.querySelector('.st').value = mon.querySelector('.st').value; r.querySelector('.en').value = mon.querySelector('.en').value; } });
+        toast('Copied Monday’s hours');
+      };
+      el.querySelectorAll('input[type=time]').forEach((i) => i.addEventListener('click', () => { try { i.showPicker(); } catch {} }));
+      el.querySelector('#dSave').onclick = async (e) => {
+        const err = el.querySelector('#dErr'); err.textContent = '';
+        const days = {};
+        el.querySelectorAll('.srow').forEach((r) => { if (r.querySelector('input[type=checkbox]').checked) days[r.dataset.d] = { start: r.querySelector('.st').value, end: r.querySelector('.en').value }; });
+        const start = el.querySelector('#lS').value, end = el.querySelector('#lE').value;
+        if (!!start !== !!end) { err.textContent = 'Set both lunch times, or clear both.'; return; }
+        e.target.disabled = true;
+        try {
+          const res = await api('/api/shift', { json: { days } });
+          shift = res.shift; if (meInfo) meInfo.shift = shift;
+          const body = { lunch: start ? { start, end } : null };
+          if (!start && meInfo?.prefs?.auto?.lunch) body.auto = { lunch: false };
+          meInfo.prefs = await api('/api/prefs', { json: body });
+          toast('Work day saved ✦'); load(true); tick(); again();
+        } catch (x) { err.textContent = x.message; e.target.disabled = false; }
+      };
+    },
+  },
+
+  auto: {
+    html: () => {
+      const p = meInfo?.prefs || DEMO_PREFS;
+      const mins = Math.round(p.auto.cap.hours * 60);
+      const ready = hbOn() && !scriptOld();
+      return `${paneHead('bolt', 'Auto mode', 'Tracket presses Asana’s timer buttons for you — always with a warning first.')}
+        <div class="flow">
+          <div><i>01</i><b>Heads-up</b>A 25-second countdown in your Asana tab, here, and as a notification.</div>
+          <div><i>02</i><b>Deny any time</b>Tap Deny and it won’t happen for the rest of the day.</div>
+          <div><i>03</i><b>Done for you</b>Your Asana tab presses Stop — or your Mac menu bar, if Safari put Asana to sleep.</div>
+        </div>
+        <div class="group"><label class="sw"><input type="checkbox" id="capOn" ${p.auto.cap.on ? 'checked' : ''}><span class="lbl"><b>Daily limit</b><small>Stop my timer when today’s total reaches</small></span></label>
+          <div class="capin" id="capIn" style="margin:12px 0 0 50px;${p.auto.cap.on ? '' : 'opacity:.4'}"><input type="number" id="capH" min="1" max="16" step="1" value="${Math.floor(mins / 60)}" aria-label="Hours"> h
+            <input type="number" id="capM" min="0" max="59" step="5" value="${mins % 60}" aria-label="Minutes"> min</div>
+          <small class="hint" style="margin-left:50px">7h is the minimum day. Once a day: deny it, or start a timer again afterwards, and it won’t stop you again that day.</small></div>
+        <div class="group"><label class="sw"><input type="checkbox" id="lunchAuto" ${p.auto.lunch && p.lunch ? 'checked' : ''} ${p.lunch ? '' : 'disabled'}><span class="lbl"><b>Lunch break</b>
+          <small>${p.lunch ? `Stop at ${esc(p.lunch.start)} and restart on the same ticket at ${esc(p.lunch.end)}.` : 'Set your lunch times in <a href="#" data-goto="day">Work day</a> first.'}</small></span></label></div>
+        <div class="group"><div class="gh">${ic('shield')}What it needs ${badge(ready, 'Ready', scriptOld() ? 'Update script' : 'No Asana tab')}</div>
+          <p>An Asana tab open with Tracket script v${SCRIPT_V}${scriptOld() ? ` — yours is v${esc(live.scriptV)}, <a href="#" data-goto="timer">update it</a>` : hbOn() ? ' — yours is connected' : ' — none is reporting right now'}. If Asana is closed, nothing happens automatically.</p></div>
+        <div class="savebar"><div class="formerr" id="aErr"></div><button class="btn" id="aSave">Save auto mode</button></div>`;
+    },
+    bind: (el, again) => {
+      el.querySelector('#capOn').onchange = (e) => { el.querySelector('#capIn').style.opacity = e.target.checked ? '' : '.4'; };
+      el.querySelector('#aSave').onclick = async (e) => {
+        const err = el.querySelector('#aErr'); err.textContent = '';
+        const hours = Number(el.querySelector('#capH').value || 0) + Number(el.querySelector('#capM').value || 0) / 60;
+        e.target.disabled = true;
+        try {
+          meInfo.prefs = await api('/api/prefs', { json: { auto: { cap: { on: el.querySelector('#capOn').checked, hours }, lunch: el.querySelector('#lunchAuto').checked } } });
+          toast('Auto mode saved ✦'); tick(); again();
+        } catch (x) { err.textContent = x.message; e.target.disabled = false; }
+      };
+    },
+  },
+
+  alerts: {
+    html: () => `${paneHead('bell', 'Notifications', 'Reminders that reach you even when Tracket is closed.')}
+      <div class="group"><div class="gh">${ic('bell')}This device ${badge(pushActive, 'On', 'Off')}</div>
+        <p>7h and 8h, shift end, ⚠ tickets that may not be yours, 💬 missing comments, 🍽 lunch and auto mode. Phones show them on the lock screen — and on your watch, if it mirrors the phone.</p>
+        ${isIOS && !standalone() ? '<p class="note-open">📱 <b>iPhone/iPad:</b> tap <b>Share → Add to Home Screen</b>, open Tracket from the Home Screen, log in there once, then turn notifications on here. Apple only allows them for Home Screen apps.</p>' : ''}
+        <div class="row2"><button class="btn" id="pushOn">${pushActive ? 'Send a test' : 'Turn on for this device'}</button>${pushActive ? '<button class="btn ghost" id="pushOff">Turn off here</button>' : ''}</div>
+        <small class="hint" id="pushInfo"></small></div>
+      <div class="group"><label class="sw"><input type="checkbox" id="repOn" ${meInfo?.prefs?.report?.on ? 'checked' : ''}><span class="lbl"><b>Daily email report</b>
+        <small>Your total, tickets and anything worth a look, sent to <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b> 30 min after your shift ends (20:00 on days without one).</small></span></label>
+        <div class="row2" style="margin-top:14px"><button class="btn ghost" id="repTest">${ic('mail')}Send today’s report now</button></div>
+        <small class="hint" id="repLast"></small></div>`,
+    bind: (el, again) => {
+      const info = el.querySelector('#pushInfo');
+      api('/api/push').then((r) => { info.textContent = r.devices.length ? `Signed up: ${r.devices.map((d) => d.ua || 'a device').join(', ')}.` : 'No devices signed up yet.'; }).catch(() => {});
+      el.querySelector('#pushOn').onclick = async (e) => {
+        e.target.disabled = true;
+        try {
+          if (pushActive) { const r = await api('/api/push/test', { json: {} }); toast(r.sent ? `Test sent to ${r.sent} device${r.sent === 1 ? '' : 's'}` : 'No device took it — try turning it off and on'); }
+          else { await enablePush(); toast(pushActive ? 'Notifications on for this device ✦' : 'Browser notifications on'); again(); }
+        } catch (x) { info.textContent = x.message; }
+        e.target.disabled = false;
+      };
+      el.querySelector('#pushOff')?.addEventListener('click', async () => { await disablePush(); toast('Notifications off for this device'); again(); });
+      el.querySelector('#repOn').onchange = async (e) => {
+        try { meInfo.prefs = await api('/api/prefs', { json: { report: { on: e.target.checked } } }); toast(e.target.checked ? 'Daily report on ✦' : 'Daily report off'); }
+        catch (x) { e.target.checked = !e.target.checked; toast(x.message); }
+      };
+      const repLast = el.querySelector('#repLast');
+      const showLast = (l) => { if (l) repLast.textContent = l.ok ? `Last report sent ${new Date(l.at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} to ${l.to}.` : `Last report failed: ${l.error}`; };
+      api('/api/report').then((r) => showLast(r.last)).catch(() => {});
+      el.querySelector('#repTest').onclick = async (e) => {
+        const b = e.currentTarget; b.disabled = true; repLast.textContent = 'Sending…';
+        try { const r = await api('/api/report/test', { json: {} }); repLast.textContent = r.ok ? `Sent to ${meInfo.email} — check your inbox (and spam).` : `Couldn’t send: ${r.error}`; }
+        catch (x) { repLast.textContent = x.message; }
+        b.disabled = false;
+      };
+    },
+  },
+
+  mac: {
+    html: () => `${paneHead('laptop', 'Mac menu bar', 'Your running timer, today’s total and new alerts — always visible at the top of your Mac.')}
+      <div class="group"><ol class="steps" style="margin:0">
+        <li>Install <a href="https://swiftbar.app" target="_blank" rel="noopener"><b>SwiftBar</b></a> (free), open it, and pick a plugin folder when it asks.</li>
+        <li><button class="btn sm-inline" id="barCopy">Copy install command</button> then paste it in <b>Terminal</b> and press Return.
+          <small>Or <a href="/api/menubar" download="tracket.js">download the plugin</a>, drop it in that folder and run <code>chmod +x tracket.js</code> there.</small></li>
+        <li><small>The timer ticks every second. 🔔3 = 3 new alerts: open it → <b>Mark all read</b>.</small></li>
+      </ol></div>
+      <div class="group"><div class="gh">${ic('bolt')}Auto mode backup</div>
+        <p>The menu bar also shows auto-mode countdowns (with <b>Deny</b>), and presses Stop itself if Safari has put your Asana tabs to sleep. Turn on <b>Safari → Develop → Allow JavaScript from Apple Events</b> for it.</p></div>`,
+    bind: (el) => {
+      el.querySelector('#barCopy').onclick = async (e) => {
+        const b = e.currentTarget;
+        try {
+          const src = await (await fetch('/api/menubar', { credentials: 'same-origin' })).text();
+          const key = (src.match(/^const TRACKET_KEY = "(.*)";$/m) || [])[1];
+          if (!key) throw new Error('no key');
+          const cmd = `DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBar")"; mkdir -p "$DIR" && curl -fsSL -H 'x-tracket-key: ${key}' '${location.origin}/api/menubar' -o "$DIR/tracket.js" && chmod +x "$DIR/tracket.js" && rm -f "$DIR/tracket.10s.js" && echo "Tracket plugin installed in $DIR"; open -g 'swiftbar://refreshallplugins' 2>/dev/null`;
+          await navigator.clipboard.writeText(cmd); b.textContent = 'Copied ✓';
+        } catch { b.textContent = 'Copy failed — use Download'; }
+        setTimeout(() => { b.textContent = 'Copy install command'; }, 2500);
+      };
+    },
+  },
+
+  account: {
+    html: () => `${paneHead('user', 'Account', `Signed in as <b style="color:var(--ink)">${esc(meInfo?.email || '')}</b>`)}
+      <div class="group"><div class="gh">${ic('link')}Asana ${badge(true, 'Connected', '')}</div>
+        <p>Tracket reads your time with your Asana token, stored encrypted.</p>
+        <div class="row2"><button class="btn ghost" id="replace">Replace token</button><button class="btn danger" id="disc">Disconnect</button></div></div>
+      <div class="group"><div class="gh">${ic('mail')}Email</div><p>Your login, and where reports go. Use an address you actually check.</p>
+        <form id="emailForm"><div class="field"><label>New email</label><input name="email" type="email" autocomplete="email" required></div>
+        <div class="field"><label>Current password</label><input name="password" type="password" autocomplete="current-password" required></div>
+        <div class="formerr"></div><button class="btn ghost" style="width:100%">Change email</button></form></div>
+      <div class="group"><div class="gh">${ic('key')}Password</div><form id="pwForm">
+        <div class="field"><label>Current</label><input name="current" type="password" autocomplete="current-password" required></div>
+        <div class="field"><label>New (8+ characters)</label><input name="next" type="password" autocomplete="new-password" minlength="8" required></div>
+        <div class="formerr"></div><button class="btn ghost" style="width:100%">Change password</button></form></div>
+      <div class="row2">${meInfo?.admin ? `<a class="btn ghost" href="/admin">${ic('shield')}Admin panel</a>` : ''}<button class="btn ghost" id="lo">${ic('logout')}Log out</button></div>`,
+    bind: (el, again) => {
+      el.querySelector('#replace').onclick = () => openConnect();
+      el.querySelector('#disc').onclick = async () => {
+        if (!confirm('Disconnect Asana? Your token is deleted from Tracket.')) return;
+        await api('/api/asana', { method: 'DELETE' }); closeModal(); boot();
+      };
+      el.querySelector('#lo').onclick = logout;
+      form(el, async (v, f) => { await api('/api/password', { json: v }); f.reset(); toast('Password changed'); }, '#pwForm');
+      form(el, async (v, f) => {
+        const r = await api('/api/email', { json: v });
+        meInfo.email = r.email; f.reset(); toast('Email changed — log in with it from now on'); again();
+      }, '#emailForm');
+    },
+  },
+};
+
+// ---------- history: the last 14 days at a glance ----------
+async function openHistory(){
+  const el = modal(`${paneHead('chart', 'Your last 14 days', 'Tap a day to open it.')}<div class="hist" id="hist"><div class="skel"></div></div>`, { wide: true, focus: false });
+  let h;
+  try {
+    if (mode === 'demo') {
+      const t = parseDay(ymd(new Date()));
+      h = { days: [...Array(14)].map((_, i) => { const d = new Date(t); d.setDate(d.getDate() - 13 + i); const we = d.getDay() % 6 === 0;
+        return { date: ymd(d), minutes: we ? (i % 3 ? 0 : 95) : [452, 488, 396, 431, 505, 470, 418, 455, 512, 402][i % 10] }; }), complete: true };
+    } else h = await api('/api/history?days=14');
+  } catch (x) { el.querySelector('#hist').innerHTML = `<p class="lead">Couldn’t load your history: ${esc(x.message)}</p>`; return; }
+  const today = todayStr || ymd(new Date());
+  const cur = viewDay || today;
+  const days = h.days.map((d) => d.date === today ? { ...d, minutes: Math.max(d.minutes || 0, Math.round(totals().total / 60)) } : d);
+  const known = days.filter((d) => d.minutes != null);
+  const worked = known.filter((d) => d.minutes > 0);
+  const avg = worked.length ? worked.reduce((s, d) => s + d.minutes, 0) / worked.length : 0;
+  const top = Math.max(9 * 60, ...known.map((d) => d.minutes));
+  const color = (m) => (m >= GOAL_MIN ? 'var(--mint)' : m >= MIN_DAY_MIN ? 'var(--amber)' : 'var(--rec)');
+  const box = el.querySelector('#hist');
+  box.innerHTML = `<div class="hstats">
+      <div><b>${hm(avg * 60)}</b><small>average on days worked</small></div>
+      <div><b>${worked.filter((d) => d.minutes >= MIN_DAY_MIN).length}<span style="color:var(--dim)">/${worked.length}</span></b><small>days at 7h or more</small></div>
+      <div><b>${hm(worked.reduce((s, d) => s + d.minutes, 0) * 60)}</b><small>logged in 14 days</small></div></div>
+    <div class="hchart"><div class="l7" style="bottom:${MIN_DAY_MIN / top * 100}%"><span>7h</span></div>
+      ${days.map((d) => `<div class="hcol ${d.date === cur ? 'sel' : ''}" data-d="${d.date}" title="${esc(dayName(d.date, true))}: ${d.minutes == null ? 'not loaded yet' : hm(d.minutes * 60)}">
+        <span class="hv">${d.minutes ? `${Math.floor(d.minutes / 60)}:${pad(d.minutes % 60)}` : ''}</span>
+        <div class="hb ${d.minutes == null ? 'none' : ''}" style="--c:${color(d.minutes || 0)};height:0"></div></div>`).join('')}</div>
+    <div class="hdays">${days.map((d) => { const x = parseDay(d.date); return `<span class="${x.getDay() % 6 === 0 ? 'we' : ''}"><b>${x.toLocaleDateString([], { weekday: 'narrow' })}</b>${x.getDate()}</span>`; }).join('')}</div>
+    <div class="hkey"><span><i style="background:var(--rec)"></i>under 7h</span><span><i style="background:var(--amber)"></i>7h+</span><span><i style="background:var(--mint)"></i>8h+</span>${h.complete ? '' : '<span>Striped = open that day once to load it</span>'}</div>`;
+  requestAnimationFrame(() => box.querySelectorAll('.hcol').forEach((c, i) => {
+    const m = days[i].minutes; c.querySelector('.hb').style.height = m == null ? '30%' : `${Math.max(1.5, m / top * 100)}%`;
+  }));
+  box.querySelector('.hchart').onclick = (e) => {
+    const c = e.target.closest('.hcol'); if (!c) return;
+    closeModal(); setDay(c.dataset.d === today ? null : c.dataset.d);
   };
 }
 
@@ -1348,7 +1595,7 @@ function loadDemo(){
   renderStatic();
 }
 
-$('gear').onclick = openSettings;
+$('gear').onclick = () => openSettings();
 $('bell').onclick = openAlerts;
 $('loginBtn').onclick = openLogin;
 

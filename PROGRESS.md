@@ -119,6 +119,11 @@ optional `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` (otherwise generated and stored)
 - **Email:** `lib/notify.js` sends through Gmail SMTP (implicit TLS 465, AUTH PLAIN, multipart text+HTML, UTF-8 subject) when
   `GMAIL_USER`/`GMAIL_APP_PASSWORD` are set, else Resend. Also used for access-request pings to `ADMIN_EMAIL`.
   Admin panel → Scheduler → *Check email* logs in to Gmail and quits (nothing sent). Tracket's Gmail: tracket.vuseia@gmail.com.
+- **Dashboard layout (2026-09-25 redesign):** a quick dock under the header (Auto mode · Work day · History · Guide tiles, each
+  showing its current state). Settings is one tabbed panel (`openSettings(tab)`, last tab remembered in `tk_set_tab`): Live timer ·
+  Work day (shift + lunch editor) · Auto mode · Notifications (push + daily report) · Mac menu bar · Account. `openShift()` /
+  `openAuto()` just open those tabs. History (`openHistory`, `GET /api/history?days=14`) = one ranged Asana call for 14 days
+  (cached 10 min in `hist:<from>:<to>`); falls back to cached `day:` summaries when the direct endpoint isn't available.
 - **Guide:** `/guide` (`public/guide.html`) — step-by-step for non-technical members: setup, notifications per device, auto mode,
   lunch, comments, email, menu bar, troubleshooting. Linked from Settings, the footer, the script setup and the admin welcome message.
 - **"Is this really your ticket?"** (`core.js` judge/checkTasks; cache `u:<id>:chk`, 30s):
