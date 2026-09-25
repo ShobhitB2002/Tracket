@@ -242,6 +242,21 @@ before any lock write; alerts fetched only when `alertsHead` changes; menu bar f
   Document Picture-in-Picture — any HTML, always on top, not Safari; (c) small native macOS app — a round, draggable, always-on-top
   bubble on every Space, reading `/api/bar` with the member key; (d) iPhone: a Scriptable widget, or Live Activities (needs a native app).
 
+## To verify on real devices (as of 2026-09-25)
+
+Built and unit/locally tested, not yet exercised with the owner's real account/devices:
+- Start / Stop / switch from the dashboard pressing Asana's buttons (userscript v2.6), and the instant relay — needs the Userscripts
+  extension allowed on tracketv1.vercel.app too (Userscripts icon → Always Allow); otherwise the next heartbeat (≤60s) or the menu bar (~6s).
+- Auto-stop at the daily limit after the v2.5 fix (opens the ticket to reach Stop), and Failsafe.
+- Pop-out mini timer (Document PiP in Chrome/Brave/Edge, video PiP in Safari) — blocked in Claude's built-in browser.
+- Slack status with a real workspace token; weekly/monthly emails; the Scriptable phone widget; timesheet with real data.
+- Admin team board / hosting usage with real traffic (usage counts are self-measured and approximate).
+
+## Ideas not built yet (owner's list, 2026-09-25)
+
+Comment on a ticket from Tracket (💬 chip), search any Asana task from ⌘K, add/edit time entries from Tracket, focus/Pomodoro mode,
+automatic seasonal theme, passkeys / 2-step login, native Mac bubble, Android widget.
+
 ## Debugging checklist
 
 1. `curl https://tracketv1.vercel.app/api/health`: env present, DB ok, deployed commit.
