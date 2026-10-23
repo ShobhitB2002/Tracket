@@ -6,7 +6,7 @@ been done, and what's open. Update it at the end of each piece of work.
 
 ## At a glance
 
-- **Live site:** https://tracketv1.vercel.app (Vercel, auto-deploys from `main`)
+- **Live site:** https://tracketv1.vercel.app (Vercel, auto-deploys from `production`, renamed from `main` 2026-10-23)
 - **Repo:** https://github.com/ShobhitB2002/Tracket
 - **Owner / admin:** Shobhit Bansal. Admin panel at `/admin` (password = `ADMIN_PASSWORD` env var)
 - **Stack:** Node 18+, zero npm dependencies, no build step. Vercel function (Hobby) + Turso (libSQL over HTTP), Upstash Redis as the older fallback
