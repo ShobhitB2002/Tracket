@@ -2,7 +2,7 @@
   "project": "tracket",
   "branches": { "production": "production", "integration": "integration", "taskPattern": "task/*" },
   "runsDir": "D:\\_ci-runs\\Tracket",
-  "requiredDocs": ["CLAUDE.md", "docs/RULES.md", "docs/HISTORY.md", "docs/DEPLOYMENT.md"],
+  "requiredDocs": ["CLAUDE.md", "README.md", "docs/DEPLOYMENT.md", "docs/BACKLOG.md", "docs/DECISIONS.md"],
   "forbiddenTracked": "(^|/)(secrets|credentials\\.bin|cache\\.bin|build\\.key|signing\\.key|master\\.secret)(/|$)|\\.(key|pem)$|(^|/)\\.env$|(^|/)\\.env\\.(?!example$)",
   "ui": "",
   "liveRoot": "",
